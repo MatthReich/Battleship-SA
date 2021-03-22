@@ -1,5 +1,0 @@
-package Battleship
-
-class GridSpec {
-
-}
