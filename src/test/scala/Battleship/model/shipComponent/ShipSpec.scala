@@ -6,7 +6,7 @@ import org.scalatest.wordspec.AnyWordSpec
 class ShipSpec extends AnyWordSpec {
 
   val shipLength = 3
-  val shipArray = Array(
+  val shipArray: Array[scala.collection.mutable.Map[String, Int]] = Array(
     scala.collection.mutable.Map("x" -> 0, "y" -> 0, "value" -> 1),
     scala.collection.mutable.Map("x" -> 0, "y" -> 1, "value" -> 1),
     scala.collection.mutable.Map("x" -> 0, "y" -> 2, "value" -> 1)
