@@ -13,8 +13,8 @@ class Ship(val shipLength: Int, var shipCoordinates: Array[scala.collection.muta
   private def isSunk: Boolean = {
     var x = 0
     shipCoordinates.foreach(m => if(m.get("value").contains(1)) { x+=1 })
-    if(x != 0) { false }
-    else true
+
+    x != 0
   }
 
 }
