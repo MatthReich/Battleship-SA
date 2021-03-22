@@ -1,5 +1,7 @@
-package Battleship.model.shipcomponent
+package Battleship.model.shipComponent
 
 trait InterfaceShip {
+
+  def hit(x: Int, y: Int): Unit
 
 }
