@@ -5,8 +5,6 @@ version := "1.1"
 
 scalaVersion := "2.13.5"
 
-libraryDependencies += "junit" % "junit" % "4.8" % "test"
-
 libraryDependencies += "org.scala-lang.modules" % "scala-swing_2.12" % "2.0.3"
 
 libraryDependencies += "com.google.inject" % "guice" % "3.0"
