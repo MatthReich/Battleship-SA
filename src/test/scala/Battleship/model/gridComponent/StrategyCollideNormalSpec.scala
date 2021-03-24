@@ -2,7 +2,7 @@ package Battleship.model.gridComponent
 
 import Battleship.config.GameModule
 import Battleship.model.gridComponent.gridImplementation.Grid
-0import Battleship.model.shipComponent.shipImplemenation.Ship
+import Battleship.model.shipComponent.shipImplemenation.Ship
 import com.google.inject.Guice
 import org.scalatest.wordspec.AnyWordSpec
 

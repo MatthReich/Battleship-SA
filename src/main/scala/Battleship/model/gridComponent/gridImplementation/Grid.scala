@@ -18,9 +18,10 @@ class Grid(val size: Int, var listOfShips: ListBuffer[Ship], val strategyCollide
   }
 
   def getShip(x: Int, y: Int): Ship = {
-    var ship = new Ship(null, null, null)
-    listOfShips.foreach(shipIterate => shipIterate.shipCoordinates.foreach(coords => if(coords.get("x").contains(x) && coords.get("y").contains(y)) {ship = shipIterate}))
-    ship
+    listOfShips.foreach(shipIterate => shipIterate.shipCoordinates.foreach(coords => if (coords.get("x").contains(x) && coords.get("y").contains(y)) {
+      return shipIterate
+    }))
+    null
   }
 
   private def update(): Unit = {

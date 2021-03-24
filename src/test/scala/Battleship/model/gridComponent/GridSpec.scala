@@ -1,9 +1,8 @@
 package Battleship.model.gridComponent
 
-import Battleship.config.GameModule
 import Battleship.model.gridComponent.gridImplementation.Grid
+import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
 import Battleship.model.shipComponent.shipImplemenation.Ship
-import com.google.inject.Guice
 import org.scalatest.wordspec.AnyWordSpec
 
 import scala.collection.mutable.ListBuffer
@@ -12,15 +11,14 @@ class GridSpec extends AnyWordSpec {
 
   val size = 10
   val listOfShips = new ListBuffer[Ship]
-  val injector = Guice.createInjector(new GameModule)
-  val strategyCollide: InterfaceStrategyCollide = injector.getInstance(classOf[InterfaceStrategyCollide])
-  val shipLength = 3
+  val strategyCollide: InterfaceStrategyCollide = new StrategyCollideNormal
   val shipArray: Array[scala.collection.mutable.Map[String, Int]] = Array(
     scala.collection.mutable.Map("x" -> 0, "y" -> 0, "value" -> 1),
     scala.collection.mutable.Map("x" -> 0, "y" -> 1, "value" -> 1),
     scala.collection.mutable.Map("x" -> 0, "y" -> 2, "value" -> 1)
   )
   val status = false
+  val shipLength = 2
 
 
   "A Grid" when {
