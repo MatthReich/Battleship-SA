@@ -1,7 +1,9 @@
 package Battleship.model.gridComponent
 
+import Battleship.config.GameModule
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.shipComponent.shipImplemenation.Ship
+import com.google.inject.Guice
 import org.scalatest.wordspec.AnyWordSpec
 
 import scala.collection.mutable.ListBuffer
@@ -10,25 +12,38 @@ class GridSpec extends AnyWordSpec {
 
   val size = 10
   val listOfShips = new ListBuffer[Ship]
+  val injector = Guice.createInjector(new GameModule)
+  val strategyCollide: InterfaceStrategyCollide = injector.getInstance(classOf[InterfaceStrategyCollide])
+  val shipLength = 3
+  val shipArray: Array[scala.collection.mutable.Map[String, Int]] = Array(
+    scala.collection.mutable.Map("x" -> 0, "y" -> 0, "value" -> 1),
+    scala.collection.mutable.Map("x" -> 0, "y" -> 1, "value" -> 1),
+    scala.collection.mutable.Map("x" -> 0, "y" -> 2, "value" -> 1)
+  )
+  val status = false
+
 
   "A Grid" when {
 
-    val grid = new Grid(size, listOfShips)
+    val grid = new Grid(size, listOfShips, strategyCollide)
 
     "new" should {
       "have no ships" in {
         assert(grid.listOfShips.isEmpty)
       }
       "say that game is not finished" in {
-        assert(!grid.winStatement())
+        assert(grid.winStatement() === false)
+      }
+      "have the right dimension" in {
+        assert(grid.size === size)
       }
     }
 
-    "ship get setted" should {
+    "ship get set" should {
       "change grid values" in {
 
       }
-      "not allow a ship with coordinates already exists" in {
+      "not work with coordinates already exists" in {
 
       }
     }
@@ -39,9 +54,18 @@ class GridSpec extends AnyWordSpec {
       }
     }
 
+    "get a ship" should {
+      val askedShip: Ship = new Ship(shipLength, shipArray, status)
+
+      "return the right ship" in {
+
+        assert(grid.getShip(0, 0) === askedShip)
+      }
+    }
+
     "game is finished" should {
       "say game is finished" in {
-
+        assert(grid.winStatement() === true)
       }
     }
   }
