@@ -1,10 +1,9 @@
 package Battleship.model.gridComponent
 
-import Battleship.model.gridComponent.gridImplementation.Grid
-import Battleship.model.shipComponent.shipImplemenation.Ship
+import scala.collection.mutable
 
 trait InterfaceStrategyCollide {
 
-  def collide(ship: Ship, grid: Grid): Boolean
+  def collide(fields: Array[mutable.Map[String, Int]], grid: Array[mutable.Map[String, Int]]): Boolean
 
 }
