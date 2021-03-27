@@ -15,7 +15,7 @@ class ShipSpec extends AnyWordSpec {
 
   "A Ship" when {
 
-    val ship: Ship = new Ship(shipLength, shipArray, status)
+    var ship: InterfaceShip = Ship(shipLength, shipArray, status)
 
     "new" should {
       "have the correct size" in {
@@ -35,7 +35,7 @@ class ShipSpec extends AnyWordSpec {
 
     "get hit" should {
       "change value of hit field" in {
-        assert(ship.hit(0, 0) === true)
+        ship = ship.hit(0, 0)
 
         assert(ship.shipCoordinates(0) get "value" contains 0)
         assert(ship.shipCoordinates(1) get "value" contains 1)
@@ -45,7 +45,7 @@ class ShipSpec extends AnyWordSpec {
       }
 
       "not sunk when a second hit but three can be taken" in {
-        assert(ship.hit(0, 1) === true)
+        ship = ship.hit(0, 1)
 
         assert(ship.shipCoordinates(0) get "value" contains 0)
         assert(ship.shipCoordinates(1) get "value" contains 0)
@@ -55,7 +55,7 @@ class ShipSpec extends AnyWordSpec {
       }
 
       "return false when wrong coordinates are given and not change any value" in {
-        assert(ship.hit(7, 7) === false)
+        ship = ship.hit(7, 7)
 
         assert(ship.shipCoordinates(0) get "value" contains 0)
         assert(ship.shipCoordinates(1) get "value" contains 0)
@@ -65,7 +65,7 @@ class ShipSpec extends AnyWordSpec {
       }
 
       "change status when sunk" in {
-        assert(ship.hit(0, 2) === true)
+        ship = ship.hit(0, 2)
 
         assert(ship.shipCoordinates(0) get "value" contains 0)
         assert(ship.shipCoordinates(1) get "value" contains 0)
