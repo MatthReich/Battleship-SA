@@ -2,11 +2,12 @@ package Battleship.model.gridComponent.gridImplementation
 
 import Battleship.controller.controllerbaseimpl.GameState
 import Battleship.controller.controllerbaseimpl.GameState.GameState
+import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
 import Battleship.model.gridComponent.{InterfaceGrid, InterfaceStrategyCollide}
 
 import scala.collection.mutable
 
-case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide) extends InterfaceGrid {
+case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Array[mutable.Map[String, Int]]) extends InterfaceGrid {
 
   override def setField(gameStatus: GameState, fields: Array[mutable.Map[String, Int]]): (InterfaceGrid, Boolean) = {
     if (gameStatus == GameState.SHIPSETTING) {
@@ -18,7 +19,7 @@ case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide) extends In
       }
       return (this, false)
     } else {
-      grid.foreach(coords => if (coords.get("x").contains(fields(0).get("x")) && coords.get("y").contains(fields(0).get("y")))
+      grid.foreach(coords => if (coords.get("x").contains(fields(0).get("x")) && coords.get("y").contains(fields(0).get("y"))) {
         if (coords.get("value").contains(0)) {
           coords("value") = 2
           return (this, true)
@@ -26,19 +27,19 @@ case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide) extends In
           coords("value") = 3
           return (this, true)
         }
+      }
       )
       return (this, false)
     }
   }
 
-  override def grid: Array[mutable.Map[String, Int]] = initgrid()
 
-  private def initgrid(): Array[mutable.Map[String, Int]] = {
-    var tmpArray = new Array[mutable.Map[String, Int]](size * size)
+  def initGrid(): InterfaceGrid = {
+    val tmpArray = new Array[mutable.Map[String, Int]](size * size)
     for (i <- 0 until size * size) {
       tmpArray(i) = mutable.Map("x" -> i % size, "y" -> i / size, "value" -> 0)
     }
-    return tmpArray
+    this.copy(grid = tmpArray)
   }
 
   // setField (Feld setzen, überprüfen ob feld schonmal beschossen wurde) new (Grid,ischanged)

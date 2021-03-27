@@ -4,6 +4,6 @@ import Battleship.model.gridComponent.InterfaceStrategyCollide
 
 import scala.collection.mutable
 
-class StrategyCollideNormal extends InterfaceStrategyCollide {
+case class StrategyCollideNormal() extends InterfaceStrategyCollide {
   override def collide(fields: Array[mutable.Map[String, Int]], grid: Array[mutable.Map[String, Int]]): Boolean = true
 }
