@@ -2,7 +2,7 @@ package Battleship.model.shipComponent.shipImplemenation
 
 import Battleship.model.shipComponent.InterfaceShip
 
-class Ship(val shipLength: Int, var shipCoordinates: Array[scala.collection.mutable.Map[String, Int]], var status: Boolean) extends InterfaceShip {
+case class Ship(shipLength: Int,shipCoordinates: Array[Map[String, Int]], status: Boolean) extends InterfaceShip {
 
   def hit(x: Int, y: Int): Boolean = {
     if (coordsExists(x, y)) {
@@ -22,7 +22,7 @@ class Ship(val shipLength: Int, var shipCoordinates: Array[scala.collection.muta
   }
 
   private def changeStatusWhenSunk(): Unit = {
-    if (isSunk) status = true
+    if (isSunk) status = this.copy(status = !this.status)
   }
 
   private def isSunk: Boolean = {

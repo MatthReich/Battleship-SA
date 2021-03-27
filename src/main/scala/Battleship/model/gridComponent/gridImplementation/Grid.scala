@@ -5,7 +5,7 @@ import Battleship.model.shipComponent.shipImplemenation.Ship
 
 import scala.collection.mutable.ListBuffer
 
-class Grid(val size: Int, var listOfShips: ListBuffer[Ship], val strategyCollide: InterfaceStrategyCollide) extends InterfaceGrid {
+case class Grid(size: Int, var listOfShips: ListBuffer[Ship], strategyCollide: InterfaceStrategyCollide) extends InterfaceGrid {
   private var field = Array.ofDim[Int](size, size)
 
 
@@ -25,7 +25,6 @@ class Grid(val size: Int, var listOfShips: ListBuffer[Ship], val strategyCollide
   }
 
   private def update(): Unit = {
-
     // GridChange Event
   }
 
