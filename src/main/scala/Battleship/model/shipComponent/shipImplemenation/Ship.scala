@@ -19,9 +19,10 @@ case class Ship(shipLength: Int, shipCoordinates: Array[mutable.Map[String, Int]
   }
 
   private def changeValueToHit(x: Int, y: Int): Unit = {
-    shipCoordinates.foreach(coords => if (coords.get("x").contains(x) && coords.get("y").contains(y)) {
-      coords("value") = 0
-    })
+    val index = shipCoordinates.indexWhere(mapping => mapping.get("x").contains(x) && mapping.get("y").contains(y))
+    if (index >= 0) {
+      shipCoordinates.update(index, shipCoordinates(index) + ("value" -> 0))
+    }
   }
 
   private def changeStatusWhenSunk(): InterfaceShip = {

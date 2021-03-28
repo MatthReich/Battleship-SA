@@ -2,37 +2,29 @@ package Battleship.model.gridComponent.gridImplementation
 
 import Battleship.controller.controllerbaseimpl.GameState
 import Battleship.controller.controllerbaseimpl.GameState.GameState
-import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
 import Battleship.model.gridComponent.{InterfaceGrid, InterfaceStrategyCollide}
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Array[mutable.Map[String, Int]]) extends InterfaceGrid {
 
   override def setField(gameStatus: GameState, fields: Array[mutable.Map[String, Int]]): (InterfaceGrid, Boolean) = {
-    if (gameStatus == GameState.SHIPSETTING) {
-      if (!strategyCollide.collide(fields, grid)) {
-        fields.foreach(coordsfield => grid.foreach(coordsgrid => if (coordsgrid.get("x").contains(coordsfield.get("x")) && coordsgrid.get("y").contains(coordsfield.get("y"))) {
-          coordsgrid("value") = 1
-        }))
-        return (this, true)
-      }
-      return (this, false)
-    } else {
-      grid.foreach(coords => if (coords.get("x").contains(fields(0).get("x")) && coords.get("y").contains(fields(0).get("y"))) {
-        if (coords.get("value").contains(0)) {
-          coords("value") = 2
-          return (this, true)
-        } else if (coords.get("value").contains(1)) {
-          coords("value") = 3
-          return (this, true)
-        }
-      }
-      )
-      return (this, false)
-    }
-  }
+    val retVal = strategyCollide.collide(fields, grid)
+    val collide = retVal._1
+    val indexes = retVal._2
 
+    if (gameStatus == GameState.SHIPSETTING) {
+      if (collide) {
+        return (this, false)
+      }
+    }
+    if (indexes.nonEmpty) {
+      indexes.foreach(index => grid.update(index, newValueOfField(index, gameStatus)))
+      return (this, true)
+    }
+    (this, false)
+  }
 
   def initGrid(): InterfaceGrid = {
     val tmpArray = new Array[mutable.Map[String, Int]](size * size)
@@ -42,9 +34,16 @@ case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Arra
     this.copy(grid = tmpArray)
   }
 
-  // setField (Feld setzen, überprüfen ob feld schonmal beschossen wurde) new (Grid,ischanged)
-
-  // setShip (Felder setzen, überprüfen ob felder valide sind) new (Grid, ischanged)
+  private def newValueOfField(index: Int, gameState: GameState): mutable.Map[String, Int] = {
+    grid(index).getOrElse("value", Int.MaxValue) match {
+      case 0 => if (gameState == GameState.SHIPSETTING) {
+        grid(index) + ("value" -> 1)
+      } else {
+        grid(index) + ("value" -> 2)
+      }
+      case 1 => grid(index) + ("value" -> 3)
+    }
+  }
 
   /*
   0=water

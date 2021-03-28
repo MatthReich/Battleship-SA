@@ -11,9 +11,15 @@ import scala.collection.mutable.ListBuffer
 
 class GridSpec extends AnyWordSpec {
 
-  val size = 10
+  val size: Int = 10
   val strategyCollide: InterfaceStrategyCollide = new StrategyCollideNormal
-  val idle = GameState.IDLE
+  val idle: GameState.Value = GameState.IDLE
+  val shipset: GameState.Value = GameState.SHIPSETTING
+  val shipArray: Array[scala.collection.mutable.Map[String, Int]] = Array(
+    scala.collection.mutable.Map("x" -> 0, "y" -> 0),
+    scala.collection.mutable.Map("x" -> 0, "y" -> 1),
+    scala.collection.mutable.Map("x" -> 0, "y" -> 2)
+  )
 
 
   "A Grid" when {
@@ -31,7 +37,10 @@ class GridSpec extends AnyWordSpec {
 
     "ship get set" should {
       "change grid values" in {
-
+        grid = grid.setField(shipset, shipArray)._1
+        assert(grid.grid(0) === mutable.Map("x" -> 0, "y" -> 0, "value" -> 1))
+        assert(grid.grid(10) === mutable.Map("x" -> 0, "y" -> 1, "value" -> 1))
+        assert(grid.grid(20) === mutable.Map("x" -> 0, "y" -> 2, "value" -> 1))
       }
       "not work with coordinates already exists" in {
 
@@ -41,20 +50,10 @@ class GridSpec extends AnyWordSpec {
     "a ship gets hit" should {
       "change grid values" in {
         grid = grid.setField(idle, Array(mutable.Map("x" -> 0, "y" -> 0)))._1
-        assert(grid.grid(0) === mutable.Map("x" -> 0, "y" -> 0, "value" -> 2))
+        assert(grid.grid(0) === mutable.Map("x" -> 0, "y" -> 0, "value" -> 3))
       }
     }
 
-    "get a ship" should {
-
-      "return the right ship" in {
-      }
-    }
-
-    "game is finished" should {
-      "say game is finished" in {
-      }
-    }
   }
 
 }
