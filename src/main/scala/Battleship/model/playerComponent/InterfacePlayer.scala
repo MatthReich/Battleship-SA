@@ -11,4 +11,6 @@ trait InterfacePlayer {
   def grid: InterfaceGrid
 
   def name: String
+
+  def changeName(input: String): InterfacePlayer
 }

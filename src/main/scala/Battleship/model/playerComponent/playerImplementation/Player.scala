@@ -8,4 +8,7 @@ import scala.collection.mutable.ListBuffer
 
 case class Player(name: String, shipList: ListBuffer[InterfaceShip], grid: InterfaceGrid) extends InterfacePlayer {
 
+  override def changeName(input: String): InterfacePlayer = {
+    this.copy(name = input)
+  }
 }
