@@ -1,5 +1,8 @@
 package Battleship.controller
 
-trait InterfaceController {
+import scala.swing.Publisher
+
+trait InterfaceController extends Publisher {
+
 
 }
