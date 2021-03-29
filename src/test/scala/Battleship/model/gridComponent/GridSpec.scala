@@ -3,18 +3,16 @@ package Battleship.model.gridComponent
 import Battleship.controller.controllerbaseimpl.GameState
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
-import Battleship.model.shipComponent.shipImplemenation.Ship
 import org.scalatest.wordspec.AnyWordSpec
 
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 
 class GridSpec extends AnyWordSpec {
 
   val size: Int = 10
   val strategyCollide: InterfaceStrategyCollide = new StrategyCollideNormal
   val idle: GameState.Value = GameState.IDLE
-  val shipset: GameState.Value = GameState.SHIPSETTING
+  val shipSet: GameState.Value = GameState.SHIPSETTING
   val shipArray: Array[scala.collection.mutable.Map[String, Int]] = Array(
     scala.collection.mutable.Map("x" -> 0, "y" -> 0),
     scala.collection.mutable.Map("x" -> 0, "y" -> 1),
@@ -28,7 +26,7 @@ class GridSpec extends AnyWordSpec {
 
     "new" should {
       "have a right grid length" in {
-        assert(grid.grid.length === size*size)
+        assert(grid.grid.length === size * size)
       }
       "have the right dimension" in {
         assert(grid.grid(0) === mutable.Map("x" -> 0, "y" -> 0, "value" -> 0))
@@ -37,7 +35,7 @@ class GridSpec extends AnyWordSpec {
 
     "ship get set" should {
       "change grid values" in {
-        grid = grid.setField(shipset, shipArray)._1
+        grid = grid.setField(shipSet, shipArray)._1
         assert(grid.grid(0) === mutable.Map("x" -> 0, "y" -> 0, "value" -> 1))
         assert(grid.grid(10) === mutable.Map("x" -> 0, "y" -> 1, "value" -> 1))
         assert(grid.grid(20) === mutable.Map("x" -> 0, "y" -> 2, "value" -> 1))
