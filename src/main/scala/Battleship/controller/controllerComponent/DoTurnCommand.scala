@@ -6,6 +6,7 @@ import Battleship.utils.Command
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.util.Try
 
 class DoTurnCommand(input: String, controller: Controller) extends Command {
 
@@ -116,8 +117,9 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
   private def calculateCoords(size: Int)(input: String): Option[Array[mutable.Map[String, Int]]] = {
     val splitInput = input.split(" ")
     if (splitInput.length == size) {
+      if (Try(splitInput.map(_.toInt)).isFailure) return None
       val convertedInput = splitInput.map(_.toInt)
-
+      if (convertedInput.exists(value => value > 9))
       size match {
         case 2 => return Some(Array(mutable.Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
         case 4 => if (checkShipFormat(convertedInput)) return Some(calculateCoordsArray(convertedInput))
