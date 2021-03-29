@@ -59,7 +59,7 @@ class PlayerSpec extends AnyWordSpec {
     }
     "ship gets added" should {
       "extend List of ships" in {
-        player = player.updateShip(ship)
+        player = player.addShip(ship)
         assert(player.shipList.nonEmpty === true)
         assert(player.shipList.length === 1)
       }

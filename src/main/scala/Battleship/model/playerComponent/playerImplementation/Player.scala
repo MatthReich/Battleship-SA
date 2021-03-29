@@ -16,7 +16,12 @@ case class Player(name: String, shipList: ListBuffer[InterfaceShip], grid: Inter
     this.copy(grid = newGrid)
   }
 
-  override def updateShip(ship: InterfaceShip): InterfacePlayer = {
+  override def addShip(ship: InterfaceShip): InterfacePlayer = {
     this.copy(shipList = shipList.addOne(ship))
+  }
+
+  override def updateShip(idx: Int, ship: InterfaceShip): InterfacePlayer = {
+    shipList.update(idx, ship)
+    this
   }
 }

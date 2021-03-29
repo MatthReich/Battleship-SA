@@ -20,4 +20,9 @@ trait InterfaceController {
 
   def setName(input: String): Unit
 
+  def changeGameState(gameState: GameState): Unit
+
 }
+
+
+

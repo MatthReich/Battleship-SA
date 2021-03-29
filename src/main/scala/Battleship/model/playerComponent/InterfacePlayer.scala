@@ -17,6 +17,7 @@ trait InterfacePlayer {
 
   def updateGrid(grid: InterfaceGrid): InterfacePlayer
 
-  def updateShip(ship: InterfaceShip): InterfacePlayer
+  def updateShip(idx: Int, ship: InterfaceShip): InterfacePlayer
 
+  def addShip(ship: InterfaceShip): InterfacePlayer
 }

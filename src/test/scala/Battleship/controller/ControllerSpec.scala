@@ -38,11 +38,21 @@ class ControllerSpec extends AnyWordSpec {
       "set ship" in {
         controller = new Controller(player_01, player_02, GameState.SHIPSETTING, PlayerState.PLAYER_ONE)
         controller.setShip("0 0 0 3")
-        assert(controller.player_01.shipList(0).shipLength === 4)
+        assert(controller.player_01.shipList.head.shipLength === 4)
         assert(controller.player_01.grid.grid(0).getOrElse("value", Int.MaxValue) === 1)
         assert(controller.player_01.grid.grid(10).getOrElse("value", Int.MaxValue) === 1)
         assert(controller.player_01.grid.grid(20).getOrElse("value", Int.MaxValue) === 1)
         assert(controller.player_01.grid.grid(30).getOrElse("value", Int.MaxValue) === 1)
+      }
+    }
+    "set Guess" should {
+      "change grid" in {
+        controller.setShip("0 0 0 3")
+        controller.changeGameState(GameState.IDLE)
+        controller.setGuess("0 0")
+        assert(player_01.shipList(0).shipCoordinates(0).getOrElse("value", Int.MaxValue) === 0)
+        assert(player_01.shipList(0).shipCoordinates(1).getOrElse("value", Int.MaxValue) === 1)
+        assert(player_01.grid.grid(0).getOrElse("value", Int.MaxValue) === 3)
       }
     }
   }

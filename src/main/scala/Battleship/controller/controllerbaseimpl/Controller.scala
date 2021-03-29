@@ -23,6 +23,10 @@ class Controller(var player_01: InterfacePlayer, var player_02: InterfacePlayer,
 
   val shipNotSunk = false
 
+  override def changeGameState(gameState: GameState): Unit = {
+    this.gameState = gameState
+  }
+
   override def setShip(input: String): Unit = {
     val coords: Array[mutable.Map[String, Int]] = calculateCoords(input)
 
@@ -34,19 +38,23 @@ class Controller(var player_01: InterfacePlayer, var player_02: InterfacePlayer,
   }
 
   override def setGuess(input: String): Unit = {
-    val x = input(0).toInt
-    val y = input(2).toInt
+    val splittedInput = input.split(" ")
+    val splittedInputInt = splittedInput.map(_.toInt)
+    val x = splittedInputInt(0)
+    val y = splittedInputInt(1)
+
     val indexes = new ListBuffer[Int]
     playerState match {
       case PLAYER_ONE =>
         player_01.shipList.foreach(ship => indexes.addOne(ship.shipCoordinates.indexWhere(mapping => mapping.get("x").contains(x) &&
           mapping.get("y").contains(y))))
-        val retVal = player_01.grid.setField(gameState, player_01.shipList(indexes(0)).shipCoordinates)
-        player_01 = player_01.updateGrid(retVal._1)
+
+        val retVal = player_01.grid.setField(gameState, player_01.shipList(indexes.head).shipCoordinates)
+        player_01 = player_01.updateGrid(retVal._1).updateShip(indexes.head,player_01.shipList(indexes.head).hit(x, y) )
       case PLAYER_TWO =>
         player_02.shipList.foreach(ship => indexes.addOne(ship.shipCoordinates.indexWhere(mapping => mapping.get("x").contains(x) &&
           mapping.get("y").contains(y))))
-        val retVal = player_02.grid.setField(gameState, player_02.shipList(indexes(0)).shipCoordinates)
+        val retVal = player_02.grid.setField(gameState, player_02.shipList(indexes.head).shipCoordinates)
         player_02 = player_02.updateGrid(retVal._1)
 
     }
@@ -66,7 +74,7 @@ class Controller(var player_01: InterfacePlayer, var player_02: InterfacePlayer,
 
     if (success) {
       val ship = Ship(getSize(coords), coords, shipNotSunk)
-      player.updateShip(ship).updateGrid(updatedGrid)
+      player.addShip(ship).updateGrid(updatedGrid)
     } else {
       player
     }
@@ -81,7 +89,7 @@ class Controller(var player_01: InterfacePlayer, var player_02: InterfacePlayer,
         var i = 0
         for (x <- splittedInputInt(0) to splittedInputInt(2)) {
           for (y <- splittedInputInt(1) to splittedInputInt(3)) {
-            tmpArray(i) = mutable.Map("x" -> x, "y" -> y)
+            tmpArray(i) = mutable.Map("x" -> x, "y" -> y, "value" -> 1)
             i += 1
           }
         }
