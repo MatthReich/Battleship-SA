@@ -1,6 +1,6 @@
 package Battleship.controller
 
-import Battleship.controller.controllerbaseimpl.{Controller, GameState, PlayerState}
+import Battleship.controller.controllerComponent.{Controller, GameState, PlayerState}
 import Battleship.model.gridComponent.InterfaceGrid
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
@@ -20,9 +20,13 @@ class ControllerSpec extends AnyWordSpec {
   val gridPlayer_02: InterfaceGrid = Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](0)).initGrid()
   val player_02: InterfacePlayer = Player("", new ListBuffer[InterfaceShip], gridPlayer_02)
 
+  val name_01: String = "Matthias"
+  val name_02: String = "Marcel"
+
+
   "A Controller" when {
 
-    var controller: InterfaceController = new Controller(player_01, player_02, GameState.PLAYERSETTING, PlayerState.PLAYER_ONE)
+    val controller: InterfaceController = new Controller(player_01, player_02, GameState.PLAYERSETTING, PlayerState.PLAYER_ONE)
 
     "new" should {
       "init with right parameters" in {
@@ -30,13 +34,25 @@ class ControllerSpec extends AnyWordSpec {
         assert(controller.playerState === PlayerState.PLAYER_ONE)
       }
     }
-    "while game" should {
-      "set name" in {
-        controller.setName("player01")
-        assert(controller.player_01.name === "player01")
+    "set a new name" should {
+      "change player one name" in {
+        controller.changePlayerState(PlayerState.PLAYER_ONE)
+        assert(controller.player_02.name != name_01)
+        controller.setName(name_01)
+        assert(controller.player_01.name === name_01)
       }
-      "set ship" in {
-        controller = new Controller(player_01, player_02, GameState.SHIPSETTING, PlayerState.PLAYER_ONE)
+      "change player two name" in {
+        controller.changePlayerState(PlayerState.PLAYER_TWO)
+        assert(controller.player_02.name != name_02)
+        controller.setName(name_02)
+        assert(controller.player_01.name === name_01)
+      }
+    }
+
+    "set a new ship" should {
+      "set ship with same x coordinates" in {
+        controller.changePlayerState(PlayerState.PLAYER_ONE)
+        controller.changeGameState(GameState.SHIPSETTING)
         controller.setShip("0 0 0 3")
         assert(controller.player_01.shipList.head.shipLength === 4)
         assert(controller.player_01.grid.grid(0).getOrElse("value", Int.MaxValue) === 1)
@@ -44,14 +60,28 @@ class ControllerSpec extends AnyWordSpec {
         assert(controller.player_01.grid.grid(20).getOrElse("value", Int.MaxValue) === 1)
         assert(controller.player_01.grid.grid(30).getOrElse("value", Int.MaxValue) === 1)
       }
+      "set ship with same y coordinates" in {
+        controller.changePlayerState(PlayerState.PLAYER_TWO)
+        controller.setShip("0 0 3 0")
+        assert(controller.player_02.shipList.head.shipLength === 4)
+        controller.player_02.grid.grid.foreach(println(_))
+        assert(controller.player_02.grid.grid(0).getOrElse("value", Int.MaxValue) === 1)
+        assert(controller.player_02.grid.grid(1).getOrElse("value", Int.MaxValue) === 1)
+        assert(controller.player_02.grid.grid(2).getOrElse("value", Int.MaxValue) === 1)
+        assert(controller.player_02.grid.grid(3).getOrElse("value", Int.MaxValue) === 1)
+      }
+      "set ship with false coordinates" in {
+        // throws null pointer
+      }
     }
+
     "set Guess" should {
       "change grid" in {
-        controller.setShip("0 0 0 3")
+        controller.changePlayerState(PlayerState.PLAYER_ONE)
         controller.changeGameState(GameState.IDLE)
         controller.setGuess("0 0")
-        assert(player_01.shipList(0).shipCoordinates(0).getOrElse("value", Int.MaxValue) === 0)
-        assert(player_01.shipList(0).shipCoordinates(1).getOrElse("value", Int.MaxValue) === 1)
+        assert(player_01.shipList.head.shipCoordinates(0).getOrElse("value", Int.MaxValue) === 0)
+        assert(player_01.shipList.head.shipCoordinates(1).getOrElse("value", Int.MaxValue) === 1)
         assert(player_01.grid.grid(0).getOrElse("value", Int.MaxValue) === 3)
       }
     }

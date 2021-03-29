@@ -10,7 +10,7 @@ case class StrategyCollideNormal() extends InterfaceStrategyCollide {
     val indexes = new ListBuffer[Int]
     fields.foreach(coords => indexes.addOne(grid.indexWhere(mapping => mapping.get("x").contains(coords.getOrElse("x", Int.MaxValue)) &&
       mapping.get("y").contains(coords.getOrElse("y", Int.MaxValue)))))
-    if (indexes.nonEmpty) {
+    if (indexes.nonEmpty && !indexes.exists(_.equals(-1))) {
       indexes.foreach(index => if (grid(index).getOrElse("value", 0) != 0) {
         return (true, indexes)
       })

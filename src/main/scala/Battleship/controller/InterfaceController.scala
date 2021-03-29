@@ -1,10 +1,12 @@
 package Battleship.controller
 
-import Battleship.controller.controllerbaseimpl.GameState.GameState
-import Battleship.controller.controllerbaseimpl.PlayerState.PlayerState
+import Battleship.controller.controllerComponent.GameState.GameState
+import Battleship.controller.controllerComponent.PlayerState.PlayerState
 import Battleship.model.playerComponent.InterfacePlayer
 
-trait InterfaceController {
+import scala.swing.Publisher
+
+trait InterfaceController extends Publisher {
 
   def player_01: InterfacePlayer
 
@@ -21,6 +23,8 @@ trait InterfaceController {
   def setName(input: String): Unit
 
   def changeGameState(gameState: GameState): Unit
+
+  def changePlayerState(playerState: PlayerState): Unit
 
 }
 

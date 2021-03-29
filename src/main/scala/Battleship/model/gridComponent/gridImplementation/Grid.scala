@@ -1,12 +1,17 @@
 package Battleship.model.gridComponent.gridImplementation
 
-import Battleship.controller.controllerbaseimpl.GameState
-import Battleship.controller.controllerbaseimpl.GameState.GameState
+import Battleship.controller.controllerComponent.GameState
+import Battleship.controller.controllerComponent.GameState.GameState
 import Battleship.model.gridComponent.{InterfaceGrid, InterfaceStrategyCollide}
 
 import scala.collection.mutable
 
 case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Array[mutable.Map[String, Int]]) extends InterfaceGrid {
+
+  private val water: Int = 0
+  private val ship: Int = 1
+  private val waterHit: Int = 2
+  private val shipHit: Int = 3
 
   override def setField(gameStatus: GameState, fields: Array[mutable.Map[String, Int]]): (InterfaceGrid, Boolean) = {
     val retVal = strategyCollide.collide(fields, grid)
@@ -18,7 +23,7 @@ case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Arra
         return (this, false)
       }
     }
-    if (indexes.nonEmpty) {
+    if (indexes.nonEmpty && !indexes.exists(_.equals(-1))) {
       indexes.foreach(index => grid.update(index, newValueOfField(index, gameStatus)))
       return (this, true)
     }
@@ -28,7 +33,7 @@ case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Arra
   def initGrid(): InterfaceGrid = {
     val tmpArray = new Array[mutable.Map[String, Int]](size * size)
     for (i <- 0 until size * size) {
-      tmpArray(i) = mutable.Map("x" -> i % size, "y" -> i / size, "value" -> 0)
+      tmpArray(i) = mutable.Map("x" -> i % size, "y" -> i / size, "value" -> water)
     }
     this.copy(grid = tmpArray)
   }
@@ -36,18 +41,12 @@ case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Arra
   private def newValueOfField(index: Int, gameState: GameState): mutable.Map[String, Int] = {
     grid(index).getOrElse("value", Int.MaxValue) match {
       case 0 => if (gameState == GameState.SHIPSETTING) {
-        grid(index) + ("value" -> 1)
+        grid(index) + ("value" -> ship)
       } else {
-        grid(index) + ("value" -> 2)
+        grid(index) + ("value" -> waterHit)
       }
-      case 1 => grid(index) + ("value" -> 3)
+      case 1 => grid(index) + ("value" -> shipHit)
     }
   }
 
-  /*
-  0=water
-  1=ship
-  2=hitwater
-  3=hitship
-   */
 }

@@ -24,4 +24,5 @@ case class Player(name: String, shipList: ListBuffer[InterfaceShip], grid: Inter
     shipList.update(idx, ship)
     this
   }
+
 }

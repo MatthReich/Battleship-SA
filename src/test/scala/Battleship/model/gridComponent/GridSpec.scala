@@ -1,6 +1,6 @@
 package Battleship.model.gridComponent
 
-import Battleship.controller.controllerbaseimpl.GameState
+import Battleship.controller.controllerComponent.GameState
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
 import org.scalatest.wordspec.AnyWordSpec
@@ -18,6 +18,11 @@ class GridSpec extends AnyWordSpec {
     scala.collection.mutable.Map("x" -> 0, "y" -> 1),
     scala.collection.mutable.Map("x" -> 0, "y" -> 2)
   )
+  val shipArrayFalse: Array[scala.collection.mutable.Map[String, Int]] = Array(
+    scala.collection.mutable.Map("x" -> 0, "y" -> 10),
+    scala.collection.mutable.Map("x" -> 0, "y" -> 1),
+    scala.collection.mutable.Map("x" -> 0, "y" -> 2)
+  )
 
 
   "A Grid" when {
@@ -29,7 +34,13 @@ class GridSpec extends AnyWordSpec {
         assert(grid.grid.length === size * size)
       }
       "have the right dimension" in {
-        assert(grid.grid(0) === mutable.Map("x" -> 0, "y" -> 0, "value" -> 0))
+        assert(grid.grid.exists(_.get("value").contains(1)) === false)
+      }
+      "has right collide strategy" in {
+        assert(grid.strategyCollide === StrategyCollideNormal())
+      }
+      "has right size" in {
+        assert(grid.size === size)
       }
     }
 
@@ -41,7 +52,10 @@ class GridSpec extends AnyWordSpec {
         assert(grid.grid(20) === mutable.Map("x" -> 0, "y" -> 2, "value" -> 1))
       }
       "not work with coordinates already exists" in {
-
+        assert(grid.setField(shipSet, shipArray)._2 === false)
+      }
+      "not work with coordinates doesnt exists" in {
+        assert(grid.setField(idle, shipArrayFalse)._2 === false)
       }
     }
 
@@ -49,6 +63,13 @@ class GridSpec extends AnyWordSpec {
       "change grid values" in {
         grid = grid.setField(idle, Array(mutable.Map("x" -> 0, "y" -> 0)))._1
         assert(grid.grid(0) === mutable.Map("x" -> 0, "y" -> 0, "value" -> 3))
+      }
+    }
+
+    "water gets hit" should {
+      "change value to water" in {
+        grid = grid.setField(idle, Array(mutable.Map("x" -> 9, "y" -> 9)))._1
+        assert(grid.grid(99) === mutable.Map("x" -> 9, "y" -> 9, "value" -> 2))
       }
     }
 

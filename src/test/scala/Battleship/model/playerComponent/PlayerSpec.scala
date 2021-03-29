@@ -1,6 +1,6 @@
 package Battleship.model.playerComponent
 
-import Battleship.controller.controllerbaseimpl.GameState
+import Battleship.controller.controllerComponent.GameState
 import Battleship.model.gridComponent.InterfaceGrid
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
@@ -24,8 +24,14 @@ class PlayerSpec extends AnyWordSpec {
     scala.collection.mutable.Map("x" -> 0, "y" -> 1, "value" -> 1),
     scala.collection.mutable.Map("x" -> 0, "y" -> 2, "value" -> 1)
   )
+  val shipArrayForUpdate: Array[scala.collection.mutable.Map[String, Int]] = Array(
+    scala.collection.mutable.Map("x" -> 0, "y" -> 0, "value" -> 0),
+    scala.collection.mutable.Map("x" -> 0, "y" -> 1, "value" -> 1),
+    scala.collection.mutable.Map("x" -> 0, "y" -> 2, "value" -> 1)
+  )
   val status = false
   val ship: InterfaceShip = Ship(shipLength, shipArray, status)
+  val updatedShip: InterfaceShip = Ship(shipLength, shipArrayForUpdate, status)
 
 
   "A Player" when {
@@ -62,6 +68,13 @@ class PlayerSpec extends AnyWordSpec {
         player = player.addShip(ship)
         assert(player.shipList.nonEmpty === true)
         assert(player.shipList.length === 1)
+      }
+    }
+    "ship gets updated" should {
+      "change value of a ship" in {
+        assert(player.shipList.head.shipCoordinates(0).getOrElse("value", Int.MaxValue) === 1)
+        player = player.updateShip(0, updatedShip)
+        assert(player.shipList.head.shipCoordinates(0).getOrElse("value", Int.MaxValue) === 0)
       }
     }
   }
