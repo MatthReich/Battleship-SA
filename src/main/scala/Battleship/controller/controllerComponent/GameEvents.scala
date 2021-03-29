@@ -2,7 +2,9 @@ package Battleship.controller.controllerComponent
 
 import scala.swing.event.Event
 
-class CellChanged extends Event
+class GameStart extends Event
+
+class GridUpdated extends Event
 
 class PlayerChanged extends Event
 

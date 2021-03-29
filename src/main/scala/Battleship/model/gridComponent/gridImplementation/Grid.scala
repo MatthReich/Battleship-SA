@@ -49,4 +49,37 @@ case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Arra
     }
   }
 
+  override def toString(showAllShips: Boolean): String = {
+    val stringOfGrid = new mutable.StringBuilder("  ")
+    var ids = 0
+    while (ids < size) {
+      stringOfGrid ++= "  " + ids + "  "
+      ids += 1
+    }
+    stringOfGrid ++= "\n"
+    var idy = 0
+    while (idy < size) {
+      var idx = 0
+      stringOfGrid ++= idy + " "
+      while (idx < size) {
+        val tmp = grid(grid.indexWhere(mapping => mapping.get("x").contains(idx) && mapping.get("y").contains(idy))).getOrElse("value", "holy shit ist das verbuggt")
+        tmp match {
+          case this.water => stringOfGrid ++= Console.BLUE + "  ~  " + Console.RESET
+          case this.ship =>
+            if (showAllShips) {
+              stringOfGrid ++= Console.GREEN + "  x  " + Console.RESET
+            } else {
+              stringOfGrid ++= Console.BLUE + "  ~  " + Console.RESET
+            }
+          case this.shipHit => stringOfGrid ++= Console.RED + "  x  " + Console.RESET
+          case this.waterHit => stringOfGrid ++= Console.BLUE + "  0  " + Console.RESET
+        }
+        idx += 1
+      }
+      idy += 1
+      stringOfGrid ++= "\n"
+    }
+    stringOfGrid.toString()
+  }
+
 }

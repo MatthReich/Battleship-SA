@@ -16,15 +16,11 @@ trait InterfaceController extends Publisher {
 
   def playerState: PlayerState
 
-  def setShip(input: String): Unit
-
-  def setGuess(input: String): Unit
-
-  def setName(input: String): Unit
-
   def changeGameState(gameState: GameState): Unit
 
   def changePlayerState(playerState: PlayerState): Unit
+
+  def doTurn(input: String): Unit
 
 }
 

@@ -31,27 +31,12 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     this.playerState = playerState
   }
 
-  override def setShip(input: String): Unit = {
-    doTurn(input)
-  }
-
-  override def setGuess(input: String): Unit = {
-    doTurn(input)
-  }
-
-  def doTurn(input: String): Unit = {
+  override def doTurn(input: String): Unit = {
     undoManager.doStep(new DoTurnCommand(input, this))
   }
 
   def redoTurn(): Unit = {
     undoManager.undoStep()
-  }
-
-  override def setName(input: String): Unit = {
-    playerState match {
-      case PLAYER_ONE => player_01 = player_01.updateName(input)
-      case PLAYER_TWO => player_02 = player_02.updateName(input)
-    }
   }
 
 }

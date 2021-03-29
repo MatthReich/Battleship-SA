@@ -14,4 +14,6 @@ trait InterfaceGrid {
 
   def setField(gameStatus: GameState, fields: Array[mutable.Map[String, Int]]): (InterfaceGrid, Boolean)
 
+  def toString(showAllShips: Boolean): String
+
 }

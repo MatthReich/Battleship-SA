@@ -38,13 +38,13 @@ class ControllerSpec extends AnyWordSpec {
       "change player one name" in {
         controller.changePlayerState(PlayerState.PLAYER_ONE)
         assert(controller.player_02.name != name_01)
-        controller.setName(name_01)
+        controller.doTurn(name_01)
         assert(controller.player_01.name === name_01)
       }
       "change player two name" in {
         controller.changePlayerState(PlayerState.PLAYER_TWO)
         assert(controller.player_02.name != name_02)
-        controller.setName(name_02)
+        controller.doTurn(name_02)
         assert(controller.player_01.name === name_01)
       }
     }
@@ -53,7 +53,7 @@ class ControllerSpec extends AnyWordSpec {
       "set ship with same x coordinates" in {
         controller.changePlayerState(PlayerState.PLAYER_ONE)
         controller.changeGameState(GameState.SHIPSETTING)
-        controller.setShip("0 0 0 3")
+        controller.doTurn("0 0 0 3")
         assert(controller.player_01.shipList.head.shipLength === 4)
         assert(controller.player_01.grid.grid(0).getOrElse("value", Int.MaxValue) === 1)
         assert(controller.player_01.grid.grid(10).getOrElse("value", Int.MaxValue) === 1)
@@ -62,7 +62,7 @@ class ControllerSpec extends AnyWordSpec {
       }
       "set ship with same y coordinates" in {
         controller.changePlayerState(PlayerState.PLAYER_TWO)
-        controller.setShip("0 0 3 0")
+        controller.doTurn("0 0 3 0")
         assert(controller.player_02.shipList.head.shipLength === 4)
         controller.player_02.grid.grid.foreach(println(_))
         assert(controller.player_02.grid.grid(0).getOrElse("value", Int.MaxValue) === 1)
@@ -79,7 +79,7 @@ class ControllerSpec extends AnyWordSpec {
       "change grid" in {
         controller.changePlayerState(PlayerState.PLAYER_ONE)
         controller.changeGameState(GameState.IDLE)
-        controller.setGuess("0 0")
+        controller.doTurn("0 0")
         assert(player_01.shipList.head.shipCoordinates(0).getOrElse("value", Int.MaxValue) === 0)
         assert(player_01.shipList.head.shipCoordinates(1).getOrElse("value", Int.MaxValue) === 1)
         assert(player_01.grid.grid(0).getOrElse("value", Int.MaxValue) === 3)
