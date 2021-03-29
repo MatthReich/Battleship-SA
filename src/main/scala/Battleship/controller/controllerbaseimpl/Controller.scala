@@ -7,6 +7,7 @@ import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.shipComponent.shipImplemenation.Ship
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 class Controller(var player_01: InterfacePlayer, var player_02: InterfacePlayer, var gameState: GameState, var playerState: PlayerState) extends InterfaceController {
 
@@ -33,7 +34,22 @@ class Controller(var player_01: InterfacePlayer, var player_02: InterfacePlayer,
   }
 
   override def setGuess(input: String): Unit = {
+    val x = input(0).toInt
+    val y = input(2).toInt
+    val indexes = new ListBuffer[Int]
+    playerState match {
+      case PLAYER_ONE =>
+        player_01.shipList.foreach(ship => indexes.addOne(ship.shipCoordinates.indexWhere(mapping => mapping.get("x").contains(x) &&
+          mapping.get("y").contains(y))))
+        val retVal = player_01.grid.setField(gameState, player_01.shipList(indexes(0)).shipCoordinates)
+        player_01 = player_01.updateGrid(retVal._1)
+      case PLAYER_TWO =>
+        player_02.shipList.foreach(ship => indexes.addOne(ship.shipCoordinates.indexWhere(mapping => mapping.get("x").contains(x) &&
+          mapping.get("y").contains(y))))
+        val retVal = player_02.grid.setField(gameState, player_02.shipList(indexes(0)).shipCoordinates)
+        player_02 = player_02.updateGrid(retVal._1)
 
+    }
   }
 
   override def setName(input: String): Unit = {
