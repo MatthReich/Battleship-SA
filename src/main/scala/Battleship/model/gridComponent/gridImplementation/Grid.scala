@@ -5,7 +5,6 @@ import Battleship.controller.controllerbaseimpl.GameState.GameState
 import Battleship.model.gridComponent.{InterfaceGrid, InterfaceStrategyCollide}
 
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 
 case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Array[mutable.Map[String, Int]]) extends InterfaceGrid {
 
