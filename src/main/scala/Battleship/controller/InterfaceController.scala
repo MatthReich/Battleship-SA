@@ -4,9 +4,7 @@ import Battleship.controller.controllerbaseimpl.GameState.GameState
 import Battleship.controller.controllerbaseimpl.PlayerState.PlayerState
 import Battleship.model.playerComponent.InterfacePlayer
 
-import scala.swing.Publisher
-
-trait InterfaceController extends Publisher {
+trait InterfaceController {
 
   def player_01: InterfacePlayer
 

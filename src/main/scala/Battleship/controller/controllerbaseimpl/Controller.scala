@@ -1,15 +1,24 @@
 package Battleship.controller.controllerbaseimpl
 
 import Battleship.controller.InterfaceController
-import Battleship.controller.controllerbaseimpl.GameState.{GameState, PLAYERSETTING}
+import Battleship.controller.controllerbaseimpl.GameState.GameState
 import Battleship.controller.controllerbaseimpl.PlayerState.{PLAYER_ONE, PLAYER_TWO, PlayerState}
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.shipComponent.shipImplemenation.Ship
 
 import scala.collection.mutable
-import scala.swing.Publisher
 
-case class Controller(var player_01: InterfacePlayer, var player_02: InterfacePlayer, gameState: GameState, playerState: PlayerState) extends InterfaceController with Publisher {
+class Controller(var player_01: InterfacePlayer, var player_02: InterfacePlayer, var gameState: GameState, var playerState: PlayerState) extends InterfaceController {
+
+  /*
+  - Publisher
+  - Main
+  - Gui
+
+  - Error Checks
+  - FileIO
+  - Tui
+   */
 
   val shipNotSunk = false
 
@@ -32,10 +41,6 @@ case class Controller(var player_01: InterfacePlayer, var player_02: InterfacePl
       case PLAYER_ONE => player_01 = player_01.updateName(input)
       case PLAYER_TWO => player_02 = player_02.updateName(input)
     }
-  }
-
-  def init(): Controller = {
-    this.copy(gameState = PLAYERSETTING, playerState = PLAYER_ONE)
   }
 
   private def changePlayerStats(coords: Array[mutable.Map[String, Int]])(player: InterfacePlayer): InterfacePlayer = {
@@ -64,7 +69,7 @@ case class Controller(var player_01: InterfacePlayer, var player_02: InterfacePl
             i += 1
           }
         }
-        tmpArray
+        return tmpArray
       }
     }
     null
@@ -83,7 +88,7 @@ case class Controller(var player_01: InterfacePlayer, var player_02: InterfacePl
   }
 
   private def checkShipFormat(splittedInputInt: Array[Int]): Boolean = {
-    ((splittedInputInt(0) == splittedInputInt(2) && splittedInputInt(1) == splittedInputInt(3))
+    !((splittedInputInt(0) == splittedInputInt(2) && splittedInputInt(1) == splittedInputInt(3))
       || (!(splittedInputInt(0) == splittedInputInt(2)) && !(splittedInputInt(1) == splittedInputInt(3))))
   }
 
