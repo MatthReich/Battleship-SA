@@ -1,6 +1,6 @@
 package Battleship.model.gridComponent
 
-import Battleship.controller.controllerComponent.GameState
+import Battleship.controller.controllerComponent.states.GameState
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
 import org.scalatest.wordspec.AnyWordSpec

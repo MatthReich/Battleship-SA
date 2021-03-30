@@ -1,7 +1,7 @@
 package Battleship.model.gridComponent.gridImplementation
 
-import Battleship.controller.controllerComponent.GameState
-import Battleship.controller.controllerComponent.GameState.GameState
+import Battleship.controller.controllerComponent.states.GameState
+import Battleship.controller.controllerComponent.states.GameState.GameState
 import Battleship.model.gridComponent.{InterfaceGrid, InterfaceStrategyCollide}
 import com.google.inject.Inject
 

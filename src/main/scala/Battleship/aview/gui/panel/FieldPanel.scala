@@ -2,12 +2,12 @@ package Battleship.aview.gui.panel
 
 import Battleship.aview.gui.Gui
 import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent.GameState
+import Battleship.controller.controllerComponent.states.GameState
 import Battleship.model.playerComponent.InterfacePlayer
 
 import java.awt.Color
-import scala.swing.event.UIEvent
 import scala.swing._
+import scala.swing.event.UIEvent
 
 class FieldPanel(showAllShips: Boolean, x: Int, y: Int, controller: InterfaceController, gui: Gui, player: InterfacePlayer) extends FlowPanel {
 

@@ -1,4 +1,4 @@
-package Battleship.controller.controllerComponent
+package Battleship.controller.controllerComponent.states
 
 object PlayerState extends Enumeration {
 

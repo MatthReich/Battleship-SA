@@ -2,8 +2,9 @@ package Battleship.aview.gui
 
 import Battleship.aview.gui.panel.FieldPanel
 import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent.PlayerState.{PLAYER_ONE, PLAYER_TWO}
-import Battleship.controller.controllerComponent._
+import Battleship.controller.controllerComponent.events.{GameWon, GridUpdated, PlayerChanged, RedoTurn}
+import Battleship.controller.controllerComponent.states.GameState
+import Battleship.controller.controllerComponent.states.PlayerState.{PLAYER_ONE, PLAYER_TWO}
 import Battleship.model.playerComponent.InterfacePlayer
 
 import java.awt.Color
@@ -76,7 +77,6 @@ class Gui(controller: InterfaceController) extends Frame {
   }
 
   def evaluateShip(input: String): Unit = {
-    println(input, ship, last)
     if (input == last) {
     }
     else {

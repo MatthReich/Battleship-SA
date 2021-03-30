@@ -1,6 +1,6 @@
 package Battleship.model.gridComponent
 
-import Battleship.controller.controllerComponent.GameState.GameState
+import Battleship.controller.controllerComponent.states.GameState.GameState
 
 import scala.collection.mutable
 

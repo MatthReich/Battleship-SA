@@ -1,6 +1,8 @@
 package Battleship.controller.controllerComponent.commands
 
 import Battleship.controller.controllerComponent._
+import Battleship.controller.controllerComponent.events.{GameWon, PlayerChanged, RedoTurn}
+import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.utils.Command
 

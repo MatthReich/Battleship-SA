@@ -1,6 +1,7 @@
 package Battleship.controller
 
-import Battleship.controller.controllerComponent.{Controller, GameState, PlayerState}
+import Battleship.controller.controllerComponent.Controller
+import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.gridComponent.InterfaceGrid
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal

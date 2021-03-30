@@ -2,7 +2,8 @@ package Battleship.aview.gui
 
 import Battleship.aview.gui.panel.ImagePanel
 import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent.{GameStart, GameState, PlayerChanged}
+import Battleship.controller.controllerComponent.events.{GameStart, PlayerChanged}
+import Battleship.controller.controllerComponent.states.GameState
 
 import java.awt.Color
 import java.awt.image.BufferedImage

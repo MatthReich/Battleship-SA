@@ -1,9 +1,10 @@
 package Battleship.controller.controllerComponent
 
 import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent.GameState.GameState
-import Battleship.controller.controllerComponent.PlayerState.PlayerState
 import Battleship.controller.controllerComponent.commands.{CommandIdle, CommandPlayerSetting, CommandShipsetting}
+import Battleship.controller.controllerComponent.states.GameState
+import Battleship.controller.controllerComponent.states.GameState.GameState
+import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.utils.UndoManager
 import com.google.inject.Inject
