@@ -1,11 +1,10 @@
 package Battleship.aview.gui
 
-import java.awt.Color
-
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.PlayerState.{PLAYER_ONE, PLAYER_TWO}
-import Battleship.controller.controllerComponent.{GameState, GridUpdated, PlayerChanged}
+import Battleship.controller.controllerComponent._
 
+import java.awt.Color
 import scala.swing._
 
 class Gui(controller: InterfaceController) extends Frame {
@@ -14,15 +13,24 @@ class Gui(controller: InterfaceController) extends Frame {
   val dimHeight = 900
   title = "Battleship"
   background = Color.GRAY
-  preferredSize = new Dimension(dimWidth, dimHeight) // maybe fullscreen setting / 1600 * 900 / 800 * 600
+  preferredSize = new Dimension(dimWidth, dimHeight)
   redraw
   reactions += {
-    case changed: PlayerChanged =>
+    case _: PlayerChanged =>
       controller.gameState match {
-        case GameState.SHIPSETTING =>
-        case GameState.IDLE =>
+        case GameState.SHIPSETTING => redraw
+        case GameState.IDLE => redraw
       }
-    case updated: GridUpdated =>
+    case _: GridUpdated =>
+      controller.gameState match {
+        case GameState.SHIPSETTING => redraw
+      }
+    case _: RedoTurn =>
+      controller.gameState match {
+        case GameState.SHIPSETTING => redoTurnAlert()
+        case GameState.IDLE => redoTurnAlert()
+      }
+    case _: GameWon => newGameOrQuit()
   }
 
   def redraw: Unit = {
@@ -47,4 +55,21 @@ class Gui(controller: InterfaceController) extends Frame {
         contents += new TextArea(controller.player_02.grid.toString(true))
     }
   }
+
+  private def redoTurnAlert() {
+    Dialog.showMessage(contents.head, "Your Input could not be used, please try again", "Alert", Dialog.Message.Warning)
+  }
+
+  private def newGameOrQuit(): Unit = {
+    val res = Dialog.showConfirmation(contents.head,
+      "Do you really want to quit?",
+      optionType = Dialog.Options.YesNo,
+      title = title)
+    if (res == Dialog.Result.Yes)
+      sys.exit(0)
+    else if (res == Dialog.Result.No)
+      Console.print("n")
+  }
+
+  centerOnScreen()
 }

@@ -1,13 +1,16 @@
 package Battleship.aview.gui
 
-import java.awt.Color
-
+import Battleship.aview.gui.panel.ImagePanel
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.{GameStart, GameState, PlayerChanged}
-import javax.swing.JTextField
 
-import scala.swing.event.ButtonClicked
+import java.awt.Color
+import java.awt.image.BufferedImage
+import java.io.File
+import javax.imageio.ImageIO
+import javax.swing.JTextField
 import scala.swing._
+import scala.swing.event.ButtonClicked
 
 class StartGui(controller: InterfaceController) extends MainFrame {
   listenTo(controller)
@@ -15,16 +18,24 @@ class StartGui(controller: InterfaceController) extends MainFrame {
   val dimHeight = 900
   title = "Battleship"
   background = Color.GRAY
-  preferredSize = new Dimension(dimWidth, dimHeight) // maybe fullscreen setting / 1600 * 900 / 800 * 600
+  preferredSize = new Dimension(dimWidth, dimHeight)
 
   reactions += {
-    case start: GameStart =>
+    case _: GameStart =>
       this.visible = true
-    case changed: PlayerChanged =>
-      if (this.visible == true && controller.gameState == GameState.SHIPSETTING) {
+    case _: PlayerChanged =>
+      if (this.visible && controller.gameState == GameState.SHIPSETTING) {
         this.visible = false
         new Gui(controller).visible = true
       }
+  }
+
+  val backgroundIMG: BufferedImage =
+    ImageIO.read(new File("src/main/scala/Battleship/aview/gui/media/BattleShipPicture.png"))
+
+  val imageLabel: ImagePanel = new ImagePanel {
+    imagePath(backgroundIMG)
+    preferredSize = new Dimension(dimWidth, dimHeight)
   }
 
   val startButton: Panel = new FlowPanel {
@@ -82,7 +93,10 @@ class StartGui(controller: InterfaceController) extends MainFrame {
   }
 
   contents = new BorderPanel {
+    iconImage = backgroundIMG
     add(startButton, BorderPanel.Position.South)
+    add(imageLabel, BorderPanel.Position.Center)
+
   }
 
   centerOnScreen()
