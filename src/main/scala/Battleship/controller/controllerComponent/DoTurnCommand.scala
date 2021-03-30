@@ -19,8 +19,6 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
       case GameState.IDLE =>
         setGuess()
       case GameState.SOLVED =>
-      case GameState.LOADED =>
-      case GameState.SAVED =>
     }
   }
 
@@ -29,11 +27,13 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
   private def setPlayerName(): Unit = {
     controller.playerState match {
       case PlayerState.PLAYER_ONE =>
-        controller.player_01 = controller.player_01.updateName(input)
+        if (input != "")
+          controller.player_01 = controller.player_01.updateName(input)
         controller.playerState = PlayerState.PLAYER_TWO
         controller.publish(new PlayerChanged)
       case PlayerState.PLAYER_TWO =>
-        controller.player_02 = controller.player_02.updateName(input)
+        if (input != "")
+          controller.player_02 = controller.player_02.updateName(input)
         controller.playerState = PlayerState.PLAYER_ONE
         controller.gameState = GameState.SHIPSETTING
         controller.publish(new PlayerChanged)

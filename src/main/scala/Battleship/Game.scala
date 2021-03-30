@@ -22,7 +22,6 @@ object Game extends Reactor {
     controller.publish(new GameStart)
     controller.publish(new PlayerChanged)
 
-
     do {
 
       input = scala.io.StdIn.readLine()

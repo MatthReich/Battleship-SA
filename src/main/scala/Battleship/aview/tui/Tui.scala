@@ -1,16 +1,16 @@
 package Battleship.aview.tui
 
 import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent.{GameStart, GameState, GameWon, PlayerChanged, PlayerState, RedoTurn}
+import Battleship.controller.controllerComponent._
 
 import scala.swing.Reactor
 
 class Tui(controller: InterfaceController) extends Reactor {
   listenTo(controller)
   reactions += {
-    case event: GameStart =>
+    case _: GameStart =>
       println("Yeah you play the best game in the world... probably :)")
-    case event: PlayerChanged =>
+    case _: PlayerChanged =>
       controller.gameState match {
         case GameState.PLAYERSETTING =>
           printTui("set your Name")
@@ -21,7 +21,7 @@ class Tui(controller: InterfaceController) extends Reactor {
         case GameState.SOLVED =>
           printTui("has won ::: should not print")
       }
-    case event: RedoTurn =>
+    case _: RedoTurn =>
       controller.gameState match {
         case GameState.PLAYERSETTING =>
           printTui("holy shit ist das game falsch gelaufen")
@@ -30,8 +30,7 @@ class Tui(controller: InterfaceController) extends Reactor {
         case GameState.IDLE =>
           printTui("try again <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString() + "\n" + controller.playerState)
       }
-
-    case event: GameWon =>
+    case _: GameWon =>
       printTui("has won")
       println("<n> for new game <q> for end")
   }

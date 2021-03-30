@@ -5,16 +5,13 @@ import Battleship.controller.controllerComponent.GameState.GameState
 import Battleship.controller.controllerComponent.PlayerState.PlayerState
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.utils.UndoManager
-import com.google.inject.Inject
 
 import scala.swing.Publisher
 
 class Controller (var player_01: InterfacePlayer, var player_02: InterfacePlayer, var gameState: GameState, var playerState: PlayerState) extends InterfaceController with Publisher {
 
   /*
-  - Publisher
   - Gui
-
   - Error Checks
   - FileIO
    */
