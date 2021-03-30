@@ -47,23 +47,31 @@ class Gui(controller: InterfaceController) extends Frame {
     contents += new TextArea(controller.player_01.name)
     contents += new TextArea(controller.player_02.name)
   }
-
   var ship: String = ""
   var last: String = ""
   var shipCoords: Int = 0
 
   def gridPanel(showAllShips: Boolean, player: InterfacePlayer): GridPanel = new GridPanel(gridSize + 1, gridSize) {
     border = Swing.LineBorder(java.awt.Color.BLACK, 1)
-    var idy = 0
-    while (idy < gridSize) {
-      var idx = 0
-      while (idx < gridSize) {
-        val fieldPanel = new FieldPanel(showAllShips, idx, idy, controller, Gui.this, player)
-        contents += fieldPanel.field
-        listenTo(fieldPanel)
-        idx += 1
+    for {
+      row <- 0 until gridSize
+    } {
+      if (row == 0) {
+        contents += new Label("")
       }
-      idy += 1
+      contents += new Label("" + row)
+    }
+    for {
+      row <- 0 until gridSize
+      column <- 0 until gridSize
+    } {
+      if (column == 0) {
+        contents += new Label("" + row)
+
+      }
+      val fieldPanel = new FieldPanel(showAllShips, column, row, controller, Gui.this, player)
+      contents += fieldPanel.field
+      listenTo(fieldPanel)
     }
   }
 
