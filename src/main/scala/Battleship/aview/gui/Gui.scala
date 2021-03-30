@@ -61,14 +61,9 @@ class Gui(controller: InterfaceController) extends Frame {
   }
 
   private def newGameOrQuit(): Unit = {
-    val res = Dialog.showConfirmation(contents.head,
-      "Do you really want to quit?",
-      optionType = Dialog.Options.YesNo,
-      title = title)
-    if (res == Dialog.Result.Yes)
-      sys.exit(0)
-    else if (res == Dialog.Result.No)
-      Console.print("n")
+    val retVal = Dialog.showConfirmation(contents.head, "Start new Game?", optionType = Dialog.Options.YesNo, title = title)
+    if (retVal == Dialog.Result.No) sys.exit(0)
+    else if (retVal == Dialog.Result.Yes) Console.print("n")
   }
 
   centerOnScreen()
