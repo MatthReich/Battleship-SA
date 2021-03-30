@@ -6,7 +6,7 @@ import Battleship.model.shipComponent.InterfaceShip
 
 import scala.collection.mutable.ListBuffer
 
-case class Player(name: String, shipList: ListBuffer[InterfaceShip], grid: InterfaceGrid) extends InterfacePlayer {
+case class Player(name: String, shipSetList: Map[String, Int], shipList: ListBuffer[InterfaceShip], grid: InterfaceGrid) extends InterfacePlayer {
 
   override def updateName(input: String): InterfacePlayer = {
     this.copy(name = input)
@@ -18,6 +18,18 @@ case class Player(name: String, shipList: ListBuffer[InterfaceShip], grid: Inter
 
   override def addShip(ship: InterfaceShip): InterfacePlayer = {
     this.copy(shipList = shipList.addOne(ship))
+  }
+
+  override def updateShipSetList(valueIn: String): InterfacePlayer = {
+    val actualValue = shipSetList.get(valueIn)
+    actualValue match {
+      case Some(value) =>
+        var newVal = value
+        newVal -= 1
+        this.copy(shipSetList = shipSetList.updated(valueIn, newVal))
+      case None =>
+        this
+    }
   }
 
   override def updateShip(idx: Int, ship: InterfaceShip): InterfacePlayer = {

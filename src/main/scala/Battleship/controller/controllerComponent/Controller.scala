@@ -12,6 +12,8 @@ class Controller (var player_01: InterfacePlayer, var player_02: InterfacePlayer
 
   /*
   - Gui
+  - values for ship setting
+  - right player on turn after setting and guessing
   - Error Checks
   - FileIO
    */

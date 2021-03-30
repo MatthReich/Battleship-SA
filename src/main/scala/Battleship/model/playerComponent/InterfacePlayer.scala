@@ -13,9 +13,13 @@ trait InterfacePlayer {
 
   def name: String
 
+  def shipSetList: Map[String, Int]
+
   def updateName(input: String): InterfacePlayer
 
   def updateGrid(grid: InterfaceGrid): InterfacePlayer
+
+  def updateShipSetList(value: String): InterfacePlayer
 
   def updateShip(idx: Int, ship: InterfaceShip): InterfacePlayer
 
