@@ -18,13 +18,14 @@ class FileIo @Inject()() extends InterfaceFileIo {
     pw.close()
   }
 
-  private def getAllObj(player_01: InterfacePlayer, player_02: InterfacePlayer, gameState: GameState, playerState: PlayerState): JsValue = Json.toJson(List(playerToJson.writes(Array(player_01, player_02)), playerStateToJson.writes(playerState), gameStateToJson.writes(gameState)))
+  implicit val gameStateToJson: Writes[GameState] = (gameState: GameState) => Json.obj(
+    "gameState" -> Json.toJson(gameState.toString)
+  )
 
   override def load(controller: Controller): Unit = {
     println("laoded")
     controller.publish(new PlayerChanged)
   }
-
 
   implicit val playerToJson: Writes[Array[InterfacePlayer]] = (player: Array[InterfacePlayer]) =>
     Json.obj(
@@ -41,10 +42,12 @@ class FileIo @Inject()() extends InterfaceFileIo {
           "grid" -> Json.toJson(""))
       )
     )
+  implicit val playerStateToJson: Writes[PlayerState] = (playerState: PlayerState) => Json.obj(
+    "playerState" -> Json.toJson(playerState.toString)
+  )
 
-
-  implicit val gameStateToJson: Writes[GameState] = (gameState: GameState) => Json.obj("gameState" -> gameState)
-
-  implicit val playerStateToJson: Writes[PlayerState] = (playerState: PlayerState) => Json.obj("playerState" -> playerState)
+  private def getAllObj(player_01: InterfacePlayer, player_02: InterfacePlayer, gameState: GameState, playerState: PlayerState): JsValue = {
+    Json.toJson(List(playerToJson.writes(Array(player_01, player_02)), playerStateToJson.writes(playerState), gameStateToJson.writes(gameState)))
+  }
 
 }
