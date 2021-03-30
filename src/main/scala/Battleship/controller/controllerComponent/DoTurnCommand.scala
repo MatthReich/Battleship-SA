@@ -29,15 +29,18 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
       case PlayerState.PLAYER_ONE =>
         if (input != "")
           controller.player_01 = controller.player_01.updateName(input)
-        controller.playerState = PlayerState.PLAYER_TWO
-        controller.publish(new PlayerChanged)
+        handlePlayerNameSetting(PlayerState.PLAYER_TWO, GameState.PLAYERSETTING)
       case PlayerState.PLAYER_TWO =>
         if (input != "")
           controller.player_02 = controller.player_02.updateName(input)
-        controller.playerState = PlayerState.PLAYER_ONE
-        controller.gameState = GameState.SHIPSETTING
-        controller.publish(new PlayerChanged)
+        handlePlayerNameSetting(PlayerState.PLAYER_ONE, GameState.SHIPSETTING)
     }
+  }
+
+  private def handlePlayerNameSetting(newPlayerState: PlayerState.PlayerState, newGameState: GameState.GameState): Unit = {
+    controller.changePlayerState(newPlayerState)
+    controller.changeGameState(newGameState)
+    controller.publish(new PlayerChanged)
   }
 
   private def setShip(): Unit = {
@@ -120,13 +123,12 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
           case PlayerState.PLAYER_ONE =>
             controller.player_02 = functionHelper(controller.player_02)
             if (checkWinStatement(controller.player_02)) {
-                controller.changeGameState(GameState.SOLVED)
-                controller.publish(new GameWon)
+              controller.changeGameState(GameState.SOLVED)
+              controller.publish(new GameWon)
             } else {
               controller.changePlayerState(PlayerState.PLAYER_TWO)
               controller.publish(new PlayerChanged)
             }
-
           case PlayerState.PLAYER_TWO =>
             controller.player_01 = functionHelper(controller.player_01)
             if (checkWinStatement(controller.player_01)) {
@@ -158,20 +160,24 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
 
   private def calculateCoords(size: Int)(input: String): Option[Array[mutable.Map[String, Int]]] = {
     val splitInput = input.split(" ")
-    if (splitInput.length == size) {
-      if (Try(splitInput.map(_.toInt)).isFailure) return None
+    if (splitInput.length == size && checkIfInputIsConvertible(input)) {
       val convertedInput = splitInput.map(_.toInt)
       size match {
         case 2 => return Some(Array(mutable.Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
         case 4 => if (checkShipFormat(convertedInput)) return Some(calculateCoordsArray(convertedInput))
+        case _ => None
       }
     }
     None
   }
 
-  private def checkShipFormat(splittedInputInt: Array[Int]): Boolean = {
-    !((splittedInputInt(0) == splittedInputInt(2) && splittedInputInt(1) == splittedInputInt(3))
-      || (!(splittedInputInt(0) == splittedInputInt(2)) && !(splittedInputInt(1) == splittedInputInt(3))))
+  private def checkIfInputIsConvertible(input: String): Boolean = {
+    Try(input.map(_.toInt)).isFailure
+  }
+
+  private def checkShipFormat(splitInput: Array[Int]): Boolean = {
+    !((splitInput(0) == splitInput(2) && splitInput(1) == splitInput(3))
+      || (!(splitInput(0) == splitInput(2)) && !(splitInput(1) == splitInput(3))))
   }
 
   private def calculateCoordsArray(convertedInput: Array[Int]): Array[mutable.Map[String, Int]] = {
