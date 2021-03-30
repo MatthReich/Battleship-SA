@@ -9,13 +9,13 @@ import Battleship.utils.Command
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class CommandIdle(input: String, controller: Controller) extends Command {
+class CommandIdle(input: String, controller: Controller, coordsCalculation: (Int, String) => Option[Array[mutable.Map[String, Int]]]) extends Command {
   override def doStep(): Unit = {
     setGuess()
   }
 
   private def setGuess(): Unit = {
-    val retVal = controller.calculateCoords(2)(input)
+    val retVal = coordsCalculation(2, input)
     retVal match {
       case Some(coords) =>
         val x = coords(0).getOrElse("x", Int.MaxValue)

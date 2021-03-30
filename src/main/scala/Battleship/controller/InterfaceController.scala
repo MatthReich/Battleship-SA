@@ -22,6 +22,12 @@ trait InterfaceController extends Publisher {
 
   def doTurn(input: String): Unit
 
+  def redoTurn(): Unit
+
+  def save(): Unit
+
+  def load(): Unit
+
 }
 
 

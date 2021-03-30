@@ -121,10 +121,10 @@ class Gui(controller: InterfaceController) extends Frame {
   menuBar = new MenuBar {
     contents += new Menu("File") {
       contents += new MenuItem(Action("save") {
-
+        controller.save()
       })
       contents += new MenuItem(Action("load") {
-
+        controller.load()
       })
       contents += new MenuItem(Action("quit") {
         newGameOrQuit()
@@ -132,6 +132,7 @@ class Gui(controller: InterfaceController) extends Frame {
     }
     contents += new Menu("Edit") {
       contents += new MenuItem(Action("Undo") {
+        controller.redoTurn()
       })
     }
   }

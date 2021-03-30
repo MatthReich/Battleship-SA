@@ -9,7 +9,7 @@ import Battleship.utils.Command
 
 import scala.collection.mutable
 
-class CommandShipsetting(input: String, controller: Controller) extends Command {
+class CommandShipSetting(input: String, controller: Controller, coordsCalculation: (Int, String) => Option[Array[mutable.Map[String, Int]]]) extends Command {
 
   override def doStep(): Unit = {
     setShip()
@@ -18,7 +18,7 @@ class CommandShipsetting(input: String, controller: Controller) extends Command 
   override def undoStep(): Unit = {}
 
   private def setShip(): Unit = {
-    val retVal = controller.calculateCoords(4)(input)
+    val retVal = coordsCalculation(4, input)
     retVal match {
       case Some(coords) =>
         val functionHelper = changePlayerStats(coords) _
@@ -30,12 +30,10 @@ class CommandShipsetting(input: String, controller: Controller) extends Command 
               if (retVal._2) {
                 controller.player_01 = controller.player_01.updateShipSetList(coords.length)
                 handleShipSetFinishing(controller.player_01, PlayerState.PLAYER_TWO, GameState.SHIPSETTING)
-              } else {
-                controller.publish(new RedoTurn)
+                return
               }
-            } else {
-              controller.publish(new RedoTurn)
             }
+            controller.publish(new RedoTurn)
           case PlayerState.PLAYER_TWO =>
             if (shipSettingAllowsNewShip(coords.length, controller.player_02)) {
               val retVal = functionHelper(controller.player_02)
@@ -43,12 +41,10 @@ class CommandShipsetting(input: String, controller: Controller) extends Command 
               if (retVal._2) {
                 controller.player_02 = controller.player_02.updateShipSetList(coords.length)
                 handleShipSetFinishing(controller.player_02, PlayerState.PLAYER_ONE, GameState.IDLE)
-              } else {
-                controller.publish(new RedoTurn)
+                return
               }
-            } else {
-              controller.publish(new RedoTurn)
             }
+            controller.publish(new RedoTurn)
         }
       case None => controller.publish(new RedoTurn)
     }

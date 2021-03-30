@@ -1,10 +1,12 @@
 package Battleship.controller.controllerComponent
 
 import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent.commands.{CommandIdle, CommandPlayerSetting, CommandShipsetting}
+import Battleship.controller.controllerComponent.commands.{CommandIdle, CommandPlayerSetting, CommandShipSetting}
 import Battleship.controller.controllerComponent.states.GameState
 import Battleship.controller.controllerComponent.states.GameState.GameState
 import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
+import Battleship.model.fileIoComponent.InterfaceFileIo
+import Battleship.model.fileIoComponent.fileIoJsonImplementation.FileIo
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.utils.UndoManager
 import com.google.inject.Inject
@@ -15,6 +17,7 @@ import scala.util.Try
 
 class Controller @Inject()(var player_01: InterfacePlayer, var player_02: InterfacePlayer, var gameState: GameState, var playerState: PlayerState) extends InterfaceController with Publisher {
   private val undoManager = new UndoManager
+  private val fileIo: InterfaceFileIo = new FileIo()
 
   override def changeGameState(gameState: GameState): Unit = {
     this.gameState = gameState
@@ -27,17 +30,12 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
   override def doTurn(input: String): Unit = {
     gameState match {
       case GameState.PLAYERSETTING => undoManager.doStep(new CommandPlayerSetting(input, this))
-      case GameState.SHIPSETTING => undoManager.doStep(new CommandShipsetting(input, this))
-      case GameState.IDLE => undoManager.doStep(new CommandIdle(input, this))
+      case GameState.SHIPSETTING => undoManager.doStep(new CommandShipSetting(input, this, coordsCalculation))
+      case GameState.IDLE => undoManager.doStep(new CommandIdle(input, this, coordsCalculation))
     }
-
   }
 
-  def redoTurn(): Unit = {
-    undoManager.undoStep()
-  }
-
-  def calculateCoords(size: Int)(input: String): Option[Array[mutable.Map[String, Int]]] = {
+  private def coordsCalculation(size: Int, input: String): Option[Array[mutable.Map[String, Int]]] = {
     val splitInput = input.split(" ")
     if (splitInput.length == size) {
       if (Try(splitInput.map(_.toInt)).isFailure) return None
@@ -49,6 +47,10 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
       }
     }
     None
+  }
+
+  override def redoTurn(): Unit = {
+    undoManager.undoStep()
   }
 
   private def checkShipFormat(splitInput: Array[Int]): Boolean = {
@@ -79,4 +81,8 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
   private def calcDiff(nr1: Int, nr2: Int): Int = {
     nr1 - nr2 + 1
   }
+
+  override def save(): Unit = fileIo.save(player_01, player_02, gameState, playerState)
+
+  override def load(): Unit = fileIo.load(this)
 }
