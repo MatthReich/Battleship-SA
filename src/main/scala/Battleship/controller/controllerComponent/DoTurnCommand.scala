@@ -18,7 +18,9 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
         setShip()
       case GameState.IDLE =>
         setGuess()
-        checkWinStatement()
+      case GameState.SOLVED =>
+      case GameState.LOADED =>
+      case GameState.SAVED =>
     }
   }
 
@@ -48,7 +50,6 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
             val retVal = functionHelper(controller.player_01)
             controller.player_01 = retVal._1
             if (retVal._2) {
-              controller.publish(new GridUpdated)
               controller.changePlayerState(PlayerState.PLAYER_TWO)
               controller.publish(new PlayerChanged)
             }
@@ -56,7 +57,6 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
             val retVal = functionHelper(controller.player_02)
             controller.player_02 = retVal._1
             if (retVal._2) {
-              controller.publish(new GridUpdated)
               controller.changeGameState(GameState.IDLE)
               controller.changePlayerState(PlayerState.PLAYER_ONE)
               controller.publish(new PlayerChanged)
@@ -76,28 +76,41 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
         val functionHelper = handleGuess(x, y) _
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
-            controller.player_01 = functionHelper(controller.player_01)
-            controller.changePlayerState(PlayerState.PLAYER_TWO)
-            controller.publish(new PlayerChanged)
-          case PlayerState.PLAYER_TWO =>
             controller.player_02 = functionHelper(controller.player_02)
-            controller.changePlayerState(PlayerState.PLAYER_ONE)
-            controller.publish(new PlayerChanged)
+            if (checkWinStatement(controller.player_02)) {
+                controller.changeGameState(GameState.SOLVED)
+                controller.publish(new GameWon)
+            } else {
+              controller.changePlayerState(PlayerState.PLAYER_TWO)
+              controller.publish(new PlayerChanged)
+            }
 
+          case PlayerState.PLAYER_TWO =>
+            controller.player_01 = functionHelper(controller.player_01)
+            if (checkWinStatement(controller.player_01)) {
+              controller.changeGameState(GameState.SOLVED)
+              controller.publish(new GameWon)
+            } else {
+              controller.changePlayerState(PlayerState.PLAYER_ONE)
+              controller.publish(new PlayerChanged)
+            }
         }
       case None => controller.publish(new RedoTurn)
     }
   }
 
   private def handleGuess(x: Int, y: Int)(player: InterfacePlayer): InterfacePlayer = {
-    //@TODO needs update !!!!
+    val newPlayer = player.updateGrid(player.grid.setField(controller.gameState, Array(mutable.Map("x" -> x, "y" -> y)))._1)
+
     val indexes = new ListBuffer[Int]
     player.shipList.foreach(ship => indexes.addOne(ship.shipCoordinates.indexWhere(mapping => mapping.get("x").contains(x) &&
-      mapping.get("y").contains(y)))) // -> Index des x y paares eines schiffes innerhalb der coordinaten
-    if (indexes.head == -1) { // wenn es kein schiff gibt einfach den wert ändern
-      player.updateGrid(player.grid.setField(controller.gameState, Array(mutable.Map("x" -> x, "y" -> y)))._1)
-    } else  { // ansonsten grid und schiff ändern
-      player.updateGrid(player.grid.setField(controller.gameState, Array(mutable.Map("x" -> x, "y" -> y)))._1).updateShip(indexes.head, player.shipList.head.hit(x, y))
+      mapping.get("y").contains(y))))
+
+    if (indexes.head == -1) {
+      newPlayer
+    } else  {
+      val index = player.shipList.indexWhere(mapping => mapping.shipCoordinates(indexes.head).get("x").contains(x) && mapping.shipCoordinates(indexes.head).get("y").contains(y))
+      newPlayer.updateShip(index, player.shipList(index).hit(x, y))
     }
   }
 
@@ -119,7 +132,6 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
     if (splitInput.length == size) {
       if (Try(splitInput.map(_.toInt)).isFailure) return None
       val convertedInput = splitInput.map(_.toInt)
-      if (convertedInput.exists(value => value > 9))
       size match {
         case 2 => return Some(Array(mutable.Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
         case 4 => if (checkShipFormat(convertedInput)) return Some(calculateCoordsArray(convertedInput))
@@ -159,11 +171,8 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
     nr1 - nr2 + 1
   }
 
-  private def checkWinStatement(): Unit = {
-    if (!controller.player_01.shipList.exists(_.status == false)) {
-      controller.changeGameState(GameState.SOLVED)
-      controller.publish(new GameWon)
-    }
+  private def checkWinStatement(player: InterfacePlayer): Boolean = {
+    !player.shipList.exists(_.status == false)
   }
 
 }

@@ -2,23 +2,21 @@ package Battleship.controller.controllerComponent
 
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.GameState.GameState
-import Battleship.controller.controllerComponent.PlayerState.{PLAYER_ONE, PLAYER_TWO, PlayerState}
+import Battleship.controller.controllerComponent.PlayerState.PlayerState
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.utils.UndoManager
 import com.google.inject.Inject
 
 import scala.swing.Publisher
 
-class Controller @Inject()(var player_01: InterfacePlayer, var player_02: InterfacePlayer, var gameState: GameState, var playerState: PlayerState) extends InterfaceController with Publisher {
+class Controller (var player_01: InterfacePlayer, var player_02: InterfacePlayer, var gameState: GameState, var playerState: PlayerState) extends InterfaceController with Publisher {
 
   /*
   - Publisher
-  - Main
   - Gui
 
   - Error Checks
   - FileIO
-  - Tui
    */
 
   private val undoManager = new UndoManager

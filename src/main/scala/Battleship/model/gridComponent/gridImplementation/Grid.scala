@@ -46,6 +46,7 @@ case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Arra
         grid(index) + ("value" -> waterHit)
       }
       case 1 => grid(index) + ("value" -> shipHit)
+      case _ => grid(index)
     }
   }
 

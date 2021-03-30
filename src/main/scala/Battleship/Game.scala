@@ -2,10 +2,9 @@ package Battleship
 
 import Battleship.aview.tui.Tui
 import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent.{Controller, GameStart, GameState, PlayerChanged, PlayerState}
+import Battleship.controller.controllerComponent._
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
-import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.playerComponent.playerImplementation.Player
 import Battleship.model.shipComponent.InterfaceShip
 
@@ -15,12 +14,7 @@ import scala.swing.Reactor
 
 object Game extends Reactor {
 
-  var dummyGrid_01: Grid = Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](1))
-  var dummyGrid_02: Grid = Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](2))
-  var dummyPlayer_01: InterfacePlayer = Player("player_01", new ListBuffer[InterfaceShip], dummyGrid_01.initGrid())
-  var dummyPlayer_02: InterfacePlayer = Player("player_02", new ListBuffer[InterfaceShip], dummyGrid_02.initGrid())
-
-  var controller: InterfaceController = new Controller(dummyPlayer_01, dummyPlayer_02, GameState.PLAYERSETTING, PlayerState.PLAYER_ONE)
+  var controller: InterfaceController = initController()
   var tui = new Tui(controller)
 
   def main(args: Array[String]): Unit = {
@@ -39,15 +33,18 @@ object Game extends Reactor {
     } while (true)
   }
 
-  def initNewGame(): Unit = {
-    dummyGrid_01 = Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](3))
-    dummyGrid_02 = Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](4))
-    dummyPlayer_01 = Player("player_01", new ListBuffer[InterfaceShip], dummyGrid_01.initGrid())
-    dummyPlayer_02 = Player("player_02", new ListBuffer[InterfaceShip], dummyGrid_02.initGrid())
-    controller = new Controller(dummyPlayer_01, dummyPlayer_02, GameState.PLAYERSETTING, PlayerState.PLAYER_ONE)
+  private def initNewGame(): Unit = {
+    controller = initController()
     tui = new Tui(controller)
     controller.publish(new GameStart)
     controller.publish(new PlayerChanged)
+  }
+
+  private def initController(): InterfaceController = {
+    new Controller(
+      Player("player_01", new ListBuffer[InterfaceShip], Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](0)).initGrid()),
+      Player("player_02", new ListBuffer[InterfaceShip], Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](1)).initGrid()),
+      GameState.PLAYERSETTING, PlayerState.PLAYER_ONE)
   }
 
 }

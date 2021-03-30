@@ -4,8 +4,6 @@ import scala.swing.event.Event
 
 class GameStart extends Event
 
-class GridUpdated extends Event
-
 class PlayerChanged extends Event
 
 class RedoTurn extends Event
