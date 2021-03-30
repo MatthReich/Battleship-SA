@@ -17,17 +17,18 @@ class Gui(controller: InterfaceController) extends Frame {
   title = "Battleship"
   background = Color.GRAY
   preferredSize = new Dimension(dimWidth, dimHeight)
-  val gridSize = controller.player_01.grid.size
-  redraw
+  val gridSize: Int = controller.player_01.grid.size
+  redraw()
+
   reactions += {
     case _: PlayerChanged =>
       controller.gameState match {
-        case GameState.SHIPSETTING => redraw
-        case GameState.IDLE => redraw
+        case GameState.SHIPSETTING => redraw()
+        case GameState.IDLE => redraw()
       }
     case _: GridUpdated =>
       controller.gameState match {
-        case GameState.SHIPSETTING => redraw
+        case GameState.SHIPSETTING => redraw()
       }
     case _: RedoTurn =>
       controller.gameState match {
@@ -37,10 +38,19 @@ class Gui(controller: InterfaceController) extends Frame {
     case _: GameWon => newGameOrQuit()
   }
 
-  def redraw: Unit = {
-    contents = new BorderPanel {
-      add(textGrid, BorderPanel.Position.North)
-      add(playGrid, BorderPanel.Position.Center)
+  def evaluateShip(input: String): Unit = {
+    if (input == last) {}
+    else {
+      shipCoords += 1
+      ship += input
+      last = input
+      if (shipCoords == 1) ship += " "
+      else {
+        controller.doTurn(ship)
+        ship = ""
+        shipCoords = 0
+        redraw()
+      }
     }
   }
 
@@ -48,6 +58,7 @@ class Gui(controller: InterfaceController) extends Frame {
     contents += new TextArea(controller.player_01.name)
     contents += new TextArea(controller.player_02.name)
   }
+
   var ship: String = ""
   var last: String = ""
   var shipCoords: Int = 0
@@ -76,31 +87,24 @@ class Gui(controller: InterfaceController) extends Frame {
     }
   }
 
-  def evaluateShip(input: String): Unit = {
-    if (input == last) {
-    }
-    else {
-      shipCoords += 1
-      ship += input
-      last = input
-      if (shipCoords == 1) ship += " "
-      else {
-        controller.doTurn(ship)
-        ship = ""
-        shipCoords = 0
-        redraw
-      }
+  private def redraw(): Unit = {
+    contents = new BorderPanel {
+      add(textGrid, BorderPanel.Position.North)
+      add(playGrid, BorderPanel.Position.Center)
     }
   }
 
-  private def playGrid = new GridPanel(1, 2) {
+  private def playGrid: GridPanel = new GridPanel(1, 2) {
+    val showAllShips = true
+    val showNotAllShips = false
+
     controller.playerState match {
       case PLAYER_ONE =>
-        contents += gridPanel(true, controller.player_01)
-        contents += gridPanel(false, controller.player_02)
+        contents += gridPanel(showAllShips, controller.player_01)
+        contents += gridPanel(showNotAllShips, controller.player_02)
       case PLAYER_TWO =>
-        contents += gridPanel(false, controller.player_01)
-        contents += gridPanel(true, controller.player_02)
+        contents += gridPanel(showNotAllShips, controller.player_01)
+        contents += gridPanel(showAllShips, controller.player_02)
     }
   }
 
