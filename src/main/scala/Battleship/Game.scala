@@ -1,5 +1,6 @@
 package Battleship
 
+import Battleship.aview.gui.StartGui
 import Battleship.aview.tui.Tui
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent._
@@ -15,6 +16,7 @@ import scala.swing.Reactor
 object Game extends Reactor {
   var controller: InterfaceController = initController()
   var tui = new Tui(controller)
+  var gui = new StartGui(controller)
 
   def main(args: Array[String]): Unit = {
     var input: String = ""
@@ -35,6 +37,7 @@ object Game extends Reactor {
   private def initNewGame(): Unit = {
     controller = initController()
     tui = new Tui(controller)
+    gui = new StartGui(controller)
     controller.publish(new GameStart)
     controller.publish(new PlayerChanged)
   }
