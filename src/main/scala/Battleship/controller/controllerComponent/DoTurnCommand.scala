@@ -160,7 +160,8 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
 
   private def calculateCoords(size: Int)(input: String): Option[Array[mutable.Map[String, Int]]] = {
     val splitInput = input.split(" ")
-    if (splitInput.length == size && checkIfInputIsConvertible(input)) {
+    if (splitInput.length == size) {
+      if (Try(splitInput.map(_.toInt)).isFailure) return None
       val convertedInput = splitInput.map(_.toInt)
       size match {
         case 2 => return Some(Array(mutable.Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
@@ -169,10 +170,6 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
       }
     }
     None
-  }
-
-  private def checkIfInputIsConvertible(input: String): Boolean = {
-    Try(input.map(_.toInt)).isFailure
   }
 
   private def checkShipFormat(splitInput: Array[Int]): Boolean = {
