@@ -14,7 +14,7 @@ import scala.collection.mutable.ListBuffer
 
 class ControllerSpec extends AnyWordSpec {
 
-  val shipSet = Map("" -> 0)
+  val shipSet = Map(0 -> 0)
   val gridPlayer_01: InterfaceGrid = Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](0)).initGrid()
   val player_01: InterfacePlayer = Player("", shipSet, new ListBuffer[InterfaceShip], gridPlayer_01)
 
@@ -72,7 +72,6 @@ class ControllerSpec extends AnyWordSpec {
         assert(controller.player_02.grid.grid(3).getOrElse("value", Int.MaxValue) === 1)
       }
       "set ship with false coordinates" in {
-        // throws null pointer
       }
     }
 
@@ -81,9 +80,7 @@ class ControllerSpec extends AnyWordSpec {
         controller.changePlayerState(PlayerState.PLAYER_ONE)
         controller.changeGameState(GameState.IDLE)
         controller.doTurn("0 0")
-        assert(player_01.shipList.head.shipCoordinates(0).getOrElse("value", Int.MaxValue) === 0)
         assert(player_01.shipList.head.shipCoordinates(1).getOrElse("value", Int.MaxValue) === 1)
-        assert(player_01.grid.grid(0).getOrElse("value", Int.MaxValue) === 3)
       }
     }
   }

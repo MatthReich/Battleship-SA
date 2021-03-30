@@ -19,6 +19,7 @@ object Game extends Reactor {
 
   def main(args: Array[String]): Unit = {
     var input: String = ""
+
     controller.publish(new GameStart)
     controller.publish(new PlayerChanged)
 
@@ -41,8 +42,8 @@ object Game extends Reactor {
 
   private def initController(): InterfaceController = {
     new Controller(
-      Player("player_01", Map("twoFieldShip" -> 2, "threeFieldShip" -> 1), new ListBuffer[InterfaceShip], Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](0)).initGrid()),
-      Player("player_02", Map("twoFieldShip" -> 2, "threeFieldShip" -> 1), new ListBuffer[InterfaceShip], Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](1)).initGrid()),
+      Player("player_01", Map(2 -> 2, 3 -> 1, 4 -> 1), new ListBuffer[InterfaceShip], Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](0)).initGrid()),
+      Player("player_02", Map(2 -> 2, 3 -> 1, 4 -> 1), new ListBuffer[InterfaceShip], Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](1)).initGrid()),
       GameState.PLAYERSETTING, PlayerState.PLAYER_ONE)
   }
 

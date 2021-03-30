@@ -36,7 +36,7 @@ class PlayerSpec extends AnyWordSpec {
 
   "A Player" when {
 
-    val shipSet = Map("" -> 0)
+    val shipSet = Map(0 -> 0)
     var player: InterfacePlayer = Player(name, shipSet, shipList, grid)
 
     "new" should {

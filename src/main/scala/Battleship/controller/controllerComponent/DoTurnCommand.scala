@@ -47,22 +47,64 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
         val functionHelper = changePlayerStats(coords) _
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
-            val retVal = functionHelper(controller.player_01)
-            controller.player_01 = retVal._1
-            if (retVal._2) {
-              controller.changePlayerState(PlayerState.PLAYER_TWO)
-              controller.publish(new PlayerChanged)
+            if (shipSettingAllowsNewShip(coords.length, controller.player_01)) {
+              val retVal = functionHelper(controller.player_01)
+              controller.player_01 = retVal._1
+              if (retVal._2) {
+                controller.player_01 = controller.player_01.updateShipSetList(coords.length)
+                handleShipSetFinishing(controller.player_01, PlayerState.PLAYER_TWO, GameState.SHIPSETTING)
+              } else {
+                controller.publish(new RedoTurn)
+              }
+            } else {
+              controller.publish(new RedoTurn)
             }
           case PlayerState.PLAYER_TWO =>
-            val retVal = functionHelper(controller.player_02)
-            controller.player_02 = retVal._1
-            if (retVal._2) {
-              controller.changeGameState(GameState.IDLE)
-              controller.changePlayerState(PlayerState.PLAYER_ONE)
-              controller.publish(new PlayerChanged)
+            if (shipSettingAllowsNewShip(coords.length, controller.player_02)) {
+              val retVal = functionHelper(controller.player_02)
+              controller.player_02 = retVal._1
+              if (retVal._2) {
+                controller.player_02 = controller.player_02.updateShipSetList(coords.length)
+                handleShipSetFinishing(controller.player_02, PlayerState.PLAYER_ONE, GameState.IDLE)
+              } else {
+                controller.publish(new RedoTurn)
+              }
+            } else {
+              controller.publish(new RedoTurn)
             }
         }
       case None => controller.publish(new RedoTurn)
+    }
+  }
+
+  private def handleShipSetFinishing(player: InterfacePlayer, newPlayerState: PlayerState.PlayerState, newGameState: GameState.GameState): Unit = {
+    if (shipSettingFinished(player)) {
+      controller.changeGameState(newGameState)
+      controller.changePlayerState(newPlayerState)
+      controller.publish(new PlayerChanged)
+    } else {
+      controller.publish(new GridUpdated)
+    }
+  }
+
+  private def shipSettingFinished(player: InterfacePlayer): Boolean = {
+    player.shipSetList.getOrElse(2, Int.MaxValue) == 0 && player.shipSetList.getOrElse(3, Int.MaxValue) == 0 && player.shipSetList.getOrElse(4, Int.MaxValue) == 0
+  }
+
+  private def shipSettingAllowsNewShip(coordsLength: Int, player: InterfacePlayer): Boolean = {
+    player.shipSetList.getOrElse(coordsLength, Int.MinValue) > 0
+  }
+
+  private def changePlayerStats(coords: Array[mutable.Map[String, Int]])(player: InterfacePlayer): (InterfacePlayer, Boolean) = {
+    val retVal = player.grid.setField(controller.gameState, coords)
+    val updatedGrid = retVal._1
+    val success = retVal._2
+    if (success) {
+      val shipNotSunk = false
+      val ship = Ship(coords.length, coords, shipNotSunk)
+      (player.addShip(ship).updateGrid(updatedGrid), true)
+    } else {
+      (player, false)
     }
   }
 
@@ -77,6 +119,7 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
             controller.player_02 = functionHelper(controller.player_02)
+            controller.player_02.shipList.foreach(ship => println(ship.shipCoordinates.mkString("Array(", ", ", ")")))
             if (checkWinStatement(controller.player_02)) {
                 controller.changeGameState(GameState.SOLVED)
                 controller.publish(new GameWon)
@@ -87,6 +130,7 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
 
           case PlayerState.PLAYER_TWO =>
             controller.player_01 = functionHelper(controller.player_01)
+            controller.player_01.shipList.foreach(ship => println(ship.shipCoordinates.mkString("Array(", ", ", ")")))
             if (checkWinStatement(controller.player_01)) {
               controller.changeGameState(GameState.SOLVED)
               controller.publish(new GameWon)
@@ -105,26 +149,17 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
     val indexes = new ListBuffer[Int]
     player.shipList.foreach(ship => indexes.addOne(ship.shipCoordinates.indexWhere(mapping => mapping.get("x").contains(x) &&
       mapping.get("y").contains(y))))
-
-    if (indexes.head == -1) {
-      newPlayer
-    } else  {
-      val index = player.shipList.indexWhere(mapping => mapping.shipCoordinates(indexes.head).get("x").contains(x) && mapping.shipCoordinates(indexes.head).get("y").contains(y))
-      newPlayer.updateShip(index, player.shipList(index).hit(x, y))
+    indexes.foreach(ship => println(ship))
+    player.shipList.foreach(ship => println(ship.status))
+    player.shipList.foreach(ship => println(ship.shipCoordinates.mkString("Array(", ", ", ")")))
+    for (i <- indexes.indices) {
+      if (indexes(i) != -1) {
+        val index = player.shipList.filter(ship => ship.shipCoordinates.length > indexes(i)).indexWhere(mapping => mapping.shipCoordinates(indexes(i)).get("x").contains(x) && mapping.shipCoordinates(indexes(i)).get("y").contains(y))
+        println("value shipindex in array:" + indexes.head)
+        return newPlayer.updateShip(index, player.shipList(index).hit(x, y))
+      }
     }
-  }
-
-  private def changePlayerStats(coords: Array[mutable.Map[String, Int]])(player: InterfacePlayer): (InterfacePlayer, Boolean) = {
-    val retVal = player.grid.setField(controller.gameState, coords)
-    val updatedGrid = retVal._1
-    val success = retVal._2
-    if (success) {
-      val shipNotSunk = false
-      val ship = Ship(getSize(coords), coords, shipNotSunk)
-      (player.addShip(ship).updateGrid(updatedGrid), true)
-    } else {
-      (player, false)
-    }
+    newPlayer
   }
 
   private def calculateCoords(size: Int)(input: String): Option[Array[mutable.Map[String, Int]]] = {
@@ -139,8 +174,6 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
     }
     None
   }
-
-  private def getSize(coords: Array[mutable.Map[String, Int]]): Int = coords.length
 
   private def checkShipFormat(splittedInputInt: Array[Int]): Boolean = {
     !((splittedInputInt(0) == splittedInputInt(2) && splittedInputInt(1) == splittedInputInt(3))
