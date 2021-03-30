@@ -5,14 +5,14 @@ import Battleship.controller.controllerComponent.GameState.GameState
 import Battleship.controller.controllerComponent.PlayerState.PlayerState
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.utils.UndoManager
+import com.google.inject.Inject
 
 import scala.swing.Publisher
 
-class Controller (var player_01: InterfacePlayer, var player_02: InterfacePlayer, var gameState: GameState, var playerState: PlayerState) extends InterfaceController with Publisher {
+class Controller @Inject()(var player_01: InterfacePlayer, var player_02: InterfacePlayer, var gameState: GameState, var playerState: PlayerState) extends InterfaceController with Publisher {
 
   /*
   - Gui
-  - values for ship setting
   - right player on turn after setting and guessing
   - Error Checks
   - FileIO

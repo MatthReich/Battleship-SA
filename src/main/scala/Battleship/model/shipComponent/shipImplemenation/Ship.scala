@@ -1,10 +1,11 @@
 package Battleship.model.shipComponent.shipImplemenation
 
 import Battleship.model.shipComponent.InterfaceShip
+import com.google.inject.Inject
 
 import scala.collection.mutable
 
-case class Ship(shipLength: Int, shipCoordinates: Array[mutable.Map[String, Int]], status: Boolean) extends InterfaceShip {
+case class Ship @Inject()(shipLength: Int, shipCoordinates: Array[mutable.Map[String, Int]], status: Boolean) extends InterfaceShip {
 
   def hit(x: Int, y: Int): InterfaceShip = {
     if (coordsExists(x, y)) {

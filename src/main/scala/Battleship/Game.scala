@@ -13,7 +13,6 @@ import scala.collection.mutable.ListBuffer
 import scala.swing.Reactor
 
 object Game extends Reactor {
-
   var controller: InterfaceController = initController()
   var tui = new Tui(controller)
 

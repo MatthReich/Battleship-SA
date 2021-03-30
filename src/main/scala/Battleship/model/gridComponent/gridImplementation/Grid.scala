@@ -3,10 +3,11 @@ package Battleship.model.gridComponent.gridImplementation
 import Battleship.controller.controllerComponent.GameState
 import Battleship.controller.controllerComponent.GameState.GameState
 import Battleship.model.gridComponent.{InterfaceGrid, InterfaceStrategyCollide}
+import com.google.inject.Inject
 
 import scala.collection.mutable
 
-case class Grid(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Array[mutable.Map[String, Int]]) extends InterfaceGrid {
+case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Array[mutable.Map[String, Int]]) extends InterfaceGrid {
 
   private val water: Int = 0
   private val ship: Int = 1

@@ -119,7 +119,6 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
             controller.player_02 = functionHelper(controller.player_02)
-            controller.player_02.shipList.foreach(ship => println(ship.shipCoordinates.mkString("Array(", ", ", ")")))
             if (checkWinStatement(controller.player_02)) {
                 controller.changeGameState(GameState.SOLVED)
                 controller.publish(new GameWon)
@@ -130,7 +129,6 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
 
           case PlayerState.PLAYER_TWO =>
             controller.player_01 = functionHelper(controller.player_01)
-            controller.player_01.shipList.foreach(ship => println(ship.shipCoordinates.mkString("Array(", ", ", ")")))
             if (checkWinStatement(controller.player_01)) {
               controller.changeGameState(GameState.SOLVED)
               controller.publish(new GameWon)
@@ -149,13 +147,9 @@ class DoTurnCommand(input: String, controller: Controller) extends Command {
     val indexes = new ListBuffer[Int]
     player.shipList.foreach(ship => indexes.addOne(ship.shipCoordinates.indexWhere(mapping => mapping.get("x").contains(x) &&
       mapping.get("y").contains(y))))
-    indexes.foreach(ship => println(ship))
-    player.shipList.foreach(ship => println(ship.status))
-    player.shipList.foreach(ship => println(ship.shipCoordinates.mkString("Array(", ", ", ")")))
     for (i <- indexes.indices) {
       if (indexes(i) != -1) {
         val index = player.shipList.filter(ship => ship.shipCoordinates.length > indexes(i)).indexWhere(mapping => mapping.shipCoordinates(indexes(i)).get("x").contains(x) && mapping.shipCoordinates(indexes(i)).get("y").contains(y))
-        println("value shipindex in array:" + indexes.head)
         return newPlayer.updateShip(index, player.shipList(index).hit(x, y))
       }
     }
