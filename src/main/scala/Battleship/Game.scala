@@ -44,8 +44,8 @@ object Game extends Reactor {
 
   private def initController(): InterfaceController = {
     new Controller(
-      Player("player_01", Map(2 -> 1, 3 -> 0, 4 -> 0), new ListBuffer[InterfaceShip], Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](0)).initGrid()),
-      Player("player_02", Map(2 -> 1, 3 -> 0, 4 -> 0), new ListBuffer[InterfaceShip], Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](1)).initGrid()),
+      Player("player_01", Map(2 -> 2, 3 -> 1, 4 -> 0), new ListBuffer[InterfaceShip], Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](0)).initGrid()),
+      Player("player_02", Map(2 -> 2, 3 -> 1, 4 -> 0), new ListBuffer[InterfaceShip], Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](1)).initGrid()),
       GameState.PLAYERSETTING, PlayerState.PLAYER_ONE)
   }
 
