@@ -35,6 +35,10 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     }
   }
 
+  override def save(): Unit = fileIo.save(player_01, player_02, gameState, playerState)
+
+  override def load(): Unit = fileIo.load(this)
+
   private def coordsCalculation(size: Int, input: String): Option[Array[mutable.Map[String, Int]]] = {
     val splitInput = input.split(" ")
     if (splitInput.length == size) {
@@ -82,7 +86,4 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     nr1 - nr2 + 1
   }
 
-  override def save(): Unit = fileIo.save(player_01, player_02, gameState, playerState)
-
-  override def load(): Unit = fileIo.load(this)
 }

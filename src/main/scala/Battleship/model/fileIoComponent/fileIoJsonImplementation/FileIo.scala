@@ -24,12 +24,26 @@ class FileIo @Inject()() extends InterfaceFileIo {
   implicit val gameStateToJson: Writes[GameState] = (gameState: GameState) => Json.obj(
     "gameState" -> Json.toJson(gameState.toString)
   )
+  implicit val playerToJson: Writes[Array[InterfacePlayer]] = (player: Array[InterfacePlayer]) =>
+    Json.obj(
+      "players" -> Json.obj(
+        "name_01" -> Json.toJson(player(0).name),
+        "shipSetList_01" -> Json.toJson(""),
+        "shipList_01" -> Json.toJson(""),
+        "grid_01" -> Json.toJson("")),
+      "name_02" -> Json.toJson(player(1).name),
+      "shipSetList_02" -> Json.toJson(""),
+      "shipList_02" -> Json.toJson(""),
+      "grid_02" -> Json.toJson(""))
 
   override def load(controller: Controller): Unit = {
     val rawSource = Source.fromFile("saveFile.json")
     val source: String = rawSource.getLines.mkString
     val json: JsValue = Json.parse(source)
     rawSource.close()
+
+    controller.player_01.updateName((json \\ "name_01").head.as[String])
+    controller.player_02.updateName((json \\ "name_02").head.as[String])
 
     controller.gameState = (json \\ "gameState").head.as[String] match {
       case "PLAYERSETTING" => GameState.PLAYERSETTING
@@ -44,22 +58,6 @@ class FileIo @Inject()() extends InterfaceFileIo {
     }
     controller.publish(new PlayerChanged)
   }
-
-  implicit val playerToJson: Writes[Array[InterfacePlayer]] = (player: Array[InterfacePlayer]) =>
-    Json.obj(
-      "players" -> Json.obj(
-        "player_01" -> Json.obj(
-          "name" -> Json.toJson(player(0).name),
-          "shipSetList" -> Json.toJson(""),
-          "shipList" -> Json.toJson(""),
-          "grid" -> Json.toJson("")),
-        "player_02" -> Json.obj(
-          "name" -> Json.toJson(player(1).name),
-          "shipSetList" -> Json.toJson(""),
-          "shipList" -> Json.toJson(""),
-          "grid" -> Json.toJson(""))
-      )
-    )
 
   implicit val playerStateToJson: Writes[PlayerState] = (playerState: PlayerState) => Json.obj(
     "playerState" -> Json.toJson(playerState.toString)

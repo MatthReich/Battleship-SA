@@ -25,7 +25,7 @@ class Tui(controller: InterfaceController) extends Reactor {
     case _: GridUpdated =>
       controller.gameState match {
         case GameState.SHIPSETTING =>
-          printTui("set your Ship <x y x y>\n" + gridAsString() + "left:\n" + shipSetListAsString())
+          printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
       }
     case _: RedoTurn =>
       controller.gameState match {
