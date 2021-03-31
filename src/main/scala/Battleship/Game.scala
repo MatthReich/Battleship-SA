@@ -6,7 +6,6 @@ import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent._
 import Battleship.controller.controllerComponent.events.{GameStart, PlayerChanged}
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
-import Battleship.model.fileIoComponent.fileIoJsonImplementation.FileIo
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
 import Battleship.model.playerComponent.playerImplementation.Player
@@ -34,6 +33,7 @@ object Game extends Reactor {
       else if (input == "n") initNewGame()
       else if (input == "s") controller.save()
       else if (input == "l") controller.load()
+      else if (input == "r") controller.redoTurn()
       else controller.doTurn(input)
 
     } while (true)

@@ -19,13 +19,15 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
   private val undoManager = new UndoManager
   private val fileIo: InterfaceFileIo = new FileIo()
 
-  override def changeGameState(gameState: GameState): Unit = {
-    this.gameState = gameState
-  }
+  override def changeGameState(gameState: GameState): Unit = this.gameState = gameState
 
-  override def changePlayerState(playerState: PlayerState): Unit = {
-    this.playerState = playerState
-  }
+  override def changePlayerState(playerState: PlayerState): Unit = this.playerState = playerState
+
+  override def save(): Unit = fileIo.save(player_01, player_02, gameState, playerState)
+
+  override def load(): Unit = fileIo.load(this)
+
+  override def redoTurn(): Unit = undoManager.undoStep()
 
   override def doTurn(input: String): Unit = {
     gameState match {
@@ -34,10 +36,6 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
       case GameState.IDLE => undoManager.doStep(new CommandIdle(input, this, coordsCalculation))
     }
   }
-
-  override def save(): Unit = fileIo.save(player_01, player_02, gameState, playerState)
-
-  override def load(): Unit = fileIo.load(this)
 
   private def coordsCalculation(size: Int, input: String): Option[Array[mutable.Map[String, Int]]] = {
     val splitInput = input.split(" ")
@@ -52,8 +50,6 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     }
     None
   }
-
-  override def redoTurn(): Unit = undoManager.undoStep()
 
   private def checkShipFormat(splitInput: Array[Int]): Boolean = {
     !((splitInput(0) == splitInput(2) && splitInput(1) == splitInput(3))

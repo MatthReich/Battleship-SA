@@ -52,10 +52,7 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
     }
   }
 
-  override def toString(showAllShips: Boolean): String = {
-    val stringOfGrid: mutable.StringBuilder = initRek()
-    toStringRek(0, 0, showAllShips, stringOfGrid)
-  }
+  override def toString(showAllShips: Boolean): String = toStringRek(0, 0, showAllShips, initRek())
 
   @tailrec
   private def toStringRek(idx: Int, idy: Int, showAllShips: Boolean, result: mutable.StringBuilder): String = {

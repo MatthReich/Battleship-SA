@@ -10,9 +10,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 class CommandIdle(input: String, controller: Controller, coordsCalculation: (Int, String) => Option[Array[mutable.Map[String, Int]]]) extends Command {
-  override def doStep(): Unit = {
-    setGuess()
-  }
+
+  override def doStep(): Unit = setGuess()
 
   private def setGuess(): Unit = {
     val retVal = coordsCalculation(2, input)
@@ -61,9 +60,7 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Int
     newPlayer
   }
 
-  private def checkWinStatement(player: InterfacePlayer): Boolean = {
-    !player.shipList.exists(_.status == false)
-  }
+  private def checkWinStatement(player: InterfacePlayer): Boolean = !player.shipList.exists(_.status == false)
 
   override def undoStep(): Unit = {
 
