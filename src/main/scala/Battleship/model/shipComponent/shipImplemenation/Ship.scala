@@ -15,9 +15,7 @@ case class Ship @Inject()(shipLength: Int, shipCoordinates: Array[mutable.Map[St
     this
   }
 
-  private def coordsExists(x: Int, y: Int): Boolean = {
-    shipCoordinates.exists(_.get("x").contains(x)) && shipCoordinates.exists(_.get("y").contains(y))
-  }
+  private def coordsExists(x: Int, y: Int): Boolean = shipCoordinates.exists(_.get("x").contains(x)) && shipCoordinates.exists(_.get("y").contains(y))
 
   private def changeValueToHit(x: Int, y: Int): Unit = {
     val index = shipCoordinates.indexWhere(mapping => mapping.get("x").contains(x) && mapping.get("y").contains(y))
@@ -26,12 +24,8 @@ case class Ship @Inject()(shipLength: Int, shipCoordinates: Array[mutable.Map[St
     }
   }
 
-  private def changeStatusWhenSunk(): InterfaceShip = {
-    this.copy(status = isSunk)
-  }
+  private def changeStatusWhenSunk(): InterfaceShip = this.copy(status = isSunk)
 
-  private def isSunk: Boolean = {
-    !shipCoordinates.exists(_.get("value").contains(1))
-  }
+  private def isSunk: Boolean = !shipCoordinates.exists(_.get("value").contains(1))
 
 }

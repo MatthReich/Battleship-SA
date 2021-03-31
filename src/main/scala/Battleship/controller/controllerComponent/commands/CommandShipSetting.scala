@@ -15,8 +15,6 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
     setShip()
   }
 
-  override def undoStep(): Unit = {}
-
   private def setShip(): Unit = {
     val retVal = coordsCalculation(4, input)
     retVal match {
@@ -80,5 +78,7 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
       (player, false)
     }
   }
+
+  override def undoStep(): Unit = {}
 
 }

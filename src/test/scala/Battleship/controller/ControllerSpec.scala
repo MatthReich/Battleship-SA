@@ -53,24 +53,10 @@ class ControllerSpec extends AnyWordSpec {
 
     "set a new ship" should {
       "set ship with same x coordinates" in {
-        controller.changePlayerState(PlayerState.PLAYER_ONE)
-        controller.changeGameState(GameState.SHIPSETTING)
-        controller.doTurn("0 0 0 3")
-        assert(controller.player_01.shipList.head.shipLength === 4)
-        assert(controller.player_01.grid.grid(0).getOrElse("value", Int.MaxValue) === 1)
-        assert(controller.player_01.grid.grid(10).getOrElse("value", Int.MaxValue) === 1)
-        assert(controller.player_01.grid.grid(20).getOrElse("value", Int.MaxValue) === 1)
-        assert(controller.player_01.grid.grid(30).getOrElse("value", Int.MaxValue) === 1)
+
       }
       "set ship with same y coordinates" in {
-        controller.changePlayerState(PlayerState.PLAYER_TWO)
-        controller.doTurn("0 0 3 0")
-        assert(controller.player_02.shipList.head.shipLength === 4)
-        controller.player_02.grid.grid.foreach(println(_))
-        assert(controller.player_02.grid.grid(0).getOrElse("value", Int.MaxValue) === 1)
-        assert(controller.player_02.grid.grid(1).getOrElse("value", Int.MaxValue) === 1)
-        assert(controller.player_02.grid.grid(2).getOrElse("value", Int.MaxValue) === 1)
-        assert(controller.player_02.grid.grid(3).getOrElse("value", Int.MaxValue) === 1)
+
       }
       "set ship with false coordinates" in {
       }
@@ -78,10 +64,6 @@ class ControllerSpec extends AnyWordSpec {
 
     "set Guess" should {
       "change grid" in {
-        controller.changePlayerState(PlayerState.PLAYER_ONE)
-        controller.changeGameState(GameState.IDLE)
-        controller.doTurn("0 0")
-        assert(player_01.shipList.head.shipCoordinates(1).getOrElse("value", Int.MaxValue) === 1)
       }
     }
   }

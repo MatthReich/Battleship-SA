@@ -65,5 +65,8 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Int
     !player.shipList.exists(_.status == false)
   }
 
-  override def undoStep(): Unit = ???
+  override def undoStep(): Unit = {
+
+  }
+
 }

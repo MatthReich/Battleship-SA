@@ -53,9 +53,7 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     None
   }
 
-  override def redoTurn(): Unit = {
-    undoManager.undoStep()
-  }
+  override def redoTurn(): Unit = undoManager.undoStep()
 
   private def checkShipFormat(splitInput: Array[Int]): Boolean = {
     !((splitInput(0) == splitInput(2) && splitInput(1) == splitInput(3))
@@ -63,7 +61,7 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
   }
 
   private def calculateCoordsArray(convertedInput: Array[Int]): Array[mutable.Map[String, Int]] = {
-    val coordsArray = new Array[mutable.Map[String, Int]](getShipSize(convertedInput))
+    val coordsArray = new Array[mutable.Map[String, Int]](getShipSize(convertedInput, calcDiff))
     var i = 0
     for (x <- convertedInput(0) to convertedInput(2)) {
       for (y <- convertedInput(1) to convertedInput(3)) {
@@ -74,7 +72,7 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     coordsArray
   }
 
-  private def getShipSize(coordsShip: Array[Int]): Int = {
+  private def getShipSize(coordsShip: Array[Int], calcDiff: (Int, Int) => Int): Int = {
     if (coordsShip(0) == coordsShip(2)) {
       math.max(calcDiff(coordsShip(1), coordsShip(3)), calcDiff(coordsShip(3), coordsShip(1)))
     } else {
@@ -82,8 +80,6 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     }
   }
 
-  private def calcDiff(nr1: Int, nr2: Int): Int = {
-    nr1 - nr2 + 1
-  }
+  private def calcDiff(nr1: Int, nr2: Int): Int = nr1 - nr2 + 1
 
 }
