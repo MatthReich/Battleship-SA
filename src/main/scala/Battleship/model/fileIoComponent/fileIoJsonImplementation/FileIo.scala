@@ -4,10 +4,13 @@ import Battleship.controller.controllerComponent.Controller
 import Battleship.controller.controllerComponent.events.PlayerChanged
 import Battleship.controller.controllerComponent.states.GameState.GameState
 import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
+import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.fileIoComponent.InterfaceFileIo
 import Battleship.model.playerComponent.InterfacePlayer
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Json, Writes}
+
+import scala.io.Source
 
 class FileIo @Inject()() extends InterfaceFileIo {
 
@@ -23,7 +26,22 @@ class FileIo @Inject()() extends InterfaceFileIo {
   )
 
   override def load(controller: Controller): Unit = {
-    println("laoded")
+    val rawSource = Source.fromFile("saveFile.json")
+    val source: String = rawSource.getLines.mkString
+    val json: JsValue = Json.parse(source)
+    rawSource.close()
+
+    controller.gameState = (json \\ "gameState").head.as[String] match {
+      case "PLAYERSETTING" => GameState.PLAYERSETTING
+      case "SHIPSETTING" => GameState.SHIPSETTING
+      case "IDLE" => GameState.IDLE
+      case "SOLVED" => GameState.SOLVED
+    }
+
+    controller.playerState = (json \\ "playerState").head.as[String] match {
+      case "PLAYER_ONE" => PlayerState.PLAYER_ONE
+      case "PLAYER_TWO" => PlayerState.PLAYER_TWO
+    }
     controller.publish(new PlayerChanged)
   }
 
@@ -42,6 +60,7 @@ class FileIo @Inject()() extends InterfaceFileIo {
           "grid" -> Json.toJson(""))
       )
     )
+
   implicit val playerStateToJson: Writes[PlayerState] = (playerState: PlayerState) => Json.obj(
     "playerState" -> Json.toJson(playerState.toString)
   )
