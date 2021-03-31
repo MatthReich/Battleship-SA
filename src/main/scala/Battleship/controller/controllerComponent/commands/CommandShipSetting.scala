@@ -11,9 +11,7 @@ import scala.collection.mutable
 
 class CommandShipSetting(input: String, controller: Controller, coordsCalculation: (Int, String) => Option[Array[mutable.Map[String, Int]]]) extends Command {
 
-  override def doStep(): Unit = {
-    setShip()
-  }
+  override def doStep(): Unit = setShip()
 
   private def setShip(): Unit = {
     val retVal = coordsCalculation(4, input)
