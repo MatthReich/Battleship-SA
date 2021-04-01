@@ -46,30 +46,39 @@ class GridSpec extends AnyWordSpec {
 
     "ship get set" should {
       "change grid values" in {
-        grid = grid.setField(shipSet, shipArray)._1
+        val retVal = grid.setField(shipSet, shipArray)
+        grid = retVal._1
+
+        assert(retVal._2 === true)
         assert(grid.grid(0) === mutable.Map("x" -> 0, "y" -> 0, "value" -> 1))
         assert(grid.grid(10) === mutable.Map("x" -> 0, "y" -> 1, "value" -> 1))
         assert(grid.grid(20) === mutable.Map("x" -> 0, "y" -> 2, "value" -> 1))
       }
       "not work with coordinates already exists" in {
-        // assert(grid.setField(shipSet, shipArray)._2 === false)
+        assert(grid.setField(shipSet, shipArray)._2 === false)
       }
       "not work with coordinates doesnt exists" in {
-        //assert(grid.setField(idle, shipArrayFalse)._2 === false)
+        assert(grid.setField(idle, shipArrayFalse)._2 === false)
       }
     }
 
     "a ship gets hit" should {
       "change grid values" in {
-        //grid = grid.setField(idle, Array(mutable.Map("x" -> 0, "y" -> 0)))._1
-        //assert(grid.grid(0) === mutable.Map("x" -> 0, "y" -> 0, "value" -> 3))
+        val retVal = grid.setField(idle, Vector(Map("x" -> 0, "y" -> 0)))
+        grid = retVal._1
+
+        assert(retVal._2 === true)
+        assert(grid.grid(0) === mutable.Map("x" -> 0, "y" -> 0, "value" -> 3))
       }
     }
 
     "water gets hit" should {
       "change value to water" in {
-        // grid = grid.setField(idle, Array(mutable.Map("x" -> 9, "y" -> 9)))._1
-        // assert(grid.grid(99) === mutable.Map("x" -> 9, "y" -> 9, "value" -> 2))
+        val retVal = grid.setField(idle, Vector(Map("x" -> 9, "y" -> 9)))
+        grid = retVal._1
+
+        assert(retVal._2 === true)
+        assert(grid.grid(99) === Map("x" -> 9, "y" -> 9, "value" -> 2))
       }
     }
 

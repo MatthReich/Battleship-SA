@@ -16,6 +16,7 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
   private val shipHit: Int = 3
 
   override def setField(gameState: GameState, fields: Vector[Map[String, Int]]): (InterfaceGrid, Boolean) = {
+    if (fields.exists(mapping => mapping.getOrElse("x", Int.MaxValue) > 9 || mapping.getOrElse("y", Int.MaxValue) > 9)) return (this, false)
     strategyCollide.collide(fields, grid) match {
       case Left(indexes) =>
         if (gameState == GameState.SHIPSETTING) (this, false)
