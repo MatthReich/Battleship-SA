@@ -31,7 +31,7 @@ case class Player @Inject()(name: String, shipSetList: Map[Int, Int], shipList: 
   }
 
   override def updateShip(oldShip: InterfaceShip, ship: InterfaceShip): InterfacePlayer = {
-    this.copy(shipList = shipList.updated(0, ship))
+    this.copy(shipList = shipList.updated(shipList.indexOf(oldShip), ship))
   }
 
 }
