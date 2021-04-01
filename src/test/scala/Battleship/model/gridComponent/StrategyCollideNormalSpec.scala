@@ -38,7 +38,11 @@ class StrategyCollideNormalSpec extends AnyWordSpec {
       "return right " in {
         strategyNormal.collide(shipArray, grid.grid) match {
           case Left(_) => fail("should represent that there is no collision")
-          case Right(_) => assert(true)
+          case Right(indexes) =>
+            assert(indexes.length === 3)
+            assert(indexes(0) == 0)
+            assert(indexes(1) == 10)
+            assert(indexes(2) == 20)
         }
       }
     }
@@ -51,7 +55,11 @@ class StrategyCollideNormalSpec extends AnyWordSpec {
         println(grid.toString(true))
 
         strategyNormal.collide(shipArray, grid.grid) match {
-          case Left(_) => assert(true)
+          case Left(indexes) =>
+            assert(indexes.length === 3)
+            assert(indexes(0) == 0)
+            assert(indexes(1) == 10)
+            assert(indexes(2) == 20)
           case Right(_) => fail("should represent that there is already a ship")
         }
       }

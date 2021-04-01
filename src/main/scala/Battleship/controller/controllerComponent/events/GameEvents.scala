@@ -16,4 +16,6 @@ class GameWon extends Event
 
 class NewGame extends Event
 
+class NewGameGui extends Event
+
 class ExitGame extends Event

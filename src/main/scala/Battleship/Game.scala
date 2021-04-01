@@ -4,7 +4,7 @@ import Battleship.aview.gui.StartGui
 import Battleship.aview.tui.Tui
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent._
-import Battleship.controller.controllerComponent.events.{GameStart, PlayerChanged}
+import Battleship.controller.controllerComponent.events.{GameStart, NewGameGui, PlayerChanged}
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
@@ -18,12 +18,18 @@ object Game extends Reactor {
   var tui = new Tui(controller)
   var gui = new StartGui(controller)
 
+  listenTo(controller)
+
+
   def main(args: Array[String]): Unit = {
     var input: String = ""
 
     controller.publish(new GameStart)
     controller.publish(new PlayerChanged)
-
+    listenTo(controller)
+    reactions += {
+      case _: NewGameGui => initNewGame()
+    }
     do {
 
       input = scala.io.StdIn.readLine()

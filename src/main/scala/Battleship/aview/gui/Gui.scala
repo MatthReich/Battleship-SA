@@ -119,7 +119,10 @@ class Gui(controller: InterfaceController) extends Frame {
   private def newGameOrQuit(): Unit = {
     val retVal = Dialog.showConfirmation(contents.head, "Start new Game?", optionType = Dialog.Options.YesNo, title = title)
     if (retVal == Dialog.Result.No) sys.exit(0)
-    else if (retVal == Dialog.Result.Yes) Console.print("n")
+    else if (retVal == Dialog.Result.Yes) {
+      this.visible = false
+      controller.publish(new NewGameGui)
+    }
   }
 
   menuBar = new MenuBar {
