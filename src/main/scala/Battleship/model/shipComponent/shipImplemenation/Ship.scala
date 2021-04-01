@@ -3,29 +3,29 @@ package Battleship.model.shipComponent.shipImplemenation
 import Battleship.model.shipComponent.InterfaceShip
 import com.google.inject.Inject
 
-import scala.collection.mutable
+import scala.util.{Failure, Success, Try}
 
-case class Ship @Inject()(shipLength: Int, shipCoordinates: Array[mutable.Map[String, Int]], status: Boolean) extends InterfaceShip {
+case class Ship @Inject()(shipLength: Int, shipCoordinates: Vector[Map[String, Int]], status: Boolean) extends InterfaceShip {
 
-  def hit(x: Int, y: Int): InterfaceShip = {
-    if (coordsExists(x, y)) {
-      changeValueToHit(x, y)
-      return changeStatusWhenSunk()
+  private val fieldIsNotHit: Int = 1
+  private val fieldIsHit: Int = 0
+
+  override def hit(x: Int, y: Int): Try[InterfaceShip] = {
+    val retVal = changedValue(x, y)
+    retVal match {
+      case Success(value) => Success(this.copy(shipCoordinates = value, status = isSunk(value)))
+      case Failure(exception) => Failure(exception)
     }
-    this
   }
 
-  private def coordsExists(x: Int, y: Int): Boolean = shipCoordinates.exists(_.get("x").contains(x)) && shipCoordinates.exists(_.get("y").contains(y))
-
-  private def changeValueToHit(x: Int, y: Int): Unit = {
+  private def changedValue(x: Int, y: Int): Try[Vector[Map[String, Int]]] = {
     val index = shipCoordinates.indexWhere(mapping => mapping.get("x").contains(x) && mapping.get("y").contains(y))
-    if (index >= 0) {
-      shipCoordinates.update(index, shipCoordinates(index) + ("value" -> 0))
+    Try(shipCoordinates.updated(index, shipCoordinates(index) + ("value" -> fieldIsHit))) match {
+      case Failure(_) => Failure(new Exception("failed to hit a ship"))
+      case Success(value) => Success(value)
     }
   }
 
-  private def changeStatusWhenSunk(): InterfaceShip = this.copy(status = isSunk)
-
-  private def isSunk: Boolean = !shipCoordinates.exists(_.get("value").contains(1))
+  private def isSunk(value: Vector[Map[String, Int]]): Boolean = !value.exists(_.get("value").contains(fieldIsNotHit))
 
 }

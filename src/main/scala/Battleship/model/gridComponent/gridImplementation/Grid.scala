@@ -8,39 +8,51 @@ import com.google.inject.Inject
 import scala.annotation.tailrec
 import scala.collection.mutable
 
-case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Array[mutable.Map[String, Int]]) extends InterfaceGrid {
+case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Vector[Map[String, Int]]) extends InterfaceGrid {
 
   private val water: Int = 0
   private val ship: Int = 1
   private val waterHit: Int = 2
   private val shipHit: Int = 3
 
-  override def setField(gameStatus: GameState, fields: Array[mutable.Map[String, Int]]): (InterfaceGrid, Boolean) = {
-    val retVal = strategyCollide.collide(fields, grid)
-    val collide = retVal._1
-    val indexes = retVal._2
-
-    if (gameStatus == GameState.SHIPSETTING) {
-      if (collide) {
-        return (this, false)
-      }
+  override def setField(gameState: GameState, fields: Vector[Map[String, Int]]): (InterfaceGrid, Boolean) = {
+    strategyCollide.collide(fields, grid) match {
+      case Left(indexes) =>
+        if (gameState == GameState.SHIPSETTING) (this, false)
+        else updateGridIfIndexesAreRight(indexes, gameState)
+      case Right(indexes) => updateGridIfIndexesAreRight(indexes, gameState)
     }
-    if (indexes.nonEmpty && !indexes.exists(_.equals(-1))) {
-      indexes.foreach(index => grid.update(index, newValueOfField(index, gameStatus)))
-      return (this, true)
-    }
-    (this, false)
   }
 
   def initGrid(): InterfaceGrid = {
-    val tmpArray = new Array[mutable.Map[String, Int]](size * size)
-    for (i <- 0 until size * size) {
-      tmpArray(i) = mutable.Map("x" -> i % size, "y" -> i / size, "value" -> water)
-    }
-    this.copy(grid = tmpArray)
+    this.copy(grid = initGridRec(0, size * size, Vector[Map[String, Int]]()))
   }
 
-  private def newValueOfField(index: Int, gameState: GameState): mutable.Map[String, Int] = {
+  private def updateGridIfIndexesAreRight(indexes: Vector[Int], gameState: GameState): (InterfaceGrid, Boolean) = {
+    if (indexes.nonEmpty && !indexes.exists(_.equals(-1))) {
+      (updateGridRec(0, indexes.length, indexes, gameState, Vector[Map[String, Int]]()), true)
+    } else (this, false)
+  }
+
+  @tailrec
+  private def updateGridRec(start: Int, end: Int, indexes: Vector[Int], gameState: GameState, result: Vector[Map[String, Int]]): InterfaceGrid = {
+    if (start == end) this.copy(grid = result)
+    else {
+      val newStart = start + 1
+      updateGridRec(newStart, end, indexes, gameState, grid.updated(indexes(start), newValueOfField(indexes(start), gameState)))
+    }
+  }
+
+  @tailrec
+  private def initGridRec(start: Int, end: Int, result: Vector[Map[String, Int]]): Vector[Map[String, Int]] = {
+    if (start == end) result
+    else {
+      val newStart = start + 1
+      initGridRec(newStart, end, result.appended(Map("x" -> start % size, "y" -> start / size, "value" -> 0)))
+    }
+  }
+
+  private def newValueOfField(index: Int, gameState: GameState): Map[String, Int] = {
     grid(index).getOrElse("value", Int.MaxValue) match {
       case 0 => if (gameState == GameState.SHIPSETTING) {
         grid(index) + ("value" -> ship)

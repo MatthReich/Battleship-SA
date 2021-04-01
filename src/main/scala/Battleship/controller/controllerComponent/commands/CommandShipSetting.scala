@@ -7,9 +7,7 @@ import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.shipComponent.shipImplemenation.Ship
 import Battleship.utils.Command
 
-import scala.collection.mutable
-
-class CommandShipSetting(input: String, controller: Controller, coordsCalculation: (Int, String) => Option[Array[mutable.Map[String, Int]]]) extends Command {
+class CommandShipSetting(input: String, controller: Controller, coordsCalculation: (Int, String) => Option[Vector[Map[String, Int]]]) extends Command {
 
   override def doStep(): Unit = setShip()
 
@@ -64,7 +62,7 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
     player.shipSetList.getOrElse(coordsLength, Int.MinValue) > 0
   }
 
-  private def changePlayerStats(coords: Array[mutable.Map[String, Int]])(player: InterfacePlayer): (InterfacePlayer, Boolean) = {
+  private def changePlayerStats(coords: Vector[Map[String, Int]])(player: InterfacePlayer): (InterfacePlayer, Boolean) = {
     val retVal = player.grid.setField(controller.gameState, coords)
     val updatedGrid = retVal._1
     val success = retVal._2

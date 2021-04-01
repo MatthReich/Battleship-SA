@@ -2,7 +2,7 @@ package Battleship.aview.gui
 
 import Battleship.aview.gui.panel.FieldPanel
 import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent.events.{GameWon, GridUpdated, PlayerChanged, RedoTurn}
+import Battleship.controller.controllerComponent.events._
 import Battleship.controller.controllerComponent.states.GameState
 import Battleship.controller.controllerComponent.states.PlayerState.{PLAYER_ONE, PLAYER_TWO}
 import Battleship.model.playerComponent.InterfacePlayer
@@ -35,7 +35,11 @@ class Gui(controller: InterfaceController) extends Frame {
         case GameState.SHIPSETTING => redoTurnAlert()
         case GameState.IDLE => redoTurnAlert()
       }
-    case _: GameWon => newGameOrQuit()
+    case _: TurnAgain => redraw()
+    case _: GameWon =>
+      redraw()
+      newGameOrQuit()
+    case _ =>
   }
 
   def evaluateShip(input: String): Unit = {

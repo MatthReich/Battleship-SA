@@ -1,15 +1,14 @@
 package Battleship.controller.controllerComponent.commands
 
 import Battleship.controller.controllerComponent._
-import Battleship.controller.controllerComponent.events.{GameWon, PlayerChanged, RedoTurn}
+import Battleship.controller.controllerComponent.events.{GameWon, PlayerChanged, RedoTurn, TurnAgain}
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.utils.Command
 
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
+import scala.util.{Failure, Success}
 
-class CommandIdle(input: String, controller: Controller, coordsCalculation: (Int, String) => Option[Array[mutable.Map[String, Int]]]) extends Command {
+class CommandIdle(input: String, controller: Controller, coordsCalculation: (Int, String) => Option[Vector[Map[String, Int]]]) extends Command {
 
   override def doStep(): Unit = setGuess()
 
@@ -23,41 +22,48 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Int
         val functionHelper = handleGuess(x, y) _
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
-            controller.player_02 = functionHelper(controller.player_02)
-            if (checkWinStatement(controller.player_02)) {
-              controller.changeGameState(GameState.SOLVED)
-              controller.publish(new GameWon)
-            } else {
-              controller.changePlayerState(PlayerState.PLAYER_TWO)
-              controller.publish(new PlayerChanged)
+            functionHelper(controller.player_02) match {
+              case Left(newPlayer) =>
+                controller.player_02 = newPlayer
+                if (checkWinStatement(controller.player_02)) {
+                  controller.changeGameState(GameState.SOLVED)
+                  controller.publish(new GameWon)
+                } else {
+                  controller.publish(new TurnAgain)
+                }
+              case Right(newPlayer) =>
+                controller.player_02 = newPlayer
+                controller.changePlayerState(PlayerState.PLAYER_TWO)
+                controller.publish(new PlayerChanged)
             }
           case PlayerState.PLAYER_TWO =>
-            controller.player_01 = functionHelper(controller.player_01)
-            if (checkWinStatement(controller.player_01)) {
-              controller.changeGameState(GameState.SOLVED)
-              controller.publish(new GameWon)
-            } else {
-              controller.changePlayerState(PlayerState.PLAYER_ONE)
-              controller.publish(new PlayerChanged)
+            functionHelper(controller.player_01) match {
+              case Left(newPlayer) =>
+                controller.player_01 = newPlayer
+                if (checkWinStatement(controller.player_01)) {
+                  controller.changeGameState(GameState.SOLVED)
+                  controller.publish(new GameWon)
+                } else {
+                  controller.publish(new TurnAgain)
+                }
+              case Right(newPlayer) =>
+                controller.player_01 = newPlayer
+                controller.changePlayerState(PlayerState.PLAYER_ONE)
+                controller.publish(new PlayerChanged)
             }
         }
       case None => controller.publish(new RedoTurn)
     }
   }
 
-  private def handleGuess(x: Int, y: Int)(player: InterfacePlayer): InterfacePlayer = {
-    val newPlayer = player.updateGrid(player.grid.setField(controller.gameState, Array(mutable.Map("x" -> x, "y" -> y)))._1)
-
-    val indexes = new ListBuffer[Int]
-    player.shipList.foreach(ship => indexes.addOne(ship.shipCoordinates.indexWhere(mapping => mapping.get("x").contains(x) &&
-      mapping.get("y").contains(y))))
-    for (i <- indexes.indices) {
-      if (indexes(i) != -1) {
-        val index = player.shipList.filter(ship => ship.shipCoordinates.length > indexes(i)).indexWhere(mapping => mapping.shipCoordinates(indexes(i)).get("x").contains(x) && mapping.shipCoordinates(indexes(i)).get("y").contains(y))
-        return newPlayer.updateShip(index, player.shipList(index).hit(x, y))
-      }
+  private def handleGuess(x: Int, y: Int)(player: InterfacePlayer): Either[InterfacePlayer, InterfacePlayer] = {
+    val newPlayer = player.updateGrid(player.grid.setField(controller.gameState, Vector(Map("x" -> x, "y" -> y)))._1)
+    for (ship <- newPlayer.shipList) yield ship.hit(x, y) match {
+      case Success(newShip) => return Left(newPlayer.updateShip(ship, newShip))
+      // @TODO besseres Failure handling, vllt durch neues event publishen
+      case Failure(exception) => println(exception.getMessage)
     }
-    newPlayer
+    Right(newPlayer)
   }
 
   private def checkWinStatement(player: InterfacePlayer): Boolean = !player.shipList.exists(_.status == false)

@@ -5,9 +5,7 @@ import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.shipComponent.InterfaceShip
 import com.google.inject.Inject
 
-import scala.collection.mutable.ListBuffer
-
-case class Player @Inject()(name: String, shipSetList: Map[Int, Int], shipList: ListBuffer[InterfaceShip], grid: InterfaceGrid) extends InterfacePlayer {
+case class Player @Inject()(name: String, shipSetList: Map[Int, Int], shipList: Vector[InterfaceShip], grid: InterfaceGrid) extends InterfacePlayer {
 
   override def updateName(input: String): InterfacePlayer = {
     this.copy(name = input)
@@ -18,24 +16,22 @@ case class Player @Inject()(name: String, shipSetList: Map[Int, Int], shipList: 
   }
 
   override def addShip(ship: InterfaceShip): InterfacePlayer = {
-    this.copy(shipList = shipList.addOne(ship))
+    this.copy(shipList = shipList.appended(ship))
   }
 
   override def updateShipSetList(valueIn: Int): InterfacePlayer = {
     val actualValue = shipSetList.get(valueIn)
     actualValue match {
       case Some(value) =>
-        var newVal = value
-        newVal -= 1
+        val newVal: Int = value - 1
         this.copy(shipSetList = shipSetList.updated(valueIn, newVal))
       case None =>
         this
     }
   }
 
-  override def updateShip(idx: Int, ship: InterfaceShip): InterfacePlayer = {
-    shipList.update(idx, ship)
-    this
+  override def updateShip(oldShip: InterfaceShip, ship: InterfaceShip): InterfacePlayer = {
+    this.copy(shipList = shipList.updated(0, ship))
   }
 
 }

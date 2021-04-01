@@ -21,11 +21,13 @@ class Tui(controller: InterfaceController) extends Reactor {
           printTui("guess the enemy ship <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
         case GameState.SOLVED =>
           printTui("has won ::: should not print")
+        case _ =>
       }
     case _: GridUpdated =>
       controller.gameState match {
         case GameState.SHIPSETTING =>
           printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
+        case _ =>
       }
     case _: RedoTurn =>
       controller.gameState match {
@@ -35,10 +37,18 @@ class Tui(controller: InterfaceController) extends Reactor {
           printTui("try again .. set your Ship <x y x y>\n" + gridAsString() + "left:\n" + shipSetListAsString())
         case GameState.IDLE =>
           printTui("try again <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
+        case _ =>
+      }
+    case _: TurnAgain =>
+      controller.gameState match {
+        case GameState.IDLE =>
+          printTui("that was a hit! guess again <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
+        case _ =>
       }
     case _: GameWon =>
       printTui("has won")
       println("<n> for new game <q> for end")
+    case _ =>
   }
 
   private def printTui(string: String): Unit = {

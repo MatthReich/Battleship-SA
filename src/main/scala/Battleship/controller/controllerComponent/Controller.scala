@@ -37,14 +37,14 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     }
   }
 
-  private def coordsCalculation(size: Int, input: String): Option[Array[mutable.Map[String, Int]]] = {
+  private def coordsCalculation(size: Int, input: String): Option[Vector[Map[String, Int]]] = {
     val splitInput = input.split(" ")
     if (splitInput.length == size) {
       if (Try(splitInput.map(_.toInt)).isFailure) return None
       val convertedInput = splitInput.map(_.toInt)
       size match {
-        case 2 => return Some(Array(mutable.Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
-        case 4 => if (checkShipFormat(convertedInput)) return Some(calculateCoordsArray(convertedInput))
+        case 2 => return Some(Array(mutable.Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0).toMap).toVector)
+        case 4 => if (checkShipFormat(convertedInput)) return Some(calculateCoordsArray(convertedInput).toVector)
         case _ => None
       }
     }
@@ -56,7 +56,7 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
       || (!(splitInput(0) == splitInput(2)) && !(splitInput(1) == splitInput(3))))
   }
 
-  private def calculateCoordsArray(convertedInput: Array[Int]): Array[mutable.Map[String, Int]] = {
+  private def calculateCoordsArray(convertedInput: Array[Int]): Array[Map[String, Int]] = {
     val coordsArray = new Array[mutable.Map[String, Int]](getShipSize(convertedInput, calcDiff))
     var i = 0
     for (x <- convertedInput(0) to convertedInput(2)) {
@@ -65,7 +65,8 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
         i += 1
       }
     }
-    coordsArray
+    coordsArray.map(_.toMap)
+
   }
 
   private def getShipSize(coordsShip: Array[Int], calcDiff: (Int, Int) => Int): Int = {

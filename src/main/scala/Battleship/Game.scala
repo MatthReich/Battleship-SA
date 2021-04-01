@@ -11,8 +11,6 @@ import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
 import Battleship.model.playerComponent.playerImplementation.Player
 import Battleship.model.shipComponent.InterfaceShip
 
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 import scala.swing.Reactor
 
 object Game extends Reactor {
@@ -49,8 +47,8 @@ object Game extends Reactor {
 
   private def initController(): InterfaceController = {
     new Controller(
-      Player("player_01", Map(2 -> 2, 3 -> 1, 4 -> 0), new ListBuffer[InterfaceShip], Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](0)).initGrid()),
-      Player("player_02", Map(2 -> 2, 3 -> 1, 4 -> 0), new ListBuffer[InterfaceShip], Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](1)).initGrid()),
+      Player("player_01", Map(2 -> 1, 3 -> 0, 4 -> 0), Vector[InterfaceShip](), Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()),
+      Player("player_02", Map(2 -> 1, 3 -> 0, 4 -> 0), Vector[InterfaceShip](), Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()),
       GameState.PLAYERSETTING, PlayerState.PLAYER_ONE)
   }
 
