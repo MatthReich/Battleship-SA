@@ -41,35 +41,34 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     val splitInput = input.split(" ")
     if (splitInput.length == size) {
       if (Try(splitInput.map(_.toInt)).isFailure) return None
-      val convertedInput = splitInput.map(_.toInt)
+      val convertedInput = splitInput.map(_.toInt).toVector
       size match {
-        case 2 => return Some(Array(mutable.Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0).toMap).toVector)
-        case 4 => if (checkShipFormat(convertedInput)) return Some(calculateCoordsArray(convertedInput).toVector)
+        case 2 => return Some(Vector(Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
+        case 4 => if (checkShipFormat(convertedInput)) return Some(calculateCoordsMapping(convertedInput).toVector)
         case _ => None
       }
     }
     None
   }
 
-  private def checkShipFormat(splitInput: Array[Int]): Boolean = {
+  private def checkShipFormat(splitInput: Vector[Int]): Boolean = {
     !((splitInput(0) == splitInput(2) && splitInput(1) == splitInput(3))
       || (!(splitInput(0) == splitInput(2)) && !(splitInput(1) == splitInput(3))))
   }
 
-  private def calculateCoordsArray(convertedInput: Array[Int]): Array[Map[String, Int]] = {
-    val coordsArray = new Array[mutable.Map[String, Int]](getShipSize(convertedInput, calcDiff))
+  private def calculateCoordsMapping(convertedInput: Vector[Int]): Vector[Map[String, Int]] = {
+    val coordsMapping = new Array[mutable.Map[String, Int]](getShipSize(convertedInput, calcDiff))
     var i = 0
     for (x <- convertedInput(0) to convertedInput(2)) {
       for (y <- convertedInput(1) to convertedInput(3)) {
-        coordsArray(i) = mutable.Map("x" -> x, "y" -> y, "value" -> 1)
+        coordsMapping(i) = mutable.Map("x" -> x, "y" -> y, "value" -> 1)
         i += 1
       }
     }
-    coordsArray.map(_.toMap)
-
+    coordsMapping.map(_.toMap).toVector
   }
 
-  private def getShipSize(coordsShip: Array[Int], calcDiff: (Int, Int) => Int): Int = {
+  private def getShipSize(coordsShip: Vector[Int], calcDiff: (Int, Int) => Int): Int = {
     if (coordsShip(0) == coordsShip(2)) {
       math.max(calcDiff(coordsShip(1), coordsShip(3)), calcDiff(coordsShip(3), coordsShip(1)))
     } else {
