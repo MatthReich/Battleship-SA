@@ -44,7 +44,7 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
       val convertedInput = splitInput.map(_.toInt).toVector
       size match {
         case 2 => return Some(Vector(Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
-        case 4 => if (checkShipFormat(convertedInput)) return Some(calculateCoordsMapping(convertedInput).toVector)
+        case 4 => if (checkShipFormat(convertedInput)) return Some(calculateCoordsMapping(convertedInput))
         case _ => None
       }
     }

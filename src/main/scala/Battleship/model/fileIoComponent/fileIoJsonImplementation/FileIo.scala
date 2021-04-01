@@ -24,7 +24,7 @@ class FileIo @Inject()() extends InterfaceFileIo {
   implicit val gameStateToJson: Writes[GameState] = (gameState: GameState) => Json.obj(
     "gameState" -> Json.toJson(gameState.toString)
   )
-  implicit val playerToJson: Writes[Array[InterfacePlayer]] = (player: Array[InterfacePlayer]) =>
+  implicit val playerToJson: Writes[Vector[InterfacePlayer]] = (player: Vector[InterfacePlayer]) =>
     Json.obj(
       "players" -> Json.obj(
         "name_01" -> Json.toJson(player(0).name),
@@ -64,7 +64,7 @@ class FileIo @Inject()() extends InterfaceFileIo {
   )
 
   private def getAllObj(player_01: InterfacePlayer, player_02: InterfacePlayer, gameState: GameState, playerState: PlayerState): JsValue = {
-    Json.toJson(List(playerToJson.writes(Array(player_01, player_02)), playerStateToJson.writes(playerState), gameStateToJson.writes(gameState)))
+    Json.toJson(List(playerToJson.writes(Vector(player_01, player_02)), playerStateToJson.writes(playerState), gameStateToJson.writes(gameState)))
   }
 
 }
