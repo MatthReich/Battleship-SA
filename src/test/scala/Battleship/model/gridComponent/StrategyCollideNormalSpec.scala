@@ -21,6 +21,19 @@ class StrategyCollideNormalSpec extends AnyWordSpec {
 
     val strategyNormal: InterfaceStrategyCollide = new StrategyCollideNormal
 
+    "when a three field ship will getting set" should {
+      "return indexes of three fields" in {
+        strategyNormal.collide(shipArray, grid.grid) match {
+          case Left(_) => fail("should represent that there is no collision")
+          case Right(indexes) =>
+            assert(indexes.length === 3)
+            assert(indexes(0) == 0)
+            assert(indexes(1) == 10)
+            assert(indexes(2) == 20)
+        }
+      }
+    }
+
     "a Ship is set at a position where is not a ship is set" should {
       "return right " in {
         strategyNormal.collide(shipArray, grid.grid) match {

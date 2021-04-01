@@ -24,13 +24,9 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
     }
   }
 
-  def initGrid(): InterfaceGrid = {
-    this.copy(grid = initGridRec(0, size * size, Vector[Map[String, Int]]()))
-  }
-
   private def updateGridIfIndexesAreRight(indexes: Vector[Int], gameState: GameState): (InterfaceGrid, Boolean) = {
     if (indexes.nonEmpty && !indexes.exists(_.equals(-1))) {
-      (updateGridRec(0, indexes.length, indexes, gameState, Vector[Map[String, Int]]()), true)
+      (updateGridRec(0, indexes.length, indexes, gameState, grid), true)
     } else (this, false)
   }
 
@@ -39,8 +35,12 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
     if (start == end) this.copy(grid = result)
     else {
       val newStart = start + 1
-      updateGridRec(newStart, end, indexes, gameState, grid.updated(indexes(start), newValueOfField(indexes(start), gameState)))
+      updateGridRec(newStart, end, indexes, gameState, result.updated(indexes(start), newValueOfField(indexes(start), gameState)))
     }
+  }
+
+  def initGrid(): InterfaceGrid = {
+    this.copy(grid = initGridRec(0, size * size, Vector[Map[String, Int]]()))
   }
 
   @tailrec
