@@ -52,12 +52,15 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
   private def calculateCoords(expectedLength: Int, convertedInput: Vector[Int]): Try[Vector[Map[String, Int]]] = {
     if (convertedInput.length != expectedLength) Failure(new Exception("wrong amount of arguments: expected " + expectedLength + " but got " + convertedInput.length + "!"))
     else if (expectedLength == 2) Success(Vector(Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
-    else if (checkShipFormat(convertedInput))
-      if (shipIsPlacedLeftToRight(convertedInput) || shipIsPlacedUpToDown(convertedInput)) calculateCoordsMappingRec(convertedInput(0), convertedInput(2), convertedInput(1), convertedInput(3), Vector[Map[String, Int]]())
-      else if (shipIsPlacedRightToLeft(convertedInput)) calculateCoordsMappingRec(convertedInput(0), convertedInput(2), convertedInput(3), convertedInput(1), Vector[Map[String, Int]]())
-      else if (shipIsPlacedDownToUp(convertedInput)) calculateCoordsMappingRec(convertedInput(2), convertedInput(0), convertedInput(3), convertedInput(1), Vector[Map[String, Int]]())
-      else Failure(new Exception("something strange happened to your coords .. maybe try rice"))
+    else if (checkShipFormat(convertedInput)) calculateCoordsMapping(convertedInput)
     else Failure(new Exception("coords are not in a line"))
+  }
+
+  private def calculateCoordsMapping(convertedInput: Vector[Int]): Try[Vector[Map[String, Int]]] = {
+    if (shipIsPlacedLeftToRight(convertedInput) || shipIsPlacedUpToDown(convertedInput)) calculateCoordsMappingRec(convertedInput(0), convertedInput(2), convertedInput(1), convertedInput(3), Vector[Map[String, Int]]())
+    else if (shipIsPlacedRightToLeft(convertedInput)) calculateCoordsMappingRec(convertedInput(0), convertedInput(2), convertedInput(3), convertedInput(1), Vector[Map[String, Int]]())
+    else if (shipIsPlacedDownToUp(convertedInput)) calculateCoordsMappingRec(convertedInput(2), convertedInput(0), convertedInput(3), convertedInput(1), Vector[Map[String, Int]]())
+    else Failure(new Exception("something strange happened to your coords .. maybe try rice"))
   }
 
   @tailrec
@@ -68,8 +71,8 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     else Failure(new Exception("cannot calculate coords"))
   }
 
-  private def checkShipFormat(splitInput: Vector[Int]): Boolean = {
-    !((splitInput(0) == splitInput(2) && splitInput(1) == splitInput(3)) || (!(splitInput(0) == splitInput(2)) && !(splitInput(1) == splitInput(3))))
+  private def checkShipFormat(convertedInput: Vector[Int]): Boolean = {
+    !((convertedInput(0) == convertedInput(2) && convertedInput(1) == convertedInput(3)) || (!(convertedInput(0) == convertedInput(2)) && !(convertedInput(1) == convertedInput(3))))
   }
 
   private def shipIsPlacedLeftToRight(convertedInput: Vector[Int]): Boolean = {
