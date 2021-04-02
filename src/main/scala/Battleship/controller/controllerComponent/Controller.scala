@@ -55,7 +55,8 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     else if (checkShipFormat(convertedInput))
       if (shipIsPlacedLeftToRight(convertedInput) || shipIsPlacedUpToDown(convertedInput)) calculateCoordsMappingRec(convertedInput(0), convertedInput(2), convertedInput(1), convertedInput(3), Vector[Map[String, Int]]())
       else if (shipIsPlacedRightToLeft(convertedInput)) calculateCoordsMappingRec(convertedInput(0), convertedInput(2), convertedInput(3), convertedInput(1), Vector[Map[String, Int]]())
-      else calculateCoordsMappingRec(convertedInput(2), convertedInput(0), convertedInput(3), convertedInput(1), Vector[Map[String, Int]]())
+      else if (shipIsPlacedDownToUp(convertedInput)) calculateCoordsMappingRec(convertedInput(2), convertedInput(0), convertedInput(3), convertedInput(1), Vector[Map[String, Int]]())
+      else Failure(new Exception("something strange happened to your coords .. maybe try rice"))
     else Failure(new Exception("coords are not in a line"))
   }
 
@@ -81,6 +82,10 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
 
   private def shipIsPlacedRightToLeft(convertedInput: Vector[Int]): Boolean = {
     convertedInput(0) == convertedInput(2) && convertedInput(1) > convertedInput(3)
+  }
+
+  private def shipIsPlacedDownToUp(convertedInput: Vector[Int]): Boolean = {
+    convertedInput(0) > convertedInput(2) && convertedInput(1) == convertedInput(3)
   }
 
 }
