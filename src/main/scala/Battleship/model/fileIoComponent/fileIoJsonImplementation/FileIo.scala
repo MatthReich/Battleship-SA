@@ -7,6 +7,7 @@ import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.fileIoComponent.InterfaceFileIo
 import Battleship.model.playerComponent.InterfacePlayer
+import Battleship.model.shipComponent.shipImplemenation.Ship
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Json, Writes}
 
@@ -42,8 +43,8 @@ class FileIo @Inject()() extends InterfaceFileIo {
     val json: JsValue = Json.parse(source)
     rawSource.close()
 
-    controller.player_01.updateName((json \\ "name_01").head.as[String])
-    controller.player_02.updateName((json \\ "name_02").head.as[String])
+    controller.player_01 = controller.player_01.updateName((json \\ "name_01").head.as[String])
+    controller.player_02 = controller.player_02.updateName((json \\ "name_02").head.as[String]).updateShip(Vector(Ship(3, Vector[Map[String, Int]](), false)))
 
     controller.gameState = (json \\ "gameState").head.as[String] match {
       case "PLAYERSETTING" => GameState.PLAYERSETTING

@@ -17,7 +17,11 @@ trait InterfacePlayer {
 
   def updateGrid(grid: InterfaceGrid): InterfacePlayer
 
+  def updateShipSetList(newShipSetList: Map[Int, Int]): InterfacePlayer
+
   def updateShipSetList(valueIn: Int): InterfacePlayer
+
+  def updateShip(newShipList: Vector[InterfaceShip]): InterfacePlayer
 
   def updateShip(oldShip: InterfaceShip, newShip: InterfaceShip): InterfacePlayer
 

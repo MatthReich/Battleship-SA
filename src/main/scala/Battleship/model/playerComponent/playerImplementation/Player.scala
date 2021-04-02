@@ -30,8 +30,16 @@ case class Player @Inject()(name: String, shipSetList: Map[Int, Int], shipList: 
     }
   }
 
+  def updateShipSetList(newShipSetList: Map[Int, Int]): InterfacePlayer = {
+    this.copy(shipSetList = newShipSetList)
+  }
+
   override def updateShip(oldShip: InterfaceShip, ship: InterfaceShip): InterfacePlayer = {
     this.copy(shipList = shipList.updated(shipList.indexOf(oldShip), ship))
+  }
+
+  override def updateShip(newShipList: Vector[InterfaceShip]): InterfacePlayer = {
+    this.copy(shipList = newShipList)
   }
 
 }

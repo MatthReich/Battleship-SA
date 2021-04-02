@@ -7,7 +7,12 @@ import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import scala.swing.Reactor
 
 class Tui(controller: InterfaceController) extends Reactor {
+
+  val showAllShips = true
+  val showNotAllShips = false
+
   listenTo(controller)
+
   reactions += {
     case _: GameStart =>
       println("Yeah you play the best game in the world... probably :)")
@@ -19,8 +24,6 @@ class Tui(controller: InterfaceController) extends Reactor {
           printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
         case GameState.IDLE =>
           printTui("guess the enemy ship <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
-        case GameState.SOLVED =>
-          printTui("has won ::: should not print")
         case _ =>
       }
     case _: GridUpdated =>
@@ -31,8 +34,6 @@ class Tui(controller: InterfaceController) extends Reactor {
       }
     case _: RedoTurn =>
       controller.gameState match {
-        case GameState.PLAYERSETTING =>
-          printTui("holy shit ist das game falsch gelaufen")
         case GameState.SHIPSETTING =>
           printTui("try again .. set your Ship <x y x y>\n" + gridAsString() + "left:\n" + shipSetListAsString())
         case GameState.IDLE =>
@@ -60,15 +61,15 @@ class Tui(controller: InterfaceController) extends Reactor {
 
   private def gridAsString(): String = {
     controller.playerState match {
-      case PlayerState.PLAYER_ONE => controller.player_01.grid.toString(true)
-      case PlayerState.PLAYER_TWO => controller.player_02.grid.toString(true)
+      case PlayerState.PLAYER_ONE => controller.player_01.grid.toString(showAllShips)
+      case PlayerState.PLAYER_TWO => controller.player_02.grid.toString(showAllShips)
     }
   }
 
   private def enemyGridAsString(): String = {
     controller.playerState match {
-      case PlayerState.PLAYER_ONE => controller.player_02.grid.toString(false)
-      case PlayerState.PLAYER_TWO => controller.player_01.grid.toString(false)
+      case PlayerState.PLAYER_ONE => controller.player_02.grid.toString(showNotAllShips)
+      case PlayerState.PLAYER_TWO => controller.player_01.grid.toString(showNotAllShips)
     }
   }
 
