@@ -37,8 +37,6 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     }
   }
 
-  // input to int array -> value of int in scope -> the right amount of arguments
-
   private def handleInput(input: String, state: Either[Int, Int]): Try[Vector[Map[String, Int]]] = {
     Try(input.split(" ").map(_.toInt)) match {
       case Success(convertedInput) =>
