@@ -6,16 +6,16 @@ import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.utils.Command
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
-class CommandIdle(input: String, controller: Controller, coordsCalculation: (Int, String) => Option[Vector[Map[String, Int]]]) extends Command {
+class CommandIdle(input: String, controller: Controller, coordsCalculation: (String, Either[Int, Int]) => Try[Vector[Map[String, Int]]]) extends Command {
 
   override def doStep(): Unit = setGuess()
 
   private def setGuess(): Unit = {
-    val retVal = coordsCalculation(2, input)
+    val retVal = coordsCalculation(input, Left(2))
     retVal match {
-      case Some(coords) =>
+      case Success(coords) =>
         val x = coords(0).getOrElse("x", Int.MaxValue)
         val y = coords(0).getOrElse("y", Int.MaxValue)
 
@@ -52,7 +52,9 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Int
                 controller.publish(new PlayerChanged)
             }
         }
-      case None => controller.publish(new RedoTurn)
+      case Failure(exception) =>
+        println(exception.getMessage)
+        controller.publish(new RedoTurn)
     }
   }
 

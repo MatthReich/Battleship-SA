@@ -7,14 +7,16 @@ import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.shipComponent.shipImplemenation.Ship
 import Battleship.utils.Command
 
-class CommandShipSetting(input: String, controller: Controller, coordsCalculation: (Int, String) => Option[Vector[Map[String, Int]]]) extends Command {
+import scala.util.{Failure, Success, Try}
+
+class CommandShipSetting(input: String, controller: Controller, coordsCalculation: (String, Either[Int, Int]) => Try[Vector[Map[String, Int]]]) extends Command {
 
   override def doStep(): Unit = setShip()
 
   private def setShip(): Unit = {
-    val retVal = coordsCalculation(4, input)
+    val retVal = coordsCalculation(input, Right(4))
     retVal match {
-      case Some(coords) =>
+      case Success(coords) =>
         val functionHelper = changePlayerStats(coords) _
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
@@ -40,7 +42,9 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
             }
             controller.publish(new RedoTurn)
         }
-      case None => controller.publish(new RedoTurn)
+      case Failure(exception) =>
+        println(exception.getMessage)
+        controller.publish(new RedoTurn)
     }
   }
 

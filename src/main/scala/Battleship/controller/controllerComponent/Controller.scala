@@ -13,7 +13,7 @@ import com.google.inject.Inject
 
 import scala.collection.mutable
 import scala.swing.Publisher
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class Controller @Inject()(var player_01: InterfacePlayer, var player_02: InterfacePlayer, var gameState: GameState, var playerState: PlayerState) extends InterfaceController with Publisher {
   private val undoManager = new UndoManager
@@ -32,23 +32,33 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
   override def doTurn(input: String): Unit = {
     gameState match {
       case GameState.PLAYERSETTING => undoManager.doStep(new CommandPlayerSetting(input, this))
-      case GameState.SHIPSETTING => undoManager.doStep(new CommandShipSetting(input, this, coordsCalculation))
-      case GameState.IDLE => undoManager.doStep(new CommandIdle(input, this, coordsCalculation))
+      case GameState.SHIPSETTING => undoManager.doStep(new CommandShipSetting(input, this, handleInput))
+      case GameState.IDLE => undoManager.doStep(new CommandIdle(input, this, handleInput))
     }
   }
 
-  private def coordsCalculation(size: Int, input: String): Option[Vector[Map[String, Int]]] = {
-    val splitInput = input.split(" ")
-    if (splitInput.length == size) {
-      if (Try(splitInput.map(_.toInt)).isFailure) return None
-      val convertedInput = splitInput.map(_.toInt).toVector
-      size match {
-        case 2 => return Some(Vector(Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
-        case 4 => if (checkShipFormat(convertedInput)) return Some(calculateCoordsMapping(convertedInput))
-        case _ => None
-      }
+  // input to int array -> value of int in scope -> the right amount of arguments
+
+  private def handleInput(input: String, state: Either[Int, Int]): Try[Vector[Map[String, Int]]] = {
+    Try(input.split(" ").map(_.toInt)) match {
+      case Success(convertedInput) =>
+        if (convertedInput.exists(_.>=(player_01.grid.size))) return Failure(new Exception("input is out of scope"))
+        state match {
+          case Left(value) =>
+            if (convertedInput.length == value) Success(Vector(Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
+            else Failure(new Exception("wrong amount of arguments: was " + convertedInput.length + " but expected " + value + "!"))
+          case Right(value) =>
+            if (convertedInput.length == value) calculateCoords(convertedInput.toVector)
+            else Failure(new Exception("wrong amount of arguments: was " + convertedInput.length + " but expected " + value + "!"))
+
+        }
+      case Failure(_) => Failure(new Exception("failed to convert input into ints"))
     }
-    None
+  }
+
+  private def calculateCoords(splitInput: Vector[Int]): Try[Vector[Map[String, Int]]] = {
+    if (checkShipFormat(splitInput)) Success(calculateCoordsMapping(splitInput))
+    else Failure(new Exception("coords are not in a line"))
   }
 
   private def checkShipFormat(splitInput: Vector[Int]): Boolean = {
