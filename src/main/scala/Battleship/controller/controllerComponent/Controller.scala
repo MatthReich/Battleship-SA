@@ -11,7 +11,7 @@ import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.utils.UndoManager
 import com.google.inject.Inject
 
-import scala.collection.mutable
+import scala.annotation.tailrec
 import scala.swing.Publisher
 import scala.util.{Failure, Success, Try}
 
@@ -44,18 +44,17 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
         state match {
           case Left(value) =>
             if (convertedInput.length == value) Success(Vector(Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
-            else Failure(new Exception("wrong amount of arguments: was " + convertedInput.length + " but expected " + value + "!"))
+            else Failure(new Exception(getMessage(value, convertedInput.length)))
           case Right(value) =>
             if (convertedInput.length == value) calculateCoords(convertedInput.toVector)
-            else Failure(new Exception("wrong amount of arguments: was " + convertedInput.length + " but expected " + value + "!"))
-
+            else Failure(new Exception(getMessage(value, convertedInput.length)))
         }
       case Failure(_) => Failure(new Exception("failed to convert input into ints"))
     }
   }
 
-  private def calculateCoords(splitInput: Vector[Int]): Try[Vector[Map[String, Int]]] = {
-    if (checkShipFormat(splitInput)) Success(calculateCoordsMapping(splitInput))
+  private def calculateCoords(convertedInput: Vector[Int]): Try[Vector[Map[String, Int]]] = {
+    if (checkShipFormat(convertedInput)) calculateCoordsMappingRec(convertedInput(0), convertedInput(2), convertedInput(1), convertedInput(3), Vector[Map[String, Int]]())
     else Failure(new Exception("coords are not in a line"))
   }
 
@@ -64,26 +63,16 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
       || (!(splitInput(0) == splitInput(2)) && !(splitInput(1) == splitInput(3))))
   }
 
-  private def calculateCoordsMapping(convertedInput: Vector[Int]): Vector[Map[String, Int]] = {
-    val coordsMapping = new Array[mutable.Map[String, Int]](getShipSize(convertedInput, calcDiff))
-    var i = 0
-    for (x <- convertedInput(0) to convertedInput(2)) {
-      for (y <- convertedInput(1) to convertedInput(3)) {
-        coordsMapping(i) = mutable.Map("x" -> x, "y" -> y, "value" -> 1)
-        i += 1
-      }
-    }
-    coordsMapping.map(_.toMap).toVector
+  @tailrec
+  private def calculateCoordsMappingRec(startX: Int, endX: Int, startY: Int, endY: Int, result: Vector[Map[String, Int]]): Try[Vector[Map[String, Int]]] = {
+    if (startX > endX && startY == endY || startX == endX && startY > endY) Success(result)
+    else if (startX == endX) calculateCoordsMappingRec(startX, endX, startY + 1, endY, result.appended(Map("x" -> startX, "y" -> startY, "value" -> 1))) // 3 4 3 6 -> y hoch zählen
+    else if (startY == endY) calculateCoordsMappingRec(startX + 1, endX, startY, endY, result.appended(Map("x" -> startX, "y" -> startY, "value" -> 1))) // 3 4 5 4 -> x hochzählen
+    else Failure(new Exception("cannot calculate coords"))
   }
 
-  private def getShipSize(coordsShip: Vector[Int], calcDiff: (Int, Int) => Int): Int = {
-    if (coordsShip(0) == coordsShip(2)) {
-      math.max(calcDiff(coordsShip(1), coordsShip(3)), calcDiff(coordsShip(3), coordsShip(1)))
-    } else {
-      math.max(calcDiff(coordsShip(0), coordsShip(2)), calcDiff(coordsShip(2), coordsShip(0)))
-    }
+  private def getMessage(expected: Int, got: Int): String = {
+    "wrong amount of arguments: expected " + expected + " but got " + got + "!"
   }
-
-  private def calcDiff(nr1: Int, nr2: Int): Int = nr1 - nr2 + 1
 
 }

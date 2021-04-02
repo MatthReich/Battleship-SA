@@ -80,20 +80,21 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
       }
       toStringRek(newX, newY, showAllShips, result)
     } else {
-      val tmp = grid(grid.indexWhere(mapping => mapping.get("x").contains(idx) && mapping.get("y").contains(idy))).getOrElse("value", "holy shit ist das verbuggt")
-      tmp match {
-        case this.water => result ++= Console.BLUE + "  ~  " + Console.RESET
-        case this.ship =>
-          if (showAllShips) {
-            result ++= Console.GREEN + "  x  " + Console.RESET
-          } else {
-            result ++= Console.BLUE + "  ~  " + Console.RESET
-          }
-        case this.shipHit => result ++= Console.RED + "  x  " + Console.RESET
-        case this.waterHit => result ++= Console.BLUE + "  0  " + Console.RESET
-      }
+      val fieldValue = grid(grid.indexWhere(mapping => mapping.get("x").contains(idx) && mapping.get("y").contains(idy))).getOrElse("value", Int.MaxValue)
+      result ++= getFieldValueInString(fieldValue, showAllShips)
       val newX = idx + 1
       toStringRek(newX, idy, showAllShips, result)
+    }
+  }
+
+  private def getFieldValueInString(fieldValue: Int, showAllShips: Boolean): String = {
+    fieldValue match {
+      case this.water => Console.BLUE + "  ~  " + Console.RESET
+      case this.ship =>
+        if (showAllShips) Console.GREEN + "  x  " + Console.RESET
+        else Console.BLUE + "  ~  " + Console.RESET
+      case this.shipHit => Console.RED + "  x  " + Console.RESET
+      case this.waterHit => Console.BLUE + "  0  " + Console.RESET
     }
   }
 
