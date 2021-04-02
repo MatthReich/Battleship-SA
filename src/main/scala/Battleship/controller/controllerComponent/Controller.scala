@@ -42,8 +42,8 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
       case Success(convertedInput) =>
         if (convertedInput.exists(_.>=(player_01.grid.size))) return Failure(new Exception("input is out of scope"))
         state match {
-          case Left(value) => calculateCoords(value, convertedInput.toVector)
-          case Right(value) => calculateCoords(value, convertedInput.toVector)
+          case Left(lengthOfArguments) => calculateCoords(lengthOfArguments, convertedInput.toVector)
+          case Right(lengthOfArguments) => calculateCoords(lengthOfArguments, convertedInput.toVector)
         }
       case Failure(_) => Failure(new Exception("failed to convert input into ints"))
     }
