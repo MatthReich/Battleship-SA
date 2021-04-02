@@ -34,10 +34,7 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
   @tailrec
   private def updateGridRec(start: Int, end: Int, indexes: Vector[Int], gameState: GameState, result: Vector[Map[String, Int]]): InterfaceGrid = {
     if (start == end) this.copy(grid = result)
-    else {
-      val newStart = start + 1
-      updateGridRec(newStart, end, indexes, gameState, result.updated(indexes(start), newValueOfField(indexes(start), gameState)))
-    }
+    else updateGridRec(start + 1, end, indexes, gameState, result.updated(indexes(start), newValueOfField(indexes(start), gameState)))
   }
 
   def initGrid(): InterfaceGrid = {
@@ -47,10 +44,7 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
   @tailrec
   private def initGridRec(start: Int, end: Int, result: Vector[Map[String, Int]]): Vector[Map[String, Int]] = {
     if (start == end) result
-    else {
-      val newStart = start + 1
-      initGridRec(newStart, end, result.appended(Map("x" -> start % size, "y" -> start / size, "value" -> 0)))
-    }
+    else initGridRec(start + 1, end, result.appended(Map("x" -> start % size, "y" -> start / size, "value" -> 0)))
   }
 
   private def newValueOfField(index: Int, gameState: GameState): Map[String, Int] = {
@@ -69,21 +63,19 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
 
   @tailrec
   private def toStringRek(idx: Int, idy: Int, showAllShips: Boolean, result: mutable.StringBuilder): String = {
-    if (idx == 0 && idy == 10) {
+    if (idx == 0 && idy == size) {
       result.toString()
-    } else if (idx == 10) {
-      val newX = 0
+    } else if (idx == size) {
       val newY = idy + 1
       result ++= "\n"
-      if (newY <= 9) {
+      if (newY < size) {
         result ++= newY + " "
       }
-      toStringRek(newX, newY, showAllShips, result)
+      toStringRek(0, newY, showAllShips, result)
     } else {
       val fieldValue = grid(grid.indexWhere(mapping => mapping.get("x").contains(idx) && mapping.get("y").contains(idy))).getOrElse("value", Int.MaxValue)
       result ++= getFieldValueInString(fieldValue, showAllShips)
-      val newX = idx + 1
-      toStringRek(newX, idy, showAllShips, result)
+      toStringRek(idx + 1, idy, showAllShips, result)
     }
   }
 

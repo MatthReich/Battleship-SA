@@ -42,25 +42,22 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
       case Success(convertedInput) =>
         if (convertedInput.exists(_.>=(player_01.grid.size))) return Failure(new Exception("input is out of scope"))
         state match {
-          case Left(value) =>
-            if (convertedInput.length == value) Success(Vector(Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
-            else Failure(new Exception(getMessage(value, convertedInput.length)))
-          case Right(value) =>
-            if (convertedInput.length == value) calculateCoords(convertedInput.toVector)
-            else Failure(new Exception(getMessage(value, convertedInput.length)))
+          case Left(value) => calculateCoords(value, convertedInput.toVector)
+          case Right(value) => calculateCoords(value, convertedInput.toVector)
         }
       case Failure(_) => Failure(new Exception("failed to convert input into ints"))
     }
   }
 
-  private def calculateCoords(convertedInput: Vector[Int]): Try[Vector[Map[String, Int]]] = {
-    if (checkShipFormat(convertedInput)) calculateCoordsMappingRec(convertedInput(0), convertedInput(2), convertedInput(1), convertedInput(3), Vector[Map[String, Int]]())
+  private def calculateCoords(expectedLength: Int, convertedInput: Vector[Int]): Try[Vector[Map[String, Int]]] = {
+    if (convertedInput.length != expectedLength) Failure(new Exception("wrong amount of arguments: expected " + expectedLength + " but got " + convertedInput.length + "!"))
+    else if (expectedLength == 2) Success(Vector(Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
+    else if (checkShipFormat(convertedInput)) calculateCoordsMappingRec(convertedInput(0), convertedInput(2), convertedInput(1), convertedInput(3), Vector[Map[String, Int]]())
     else Failure(new Exception("coords are not in a line"))
   }
 
   private def checkShipFormat(splitInput: Vector[Int]): Boolean = {
-    !((splitInput(0) == splitInput(2) && splitInput(1) == splitInput(3))
-      || (!(splitInput(0) == splitInput(2)) && !(splitInput(1) == splitInput(3))))
+    !((splitInput(0) == splitInput(2) && splitInput(1) == splitInput(3)) || (!(splitInput(0) == splitInput(2)) && !(splitInput(1) == splitInput(3))))
   }
 
   @tailrec
@@ -69,10 +66,6 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     else if (startX == endX) calculateCoordsMappingRec(startX, endX, startY + 1, endY, result.appended(Map("x" -> startX, "y" -> startY, "value" -> 1))) // 3 4 3 6 -> y hoch zählen
     else if (startY == endY) calculateCoordsMappingRec(startX + 1, endX, startY, endY, result.appended(Map("x" -> startX, "y" -> startY, "value" -> 1))) // 3 4 5 4 -> x hochzählen
     else Failure(new Exception("cannot calculate coords"))
-  }
-
-  private def getMessage(expected: Int, got: Int): String = {
-    "wrong amount of arguments: expected " + expected + " but got " + got + "!"
   }
 
 }
