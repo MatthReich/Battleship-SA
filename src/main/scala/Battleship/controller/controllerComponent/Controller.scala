@@ -52,20 +52,35 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
   private def calculateCoords(expectedLength: Int, convertedInput: Vector[Int]): Try[Vector[Map[String, Int]]] = {
     if (convertedInput.length != expectedLength) Failure(new Exception("wrong amount of arguments: expected " + expectedLength + " but got " + convertedInput.length + "!"))
     else if (expectedLength == 2) Success(Vector(Map("x" -> convertedInput(0), "y" -> convertedInput(1), "value" -> 0)))
-    else if (checkShipFormat(convertedInput)) calculateCoordsMappingRec(convertedInput(0), convertedInput(2), convertedInput(1), convertedInput(3), Vector[Map[String, Int]]())
+    else if (checkShipFormat(convertedInput))
+      if (shipIsPlacedLeftToRight(convertedInput) || shipIsPlacedUpToDown(convertedInput)) calculateCoordsMappingRec(convertedInput(0), convertedInput(2), convertedInput(1), convertedInput(3), Vector[Map[String, Int]]())
+      else if (shipIsPlacedRightToLeft(convertedInput)) calculateCoordsMappingRec(convertedInput(0), convertedInput(2), convertedInput(3), convertedInput(1), Vector[Map[String, Int]]())
+      else calculateCoordsMappingRec(convertedInput(2), convertedInput(0), convertedInput(3), convertedInput(1), Vector[Map[String, Int]]())
     else Failure(new Exception("coords are not in a line"))
+  }
+
+  @tailrec
+  private def calculateCoordsMappingRec(startX: Int, endX: Int, startY: Int, endY: Int, result: Vector[Map[String, Int]]): Try[Vector[Map[String, Int]]] = {
+    if (startX > endX && startY == endY || startX == endX && startY > endY) Success(result)
+    else if (startX == endX) calculateCoordsMappingRec(startX, endX, startY + 1, endY, result.appended(Map("x" -> startX, "y" -> startY, "value" -> 1)))
+    else if (startY == endY) calculateCoordsMappingRec(startX + 1, endX, startY, endY, result.appended(Map("x" -> startX, "y" -> startY, "value" -> 1)))
+    else Failure(new Exception("cannot calculate coords"))
   }
 
   private def checkShipFormat(splitInput: Vector[Int]): Boolean = {
     !((splitInput(0) == splitInput(2) && splitInput(1) == splitInput(3)) || (!(splitInput(0) == splitInput(2)) && !(splitInput(1) == splitInput(3))))
   }
 
-  @tailrec
-  private def calculateCoordsMappingRec(startX: Int, endX: Int, startY: Int, endY: Int, result: Vector[Map[String, Int]]): Try[Vector[Map[String, Int]]] = {
-    if (startX > endX && startY == endY || startX == endX && startY > endY) Success(result)
-    else if (startX == endX) calculateCoordsMappingRec(startX, endX, startY + 1, endY, result.appended(Map("x" -> startX, "y" -> startY, "value" -> 1))) // 3 4 3 6 -> y hoch zählen
-    else if (startY == endY) calculateCoordsMappingRec(startX + 1, endX, startY, endY, result.appended(Map("x" -> startX, "y" -> startY, "value" -> 1))) // 3 4 5 4 -> x hochzählen
-    else Failure(new Exception("cannot calculate coords"))
+  private def shipIsPlacedLeftToRight(convertedInput: Vector[Int]): Boolean = {
+    convertedInput(0) == convertedInput(2) && convertedInput(1) < convertedInput(3)
+  }
+
+  private def shipIsPlacedUpToDown(convertedInput: Vector[Int]): Boolean = {
+    convertedInput(0) < convertedInput(2) && convertedInput(1) == convertedInput(3)
+  }
+
+  private def shipIsPlacedRightToLeft(convertedInput: Vector[Int]): Boolean = {
+    convertedInput(0) == convertedInput(2) && convertedInput(1) > convertedInput(3)
   }
 
 }
