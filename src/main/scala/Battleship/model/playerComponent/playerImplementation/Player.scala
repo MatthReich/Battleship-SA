@@ -20,14 +20,13 @@ case class Player @Inject()(name: String, shipSetList: Map[Int, Int], shipList: 
   }
 
   override def updateShipSetList(valueIn: Int): InterfacePlayer = {
-    val actualValue = shipSetList.get(valueIn)
-    actualValue match {
+    shipSetList.get(valueIn) match {
       case Some(value) => this.copy(shipSetList = shipSetList.updated(valueIn, value - 1))
       case None => this
     }
   }
 
-  def updateShipSetList(newShipSetList: Map[Int, Int]): InterfacePlayer = {
+  override def updateShipSetList(newShipSetList: Map[Int, Int]): InterfacePlayer = {
     this.copy(shipSetList = newShipSetList)
   }
 
