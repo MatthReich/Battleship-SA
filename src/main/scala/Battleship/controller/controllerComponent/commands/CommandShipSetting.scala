@@ -57,7 +57,7 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
   }
 
   private def shipSettingFinished(player: InterfacePlayer): Boolean = {
-    player.shipSetList.getOrElse(2, Int.MaxValue) == 0 && player.shipSetList.getOrElse(3, Int.MaxValue) == 0 && player.shipSetList.getOrElse(4, Int.MaxValue) == 0
+    !player.shipSetList.exists(_._2 != 0)
   }
 
   private def shipSettingAllowsNewShip(coordsLength: Int, player: InterfacePlayer): Boolean = {
