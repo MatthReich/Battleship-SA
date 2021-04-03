@@ -17,7 +17,6 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
   private val shipHit: Int = 3
 
   override def setField(gameState: GameState, fields: Vector[Map[String, Int]]): Try[InterfaceGrid] = {
-    if (fields.exists(mapping => mapping.getOrElse("x", Int.MaxValue) > 9 || mapping.getOrElse("y", Int.MaxValue) > 9)) return Failure(new Exception("input is out of scope"))
     strategyCollide.collide(fields, grid) match {
       case Left(indexes) =>
         if (gameState == GameState.SHIPSETTING) Failure(new Exception("there is already a ship placed"))
@@ -27,9 +26,9 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
   }
 
   private def updateGridIfIndexesAreRight(indexes: Vector[Int], gameState: GameState): Try[InterfaceGrid] = {
-    if (indexes.nonEmpty && !indexes.exists(_.equals(-1))) {
+    if (indexes.nonEmpty && !indexes.exists(_.equals(-1)))
       Success(updateGridRec(0, indexes.length, indexes, gameState, grid))
-    } else Failure(new Exception("unexpected error"))
+    else Failure(new Exception("input is out of scope"))
   }
 
   @tailrec
