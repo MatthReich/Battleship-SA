@@ -13,8 +13,7 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
   override def doStep(): Unit = setGuess()
 
   private def setGuess(): Unit = {
-    val retVal = coordsCalculation(input, Left(2))
-    retVal match {
+    coordsCalculation(input, Left(2)) match {
       case Success(coords) =>
         val x = coords(0).getOrElse("x", Int.MaxValue)
         val y = coords(0).getOrElse("y", Int.MaxValue)
@@ -27,12 +26,7 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
               case Success(way) => way match {
                 case Left(newPlayer) =>
                   controller.player_02 = newPlayer
-                  if (checkWinStatement(controller.player_02)) {
-                    controller.changeGameState(GameState.SOLVED)
-                    controller.publish(new GameWon)
-                  } else {
-                    controller.publish(new TurnAgain)
-                  }
+                  handleNewGameSituationAndEndGameIfFinished(controller.player_02)
                 case Right(newPlayer) =>
                   controller.player_02 = newPlayer
                   controller.changePlayerState(PlayerState.PLAYER_TWO)
@@ -44,12 +38,7 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
               case Success(way) => way match {
                 case Left(newPlayer) =>
                   controller.player_01 = newPlayer
-                  if (checkWinStatement(controller.player_01)) {
-                    controller.changeGameState(GameState.SOLVED)
-                    controller.publish(new GameWon)
-                  } else {
-                    controller.publish(new TurnAgain)
-                  }
+                  handleNewGameSituationAndEndGameIfFinished(controller.player_01)
                 case Right(newPlayer) =>
                   controller.player_01 = newPlayer
                   controller.changePlayerState(PlayerState.PLAYER_ONE)
@@ -58,8 +47,7 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
               case Failure(exception) => println(exception.getMessage)
             }
         }
-      case Failure(exception) =>
-        println(exception.getMessage)
+      case Failure(exception) => println(exception.getMessage)
         controller.publish(new RedoTurn)
     }
   }
@@ -78,7 +66,16 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
 
   }
 
-  private def checkWinStatement(player: InterfacePlayer): Boolean = !player.shipList.exists(_.status == false)
+  private def handleNewGameSituationAndEndGameIfFinished(player: InterfacePlayer): Unit = {
+    if (gameIsWonOf(player)) {
+      controller.changeGameState(GameState.SOLVED)
+      controller.publish(new GameWon)
+    } else {
+      controller.publish(new TurnAgain)
+    }
+  }
+
+  private def gameIsWonOf(player: InterfacePlayer): Boolean = !player.shipList.exists(_.status == false)
 
   override def undoStep(): Unit = {
 

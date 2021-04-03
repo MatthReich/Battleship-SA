@@ -16,8 +16,7 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
   override def doStep(): Unit = setShip()
 
   private def setShip(): Unit = {
-    val retVal = coordsCalculation(input, Right(4))
-    retVal match {
+    coordsCalculation(input, Right(4)) match {
       case Success(coords) =>
         val functionHelper = changePlayerStats(coords) _
         controller.playerState match {
@@ -42,8 +41,7 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
             }
             controller.publish(new RedoTurn)
         }
-      case Failure(exception) =>
-        println(exception.getMessage)
+      case Failure(exception) => println(exception.getMessage)
         controller.publish(new RedoTurn)
     }
   }
