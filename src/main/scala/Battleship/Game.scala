@@ -4,7 +4,7 @@ import Battleship.aview.gui.StartGui
 import Battleship.aview.tui.Tui
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent._
-import Battleship.controller.controllerComponent.events.{GameStart, NewGameGui, PlayerChanged}
+import Battleship.controller.controllerComponent.events.{GameStart, NewGameView, PlayerChanged}
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
@@ -30,7 +30,7 @@ object Game extends Reactor {
     listenTo(controller)
 
     reactions += {
-      case _: NewGameGui => initNewGame()
+      case _: NewGameView => initNewGame()
     }
 
     do {

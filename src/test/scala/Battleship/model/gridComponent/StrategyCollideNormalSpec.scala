@@ -5,6 +5,8 @@ import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
 import org.scalatest.wordspec.AnyWordSpec
 
+import scala.util.{Failure, Success}
+
 class StrategyCollideNormalSpec extends AnyWordSpec {
 
   val size: Int = 10
@@ -49,10 +51,10 @@ class StrategyCollideNormalSpec extends AnyWordSpec {
 
     "a Ship is set at a position where is already a ship is set" should {
       "return left" in {
-        println(grid.toString(true))
-        grid = grid.setField(shipSet, Vector(Map("x" -> 0, "y" -> 0)))._1
-        grid = grid.setField(shipSet, Vector(Map("x" -> 0, "y" -> 1)))._1
-        println(grid.toString(true))
+        grid.setField(shipSet, Vector(Map("x" -> 0, "y" -> 0), Map("x" -> 0, "y" -> 1))) match {
+          case Failure(_) => fail("grid is not working!")
+          case Success(newGrid) => grid = newGrid
+        }
 
         strategyNormal.collide(shipArray, grid.grid) match {
           case Left(indexes) =>

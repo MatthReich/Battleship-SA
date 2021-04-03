@@ -121,7 +121,7 @@ class Gui(controller: InterfaceController) extends Frame {
     if (retVal == Dialog.Result.No) sys.exit(0)
     else if (retVal == Dialog.Result.Yes) {
       this.visible = false
-      controller.publish(new NewGameGui)
+      controller.publish(new NewGameView)
     }
   }
 

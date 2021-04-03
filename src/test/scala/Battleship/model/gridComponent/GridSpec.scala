@@ -6,6 +6,7 @@ import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
 import org.scalatest.wordspec.AnyWordSpec
 
 import scala.collection.mutable
+import scala.util.{Failure, Success}
 
 class GridSpec extends AnyWordSpec {
 
@@ -45,43 +46,56 @@ class GridSpec extends AnyWordSpec {
     }
 
     "ship get set" should {
-      "change grid values" in {
-        val retVal = grid.setField(shipSet, shipArray)
-        grid = retVal._1
+      "do an success and change grid values" in {
+        grid.setField(shipSet, shipArray) match {
+          case Failure(_) => fail("failed to set fields but should do it")
+          case Success(newGrid) => grid = newGrid
+        }
 
-        assert(retVal._2 === true)
         assert(grid.grid(0) === mutable.Map("x" -> 0, "y" -> 0, "value" -> 1))
         assert(grid.grid(10) === mutable.Map("x" -> 0, "y" -> 1, "value" -> 1))
         assert(grid.grid(20) === mutable.Map("x" -> 0, "y" -> 2, "value" -> 1))
       }
       "not work with coordinates already exists" in {
-        assert(grid.setField(shipSet, shipArray)._2 === false)
+        assert(grid.setField(shipSet, shipArray).isFailure)
       }
       "not work with coordinates doesnt exists" in {
-        assert(grid.setField(idle, shipArrayFalse)._2 === false)
+        assert(grid.setField(idle, shipArrayFalse).isFailure)
       }
     }
 
     "a ship gets hit" should {
       "change grid values" in {
-        val retVal = grid.setField(idle, Vector(Map("x" -> 0, "y" -> 0)))
-        grid = retVal._1
-
-        assert(retVal._2 === true)
+        grid.setField(idle, Vector(Map("x" -> 0, "y" -> 0))) match {
+          case Failure(_) => fail("failed to set fields but should do it")
+          case Success(newGrid) => grid = newGrid
+        }
         assert(grid.grid(0) === mutable.Map("x" -> 0, "y" -> 0, "value" -> 3))
       }
     }
 
     "water gets hit" should {
       "change value to water" in {
-        val retVal = grid.setField(idle, Vector(Map("x" -> 9, "y" -> 9)))
-        grid = retVal._1
-
-        assert(retVal._2 === true)
+        grid.setField(idle, Vector(Map("x" -> 9, "y" -> 9))) match {
+          case Failure(_) => fail("failed to set field but should do it")
+          case Success(newGrid) => grid = newGrid
+        }
         assert(grid.grid(99) === Map("x" -> 9, "y" -> 9, "value" -> 2))
       }
     }
 
-  }
+    "toString" should {
+      "build a new grid" in {
+        assert(grid.toString(true).contains("0"))
+      }
+      "build a grid with true where all ships can be seen" in {
+        assert(grid.toString(true).contains("0"))
+      }
+      "build a grid with false where not the ships can be seen" in {
+        assert(grid.toString(false).contains("0"))
 
+      }
+    }
+
+  }
 }

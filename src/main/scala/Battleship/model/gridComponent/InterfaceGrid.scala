@@ -2,6 +2,8 @@ package Battleship.model.gridComponent
 
 import Battleship.controller.controllerComponent.states.GameState.GameState
 
+import scala.util.Try
+
 trait InterfaceGrid {
 
   def size: Int
@@ -10,7 +12,7 @@ trait InterfaceGrid {
 
   def grid: Vector[Map[String, Int]]
 
-  def setField(gameStatus: GameState, fields: Vector[Map[String, Int]]): (InterfaceGrid, Boolean)
+  def setField(gameStatus: GameState, fields: Vector[Map[String, Int]]): Try[InterfaceGrid]
 
   def toString(showAllShips: Boolean): String
 

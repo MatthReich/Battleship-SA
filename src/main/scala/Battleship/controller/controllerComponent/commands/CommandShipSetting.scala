@@ -11,6 +11,8 @@ import scala.util.{Failure, Success, Try}
 
 class CommandShipSetting(input: String, controller: Controller, coordsCalculation: (String, Either[Int, Int]) => Try[Vector[Map[String, Int]]]) extends Command {
 
+  val shipNotSunk = false
+
   override def doStep(): Unit = setShip()
 
   private def setShip(): Unit = {
@@ -20,25 +22,23 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
         val functionHelper = changePlayerStats(coords) _
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
-            if (shipSettingAllowsNewShip(coords.length, controller.player_01)) {
-              val retVal = functionHelper(controller.player_01)
-              controller.player_01 = retVal._1
-              if (retVal._2) {
+            functionHelper(controller.player_01) match {
+              case Left(value) =>
+                controller.player_01 = value
                 controller.player_01 = controller.player_01.updateShipSetList(coords.length)
                 handleShipSetFinishing(controller.player_01, PlayerState.PLAYER_TWO, GameState.SHIPSETTING)
                 return
-              }
+              case Right(exception) => println(exception.getMessage)
             }
             controller.publish(new RedoTurn)
           case PlayerState.PLAYER_TWO =>
-            if (shipSettingAllowsNewShip(coords.length, controller.player_02)) {
-              val retVal = functionHelper(controller.player_02)
-              controller.player_02 = retVal._1
-              if (retVal._2) {
+            functionHelper(controller.player_02) match {
+              case Left(value) =>
+                controller.player_02 = value
                 controller.player_02 = controller.player_02.updateShipSetList(coords.length)
                 handleShipSetFinishing(controller.player_02, PlayerState.PLAYER_ONE, GameState.IDLE)
                 return
-              }
+              case Right(exception) => println(exception.getMessage)
             }
             controller.publish(new RedoTurn)
         }
@@ -66,16 +66,13 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
     player.shipSetList.getOrElse(coordsLength, Int.MinValue) > 0
   }
 
-  private def changePlayerStats(coords: Vector[Map[String, Int]])(player: InterfacePlayer): (InterfacePlayer, Boolean) = {
-    val retVal = player.grid.setField(controller.gameState, coords)
-    val updatedGrid = retVal._1
-    val success = retVal._2
-    if (success) {
-      val shipNotSunk = false
-      val ship = Ship(coords.length, coords, shipNotSunk)
-      (player.addShip(ship).updateGrid(updatedGrid), true)
-    } else {
-      (player, false)
+  private def changePlayerStats(coords: Vector[Map[String, Int]])(player: InterfacePlayer): Either[InterfacePlayer, Throwable] = {
+    if (!shipSettingAllowsNewShip(coords.length, player)) return Right(new Exception("no more ships of this length can be placed"))
+    player.grid.setField(controller.gameState, coords) match {
+      case Failure(exception) => Right(exception)
+      case Success(updatedGrid) =>
+        val ship = Ship(coords.length, coords, shipNotSunk)
+        Left(player.addShip(ship).updateGrid(updatedGrid))
     }
   }
 

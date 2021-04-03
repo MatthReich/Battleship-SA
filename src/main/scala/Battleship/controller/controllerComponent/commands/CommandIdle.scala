@@ -23,33 +23,39 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
             functionHelper(controller.player_02) match {
-              case Left(newPlayer) =>
-                controller.player_02 = newPlayer
-                if (checkWinStatement(controller.player_02)) {
-                  controller.changeGameState(GameState.SOLVED)
-                  controller.publish(new GameWon)
-                } else {
-                  controller.publish(new TurnAgain)
-                }
-              case Right(newPlayer) =>
-                controller.player_02 = newPlayer
-                controller.changePlayerState(PlayerState.PLAYER_TWO)
-                controller.publish(new PlayerChanged)
+              case Failure(exception) => println(exception.getMessage)
+              case Success(way) => way match {
+                case Left(newPlayer) =>
+                  controller.player_02 = newPlayer
+                  if (checkWinStatement(controller.player_02)) {
+                    controller.changeGameState(GameState.SOLVED)
+                    controller.publish(new GameWon)
+                  } else {
+                    controller.publish(new TurnAgain)
+                  }
+                case Right(newPlayer) =>
+                  controller.player_02 = newPlayer
+                  controller.changePlayerState(PlayerState.PLAYER_TWO)
+                  controller.publish(new PlayerChanged)
+              }
             }
           case PlayerState.PLAYER_TWO =>
             functionHelper(controller.player_01) match {
-              case Left(newPlayer) =>
-                controller.player_01 = newPlayer
-                if (checkWinStatement(controller.player_01)) {
-                  controller.changeGameState(GameState.SOLVED)
-                  controller.publish(new GameWon)
-                } else {
-                  controller.publish(new TurnAgain)
-                }
-              case Right(newPlayer) =>
-                controller.player_01 = newPlayer
-                controller.changePlayerState(PlayerState.PLAYER_ONE)
-                controller.publish(new PlayerChanged)
+              case Success(way) => way match {
+                case Left(newPlayer) =>
+                  controller.player_01 = newPlayer
+                  if (checkWinStatement(controller.player_01)) {
+                    controller.changeGameState(GameState.SOLVED)
+                    controller.publish(new GameWon)
+                  } else {
+                    controller.publish(new TurnAgain)
+                  }
+                case Right(newPlayer) =>
+                  controller.player_01 = newPlayer
+                  controller.changePlayerState(PlayerState.PLAYER_ONE)
+                  controller.publish(new PlayerChanged)
+              }
+              case Failure(exception) => println(exception.getMessage)
             }
         }
       case Failure(exception) =>
@@ -58,14 +64,18 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
     }
   }
 
-  private def handleGuess(x: Int, y: Int)(player: InterfacePlayer): Either[InterfacePlayer, InterfacePlayer] = {
-    val newPlayer = player.updateGrid(player.grid.setField(controller.gameState, Vector(Map("x" -> x, "y" -> y)))._1)
-    for (ship <- newPlayer.shipList) yield ship.hit(x, y) match {
-      case Success(newShip) => return Left(newPlayer.updateShip(ship, newShip))
-      // @TODO besseres Failure handling, vllt durch neues event publishen
-      case Failure(exception) => println(exception.getMessage)
+  private def handleGuess(x: Int, y: Int)(player: InterfacePlayer): Try[Either[InterfacePlayer, InterfacePlayer]] = {
+    player.grid.setField(controller.gameState, Vector(Map("x" -> x, "y" -> y))) match {
+      case Success(value) =>
+        val newPlayer = player.updateGrid(value)
+        for (ship <- newPlayer.shipList) yield ship.hit(x, y) match {
+          case Success(newShip) => return Success(Left(newPlayer.updateShip(ship, newShip)))
+          case Failure(_) =>
+        }
+        Success(Right(newPlayer))
+      case Failure(exception) => Failure(exception)
     }
-    Right(newPlayer)
+
   }
 
   private def checkWinStatement(player: InterfacePlayer): Boolean = !player.shipList.exists(_.status == false)
