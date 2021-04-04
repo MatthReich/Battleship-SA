@@ -22,7 +22,6 @@ object Game extends Reactor {
 
 
   def main(args: Array[String]): Unit = {
-    var input: String = ""
 
     controller.publish(new GameStart)
     controller.publish(new PlayerChanged)
@@ -34,16 +33,9 @@ object Game extends Reactor {
     }
 
     do {
-
-      input = scala.io.StdIn.readLine()
-      if (input == "q") System.exit(0)
-      else if (input == "n") initNewGame()
-      else if (input == "s") controller.save()
-      else if (input == "l") controller.load()
-      else if (input == "r") controller.redoTurn()
-      else controller.doTurn(input)
-
+      tui.tuiProcessLine(scala.io.StdIn.readLine())
     } while (true)
+
   }
 
   private def initNewGame(): Unit = {

@@ -52,6 +52,15 @@ class Tui(controller: InterfaceController) extends Reactor {
     case _ =>
   }
 
+  def tuiProcessLine(input: String): Unit = {
+    if (input == "q") System.exit(0)
+    else if (input == "n") controller.publish(new NewGameView)
+    else if (input == "s") controller.save()
+    else if (input == "l") controller.load()
+    else if (input == "r") controller.redoTurn()
+    else controller.doTurn(input)
+  }
+
   private def printTui(string: String): Unit = {
     controller.playerState match {
       case PlayerState.PLAYER_ONE => println(Console.MAGENTA + controller.player_01.name + Console.RESET + " " + string)
