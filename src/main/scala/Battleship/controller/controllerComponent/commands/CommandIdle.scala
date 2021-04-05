@@ -28,7 +28,21 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
     }
   }
 
-  private def handleFieldSetting(tryWay: Try[Either[InterfacePlayer, InterfacePlayer]], state: PlayerState.Value) = {
+  private def handleGuess(x: Int, y: Int)(player: InterfacePlayer): Try[Either[InterfacePlayer, InterfacePlayer]] = {
+    player.grid.setField(controller.gameState, Vector(Map("x" -> x, "y" -> y))) match {
+      case Success(value) =>
+        val newPlayer = player.updateGrid(value)
+        for (ship <- newPlayer.shipList) yield ship.hit(x, y) match {
+          case Success(newShip) => return Success(Left(newPlayer.updateShip(ship, newShip)))
+          case Failure(_) =>
+        }
+        Success(Right(newPlayer))
+      case Failure(exception) => Failure(exception)
+    }
+
+  }
+
+  private def handleFieldSetting(tryWay: Try[Either[InterfacePlayer, InterfacePlayer]], state: PlayerState.Value): Unit = {
     tryWay match {
       case Success(way) => way match {
         case Left(newPlayer) =>
@@ -52,20 +66,6 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
       }
       case Failure(exception) => println(exception.getMessage)
     }
-  }
-
-  private def handleGuess(x: Int, y: Int)(player: InterfacePlayer): Try[Either[InterfacePlayer, InterfacePlayer]] = {
-    player.grid.setField(controller.gameState, Vector(Map("x" -> x, "y" -> y))) match {
-      case Success(value) =>
-        val newPlayer = player.updateGrid(value)
-        for (ship <- newPlayer.shipList) yield ship.hit(x, y) match {
-          case Success(newShip) => return Success(Left(newPlayer.updateShip(ship, newShip)))
-          case Failure(_) =>
-        }
-        Success(Right(newPlayer))
-      case Failure(exception) => Failure(exception)
-    }
-
   }
 
   private def handleNewGameSituationAndEndGameIfFinished(player: InterfacePlayer): Unit = {
