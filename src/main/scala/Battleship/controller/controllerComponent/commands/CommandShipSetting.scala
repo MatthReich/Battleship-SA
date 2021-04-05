@@ -13,35 +13,44 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
 
   val shipNotSunk = false
 
-  override def doStep(): Unit = setShip()
-
-  private def setShip(): Unit = {
+  override def doStep(): Unit = {
     coordsCalculation(input, Right(4)) match {
       case Success(coords) =>
         val functionHelper = changePlayerStats(coords) _
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
-            functionHelper(controller.player_01) match {
-              case Left(value) =>
-                controller.player_01 = value
-                controller.player_01 = controller.player_01.updateShipSetList(coords.length)
-                handleShipSetFinishing(controller.player_01, PlayerState.PLAYER_TWO, GameState.SHIPSETTING)
-                return
-              case Right(exception) => println(exception.getMessage)
-            }
-            controller.publish(new RedoTurn)
+            handleFieldSetting(functionHelper(controller.player_01), PlayerState.PLAYER_ONE, coords.length)
           case PlayerState.PLAYER_TWO =>
-            functionHelper(controller.player_02) match {
-              case Left(value) =>
-                controller.player_02 = value
-                controller.player_02 = controller.player_02.updateShipSetList(coords.length)
-                handleShipSetFinishing(controller.player_02, PlayerState.PLAYER_ONE, GameState.IDLE)
-                return
-              case Right(exception) => println(exception.getMessage)
-            }
-            controller.publish(new RedoTurn)
+            handleFieldSetting(functionHelper(controller.player_02), PlayerState.PLAYER_TWO, coords.length)
         }
       case Failure(exception) => println(exception.getMessage)
+        controller.publish(new RedoTurn)
+    }
+  }
+
+  private def changePlayerStats(coords: Vector[Map[String, Int]])(player: InterfacePlayer): Either[InterfacePlayer, Throwable] = {
+    if (!shipSettingAllowsNewShip(coords.length, player)) return Right(new Exception("no more ships of this length can be placed"))
+    player.grid.setField(controller.gameState, coords) match {
+      case Failure(exception) => Right(exception)
+      case Success(updatedGrid) =>
+        val ship = Ship(coords.length, coords, shipNotSunk)
+        Left(player.addShip(ship).updateGrid(updatedGrid))
+    }
+  }
+
+  private def handleFieldSetting(way: Either[InterfacePlayer, Throwable], state: PlayerState.Value, shipLength: Int) = {
+    way match {
+      case Left(value) =>
+        if (state == PlayerState.PLAYER_ONE) {
+          controller.player_01 = value
+          controller.player_01 = controller.player_01.updateShipSetList(shipLength)
+          handleShipSetFinishing(controller.player_01, PlayerState.PLAYER_TWO, GameState.SHIPSETTING)
+        } else {
+          controller.player_02 = value
+          controller.player_02 = controller.player_02.updateShipSetList(shipLength)
+          handleShipSetFinishing(controller.player_02, PlayerState.PLAYER_ONE, GameState.IDLE)
+        }
+      case Right(exception) => println(exception.getMessage)
         controller.publish(new RedoTurn)
     }
   }
@@ -62,16 +71,6 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
 
   private def shipSettingAllowsNewShip(coordsLength: Int, player: InterfacePlayer): Boolean = {
     player.shipSetList.getOrElse(coordsLength, Int.MinValue) > 0
-  }
-
-  private def changePlayerStats(coords: Vector[Map[String, Int]])(player: InterfacePlayer): Either[InterfacePlayer, Throwable] = {
-    if (!shipSettingAllowsNewShip(coords.length, player)) return Right(new Exception("no more ships of this length can be placed"))
-    player.grid.setField(controller.gameState, coords) match {
-      case Failure(exception) => Right(exception)
-      case Success(updatedGrid) =>
-        val ship = Ship(coords.length, coords, shipNotSunk)
-        Left(player.addShip(ship).updateGrid(updatedGrid))
-    }
   }
 
   override def undoStep(): Unit = {}
