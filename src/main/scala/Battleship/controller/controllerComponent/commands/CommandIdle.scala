@@ -10,9 +10,7 @@ import scala.util.{Failure, Success, Try}
 
 class CommandIdle(input: String, controller: Controller, coordsCalculation: (String, Either[Int, Int]) => Try[Vector[Map[String, Int]]]) extends Command {
 
-  override def doStep(): Unit = setGuess()
-
-  private def setGuess(): Unit = {
+  override def doStep(): Unit = {
     coordsCalculation(input, Left(2)) match {
       case Success(coords) =>
         val x = coords(0).getOrElse("x", Int.MaxValue)
@@ -21,34 +19,38 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
         val functionHelper = handleGuess(x, y) _
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
-            functionHelper(controller.player_02) match {
-              case Failure(exception) => println(exception.getMessage)
-              case Success(way) => way match {
-                case Left(newPlayer) =>
-                  controller.player_02 = newPlayer
-                  handleNewGameSituationAndEndGameIfFinished(controller.player_02)
-                case Right(newPlayer) =>
-                  controller.player_02 = newPlayer
-                  controller.changePlayerState(PlayerState.PLAYER_TWO)
-                  controller.publish(new PlayerChanged)
-              }
-            }
+            handleFieldSetting(functionHelper(controller.player_02), PlayerState.PLAYER_ONE)
           case PlayerState.PLAYER_TWO =>
-            functionHelper(controller.player_01) match {
-              case Success(way) => way match {
-                case Left(newPlayer) =>
-                  controller.player_01 = newPlayer
-                  handleNewGameSituationAndEndGameIfFinished(controller.player_01)
-                case Right(newPlayer) =>
-                  controller.player_01 = newPlayer
-                  controller.changePlayerState(PlayerState.PLAYER_ONE)
-                  controller.publish(new PlayerChanged)
-              }
-              case Failure(exception) => println(exception.getMessage)
-            }
+            handleFieldSetting(functionHelper(controller.player_01), PlayerState.PLAYER_TWO)
         }
       case Failure(exception) => println(exception.getMessage)
         controller.publish(new RedoTurn)
+    }
+  }
+
+  private def handleFieldSetting(tryWay: Try[Either[InterfacePlayer, InterfacePlayer]], state: PlayerState.Value) = {
+    tryWay match {
+      case Success(way) => way match {
+        case Left(newPlayer) =>
+          if (state == PlayerState.PLAYER_ONE) {
+            controller.player_02 = newPlayer
+            handleNewGameSituationAndEndGameIfFinished(controller.player_02)
+          } else {
+            controller.player_01 = newPlayer
+            handleNewGameSituationAndEndGameIfFinished(controller.player_01)
+          }
+        case Right(newPlayer) =>
+          if (state == PlayerState.PLAYER_ONE) {
+            controller.player_02 = newPlayer
+            controller.changePlayerState(PlayerState.PLAYER_TWO)
+            controller.publish(new PlayerChanged)
+          } else {
+            controller.player_01 = newPlayer
+            controller.changePlayerState(PlayerState.PLAYER_ONE)
+            controller.publish(new PlayerChanged)
+          }
+      }
+      case Failure(exception) => println(exception.getMessage)
     }
   }
 
