@@ -1,15 +1,15 @@
 package Battleship.controller.controllerComponent
 
+import Battleship.config.GameModule
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.commands.{CommandIdle, CommandPlayerSetting, CommandShipSetting}
 import Battleship.controller.controllerComponent.states.GameState
 import Battleship.controller.controllerComponent.states.GameState.GameState
 import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 import Battleship.model.fileIoComponent.InterfaceFileIo
-import Battleship.model.fileIoComponent.fileIoJsonImplementation.FileIo
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.utils.UndoManager
-import com.google.inject.Inject
+import com.google.inject.{Guice, Inject, Injector}
 
 import scala.annotation.tailrec
 import scala.swing.Publisher
@@ -17,7 +17,8 @@ import scala.util.{Failure, Success, Try}
 
 class Controller @Inject()(var player_01: InterfacePlayer, var player_02: InterfacePlayer, var gameState: GameState, var playerState: PlayerState) extends InterfaceController with Publisher {
   private val undoManager = new UndoManager
-  private val fileIo: InterfaceFileIo = new FileIo()
+  private val injector: Injector = Guice.createInjector(new GameModule)
+  private val fileIo: InterfaceFileIo = injector.getInstance(classOf[InterfaceFileIo])
 
   override def changeGameState(gameState: GameState): Unit = this.gameState = gameState
 
