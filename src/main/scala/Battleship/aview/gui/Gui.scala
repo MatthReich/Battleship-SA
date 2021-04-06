@@ -32,13 +32,14 @@ class Gui(controller: InterfaceController) extends Frame {
       }
     case _: RedoTurn =>
       controller.gameState match {
-        case GameState.SHIPSETTING => redoTurnAlert()
-        case GameState.IDLE => redoTurnAlert()
+        case GameState.SHIPSETTING =>
+        case GameState.IDLE =>
       }
     case _: TurnAgain => redraw()
     case _: GameWon =>
       redraw()
       newGameOrQuit()
+    case exception: FailureEvent => redoTurnAlert(exception.getMessage())
     case _ =>
   }
 
@@ -112,8 +113,8 @@ class Gui(controller: InterfaceController) extends Frame {
     }
   }
 
-  private def redoTurnAlert() {
-    Dialog.showMessage(contents.head, "Your Input could not be used, please try again", "Alert", Dialog.Message.Warning)
+  private def redoTurnAlert(cause: String) {
+    Dialog.showMessage(contents.head, cause, "Alert", Dialog.Message.Warning)
   }
 
   private def newGameOrQuit(): Unit = {
