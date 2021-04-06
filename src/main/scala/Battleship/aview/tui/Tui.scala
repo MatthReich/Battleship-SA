@@ -49,6 +49,7 @@ class Tui(controller: InterfaceController) extends Reactor {
     case _: GameWon =>
       printTui("has won")
       println("<n> for new game <q> for end")
+    case exception: FailureEvent => println(exception.getMessage())
     case _ =>
   }
 

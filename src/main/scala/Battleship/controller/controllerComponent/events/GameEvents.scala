@@ -19,3 +19,7 @@ class NewGame extends Event
 class NewGameView extends Event
 
 class ExitGame extends Event
+
+class FailureEvent(message: String) extends Event {
+  def getMessage(): String = message
+}

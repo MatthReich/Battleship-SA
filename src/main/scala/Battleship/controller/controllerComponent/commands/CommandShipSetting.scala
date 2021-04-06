@@ -1,7 +1,7 @@
 package Battleship.controller.controllerComponent.commands
 
 import Battleship.controller.controllerComponent._
-import Battleship.controller.controllerComponent.events.{GridUpdated, PlayerChanged, RedoTurn}
+import Battleship.controller.controllerComponent.events.{FailureEvent, GridUpdated, PlayerChanged, RedoTurn}
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.shipComponent.shipImplemenation.Ship
@@ -23,7 +23,8 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
           case PlayerState.PLAYER_TWO =>
             handleFieldSetting(functionHelper(controller.player_02), PlayerState.PLAYER_TWO, coords.length)
         }
-      case Failure(exception) => println(exception.getMessage)
+      case Failure(exception) =>
+        controller.publish(new FailureEvent(exception.getMessage))
         controller.publish(new RedoTurn)
     }
   }
@@ -50,7 +51,8 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
           controller.player_02 = controller.player_02.updateShipSetList(shipLength)
           handleShipSetFinishing(controller.player_02, PlayerState.PLAYER_ONE, GameState.IDLE)
         }
-      case Right(exception) => println(exception.getMessage)
+      case Right(exception) =>
+        controller.publish(new FailureEvent(exception.getMessage))
         controller.publish(new RedoTurn)
     }
   }

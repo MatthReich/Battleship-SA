@@ -1,7 +1,7 @@
 package Battleship.controller.controllerComponent.commands
 
 import Battleship.controller.controllerComponent._
-import Battleship.controller.controllerComponent.events.{GameWon, PlayerChanged, RedoTurn, TurnAgain}
+import Battleship.controller.controllerComponent.events._
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.utils.Command
@@ -23,7 +23,8 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
           case PlayerState.PLAYER_TWO =>
             handleFieldSetting(functionHelper(controller.player_01), PlayerState.PLAYER_TWO)
         }
-      case Failure(exception) => println(exception.getMessage)
+      case Failure(exception) =>
+        controller.publish(new FailureEvent(exception.getMessage))
         controller.publish(new RedoTurn)
     }
   }
@@ -64,7 +65,7 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
             controller.publish(new PlayerChanged)
           }
       }
-      case Failure(exception) => println(exception.getMessage)
+      case Failure(exception) => controller.publish(new FailureEvent(exception.getMessage))
     }
   }
 
