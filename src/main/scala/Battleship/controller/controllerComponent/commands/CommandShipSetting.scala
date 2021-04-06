@@ -19,14 +19,23 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
         val functionHelper = changePlayerStats(coords) _
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
-            handleFieldSetting(functionHelper(controller.player_01), PlayerState.PLAYER_ONE, coords.length)
+            handleFieldSetting(functionHelper(controller.player_01), PlayerState.PLAYER_ONE, coords.length) match {
+              case Failure(exception) => publishFailure(exception.getMessage)
+              case _ =>
+            }
           case PlayerState.PLAYER_TWO =>
-            handleFieldSetting(functionHelper(controller.player_02), PlayerState.PLAYER_TWO, coords.length)
+            handleFieldSetting(functionHelper(controller.player_02), PlayerState.PLAYER_TWO, coords.length) match {
+              case Failure(exception) => publishFailure(exception.getMessage)
+              case _ =>
+            }
         }
-      case Failure(exception) =>
-        controller.publish(new FailureEvent(exception.getMessage))
-        controller.publish(new RedoTurn)
+      case Failure(exception) => publishFailure(exception.getMessage)
     }
+  }
+
+  private def publishFailure(cause: String): Unit = {
+    controller.publish(new FailureEvent(cause))
+    controller.publish(new RedoTurn)
   }
 
   private def changePlayerStats(coords: Vector[Map[String, Int]])(player: InterfacePlayer): Either[InterfacePlayer, Throwable] = {
@@ -39,21 +48,21 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
     }
   }
 
-  private def handleFieldSetting(way: Either[InterfacePlayer, Throwable], state: PlayerState.Value, shipLength: Int) = {
+  private def handleFieldSetting(way: Either[InterfacePlayer, Throwable], state: PlayerState.Value, shipLength: Int): Try[_] = {
     way match {
       case Left(value) =>
         if (state == PlayerState.PLAYER_ONE) {
           controller.player_01 = value
           controller.player_01 = controller.player_01.updateShipSetList(shipLength)
           handleShipSetFinishing(controller.player_01, PlayerState.PLAYER_TWO, GameState.SHIPSETTING)
+          Success()
         } else {
           controller.player_02 = value
           controller.player_02 = controller.player_02.updateShipSetList(shipLength)
           handleShipSetFinishing(controller.player_02, PlayerState.PLAYER_ONE, GameState.IDLE)
+          Success()
         }
-      case Right(exception) =>
-        controller.publish(new FailureEvent(exception.getMessage))
-        controller.publish(new RedoTurn)
+      case Right(exception) => Failure(exception)
     }
   }
 

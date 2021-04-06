@@ -23,10 +23,13 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
           case PlayerState.PLAYER_TWO =>
             handleFieldSetting(functionHelper(controller.player_01), PlayerState.PLAYER_TWO)
         }
-      case Failure(exception) =>
-        controller.publish(new FailureEvent(exception.getMessage))
-        controller.publish(new RedoTurn)
+      case Failure(exception) => publishFailure(exception.getMessage)
     }
+  }
+
+  private def publishFailure(cause: String): Unit = {
+    controller.publish(new FailureEvent(cause))
+    controller.publish(new RedoTurn)
   }
 
   private def handleGuess(x: Int, y: Int)(player: InterfacePlayer): Try[Either[InterfacePlayer, InterfacePlayer]] = {
