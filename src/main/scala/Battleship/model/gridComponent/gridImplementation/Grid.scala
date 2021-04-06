@@ -7,40 +7,47 @@ import com.google.inject.Inject
 
 import scala.annotation.tailrec
 import scala.collection.mutable
+import scala.util.{Failure, Success, Try}
 
-case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Array[mutable.Map[String, Int]]) extends InterfaceGrid {
+case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Vector[Map[String, Int]]) extends InterfaceGrid {
 
   private val water: Int = 0
   private val ship: Int = 1
   private val waterHit: Int = 2
   private val shipHit: Int = 3
 
-  override def setField(gameStatus: GameState, fields: Array[mutable.Map[String, Int]]): (InterfaceGrid, Boolean) = {
-    val retVal = strategyCollide.collide(fields, grid)
-    val collide = retVal._1
-    val indexes = retVal._2
+  override def setField(gameState: GameState, fields: Vector[Map[String, Int]]): Try[InterfaceGrid] = {
+    strategyCollide.collide(fields, grid) match {
+      case Left(indexes) =>
+        if (gameState == GameState.SHIPSETTING) Failure(new Exception("there is already a ship placed"))
+        else updateGridIfIndexesAreRight(indexes, gameState)
+      case Right(indexes) => updateGridIfIndexesAreRight(indexes, gameState)
+    }
+  }
 
-    if (gameStatus == GameState.SHIPSETTING) {
-      if (collide) {
-        return (this, false)
-      }
-    }
-    if (indexes.nonEmpty && !indexes.exists(_.equals(-1))) {
-      indexes.foreach(index => grid.update(index, newValueOfField(index, gameStatus)))
-      return (this, true)
-    }
-    (this, false)
+  private def updateGridIfIndexesAreRight(indexes: Vector[Int], gameState: GameState): Try[InterfaceGrid] = {
+    if (indexes.nonEmpty && !indexes.exists(_.equals(-1)))
+      Success(updateGridRec(0, indexes.length, indexes, gameState, grid))
+    else Failure(new Exception("input is out of scope"))
+  }
+
+  @tailrec
+  private def updateGridRec(start: Int, end: Int, indexes: Vector[Int], gameState: GameState, result: Vector[Map[String, Int]]): InterfaceGrid = {
+    if (start == end) this.copy(grid = result)
+    else updateGridRec(start + 1, end, indexes, gameState, result.updated(indexes(start), newValueOfField(indexes(start), gameState)))
   }
 
   def initGrid(): InterfaceGrid = {
-    val tmpArray = new Array[mutable.Map[String, Int]](size * size)
-    for (i <- 0 until size * size) {
-      tmpArray(i) = mutable.Map("x" -> i % size, "y" -> i / size, "value" -> water)
-    }
-    this.copy(grid = tmpArray)
+    this.copy(grid = initGridRec(0, size * size, Vector[Map[String, Int]]()))
   }
 
-  private def newValueOfField(index: Int, gameState: GameState): mutable.Map[String, Int] = {
+  @tailrec
+  private def initGridRec(start: Int, end: Int, result: Vector[Map[String, Int]]): Vector[Map[String, Int]] = {
+    if (start == end) result
+    else initGridRec(start + 1, end, result.appended(Map("x" -> start % size, "y" -> start / size, "value" -> 0)))
+  }
+
+  private def newValueOfField(index: Int, gameState: GameState): Map[String, Int] = {
     grid(index).getOrElse("value", Int.MaxValue) match {
       case 0 => if (gameState == GameState.SHIPSETTING) {
         grid(index) + ("value" -> ship)
@@ -56,31 +63,30 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
 
   @tailrec
   private def toStringRek(idx: Int, idy: Int, showAllShips: Boolean, result: mutable.StringBuilder): String = {
-    if (idx == 0 && idy == 10) {
+    if (idx == 0 && idy == size) {
       result.toString()
-    } else if (idx == 10) {
-      val newX = 0
+    } else if (idx == size) {
       val newY = idy + 1
       result ++= "\n"
-      if (newY <= 9) {
+      if (newY < size) {
         result ++= newY + " "
       }
-      toStringRek(newX, newY, showAllShips, result)
+      toStringRek(0, newY, showAllShips, result)
     } else {
-      val tmp = grid(grid.indexWhere(mapping => mapping.get("x").contains(idx) && mapping.get("y").contains(idy))).getOrElse("value", "holy shit ist das verbuggt")
-      tmp match {
-        case this.water => result ++= Console.BLUE + "  ~  " + Console.RESET
-        case this.ship =>
-          if (showAllShips) {
-            result ++= Console.GREEN + "  x  " + Console.RESET
-          } else {
-            result ++= Console.BLUE + "  ~  " + Console.RESET
-          }
-        case this.shipHit => result ++= Console.RED + "  x  " + Console.RESET
-        case this.waterHit => result ++= Console.BLUE + "  0  " + Console.RESET
-      }
-      val newX = idx + 1
-      toStringRek(newX, idy, showAllShips, result)
+      val fieldValue = grid(grid.indexWhere(mapping => mapping.get("x").contains(idx) && mapping.get("y").contains(idy))).getOrElse("value", Int.MaxValue)
+      result ++= getFieldValueInString(fieldValue, showAllShips)
+      toStringRek(idx + 1, idy, showAllShips, result)
+    }
+  }
+
+  private def getFieldValueInString(fieldValue: Int, showAllShips: Boolean): String = {
+    fieldValue match {
+      case this.water => Console.BLUE + "  ~  " + Console.RESET
+      case this.ship =>
+        if (showAllShips) Console.GREEN + "  x  " + Console.RESET
+        else Console.BLUE + "  ~  " + Console.RESET
+      case this.shipHit => Console.RED + "  x  " + Console.RESET
+      case this.waterHit => Console.BLUE + "  0  " + Console.RESET
     }
   }
 

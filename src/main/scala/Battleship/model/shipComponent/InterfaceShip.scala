@@ -1,15 +1,15 @@
 package Battleship.model.shipComponent
 
-import scala.collection.mutable
+import scala.util.Try
 
 trait InterfaceShip {
 
   def shipLength: Int
 
-  def shipCoordinates: Array[mutable.Map[String, Int]]
+  def shipCoordinates: Vector[Map[String, Int]]
 
   def status: Boolean
 
-  def hit(x: Int, y: Int): InterfaceShip
+  def hit(x: Int, y: Int): Try[InterfaceShip]
 
 }

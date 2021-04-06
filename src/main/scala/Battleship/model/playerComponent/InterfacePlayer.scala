@@ -3,11 +3,9 @@ package Battleship.model.playerComponent
 import Battleship.model.gridComponent.InterfaceGrid
 import Battleship.model.shipComponent.InterfaceShip
 
-import scala.collection.mutable.ListBuffer
-
 trait InterfacePlayer {
 
-  def shipList: ListBuffer[InterfaceShip]
+  def shipList: Vector[InterfaceShip]
 
   def grid: InterfaceGrid
 
@@ -19,9 +17,13 @@ trait InterfacePlayer {
 
   def updateGrid(grid: InterfaceGrid): InterfacePlayer
 
+  def updateShipSetList(newShipSetList: Map[Int, Int]): InterfacePlayer
+
   def updateShipSetList(valueIn: Int): InterfacePlayer
 
-  def updateShip(idx: Int, ship: InterfaceShip): InterfacePlayer
+  def updateShip(newShipList: Vector[InterfaceShip]): InterfacePlayer
+
+  def updateShip(oldShip: InterfaceShip, newShip: InterfaceShip): InterfacePlayer
 
   def addShip(ship: InterfaceShip): InterfacePlayer
 }

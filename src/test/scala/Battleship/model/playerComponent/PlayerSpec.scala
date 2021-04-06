@@ -9,25 +9,24 @@ import Battleship.model.shipComponent.InterfaceShip
 import Battleship.model.shipComponent.shipImplemenation.Ship
 import org.scalatest.wordspec.AnyWordSpec
 
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
+import scala.util.{Failure, Success}
 
 class PlayerSpec extends AnyWordSpec {
 
   val name: String = "Matthias"
   val newName: String = "Marcel"
-  val shipList = new ListBuffer[InterfaceShip]
-  val grid: InterfaceGrid = Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](0)).initGrid()
+  val shipList: Vector[InterfaceShip] = Vector[InterfaceShip]()
+  val grid: InterfaceGrid = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
   val shipLength = 3
-  val shipArray: Array[scala.collection.mutable.Map[String, Int]] = Array(
-    scala.collection.mutable.Map("x" -> 0, "y" -> 0, "value" -> 1),
-    scala.collection.mutable.Map("x" -> 0, "y" -> 1, "value" -> 1),
-    scala.collection.mutable.Map("x" -> 0, "y" -> 2, "value" -> 1)
+  val shipArray: Vector[Map[String, Int]] = Vector(
+    Map("x" -> 0, "y" -> 0, "value" -> 1),
+    Map("x" -> 0, "y" -> 1, "value" -> 1),
+    Map("x" -> 0, "y" -> 2, "value" -> 1)
   )
-  val shipArrayForUpdate: Array[scala.collection.mutable.Map[String, Int]] = Array(
-    scala.collection.mutable.Map("x" -> 0, "y" -> 0, "value" -> 0),
-    scala.collection.mutable.Map("x" -> 0, "y" -> 1, "value" -> 1),
-    scala.collection.mutable.Map("x" -> 0, "y" -> 2, "value" -> 1)
+  val shipArrayForUpdate: Vector[Map[String, Int]] = Vector(
+    Map("x" -> 0, "y" -> 0, "value" -> 0),
+    Map("x" -> 0, "y" -> 1, "value" -> 1),
+    Map("x" -> 0, "y" -> 2, "value" -> 1)
   )
   val status = false
   val ship: InterfaceShip = Ship(shipLength, shipArray, status)
@@ -36,8 +35,7 @@ class PlayerSpec extends AnyWordSpec {
 
   "A Player" when {
 
-    val shipSet = Map(0 -> 0)
-    var player: InterfacePlayer = Player(name, shipSet, shipList, grid)
+    var player: InterfacePlayer = Player(name, Map(2 -> 2), shipList, grid)
 
     "new" should {
       "have a name" in {
@@ -58,24 +56,48 @@ class PlayerSpec extends AnyWordSpec {
     }
     "grid gets updated" should {
       "update grid" in {
-        val newGrid = grid.setField(GameState.SHIPSETTING, Array(mutable.Map("x" -> 0, "y" -> 0)))
-        assert(newGrid._2 === true)
-        player = player.updateGrid(newGrid._1)
-        assert(player.grid.grid(0).getOrElse("value", Int.MaxValue) === 1)
+        grid.setField(GameState.SHIPSETTING, Vector(Map("x" -> 0, "y" -> 0))) match {
+          case Failure(_) => fail("grid not working correctly")
+          case Success(newGrid) =>
+            player = player.updateGrid(newGrid)
+            assert(player.grid.grid(0).getOrElse("value", Int.MaxValue) === 1)
+        }
       }
     }
+    "ship set list is updated" should {
+      "reduce the right ship by one" in {
+        player = player.updateShipSetList(2)
+        assert(player.shipSetList.get(2).contains(1))
+      }
+      "replace the list" in {
+        player = player.updateShipSetList(Map(2 -> 2, 3 -> 3))
+        assert(player.shipSetList.get(2).contains(2))
+        assert(player.shipSetList.get(3).contains(3))
+      }
+      "return old when expected does not exists" in {
+        player = player.updateShipSetList(5)
+        assert(player.shipSetList.get(2).contains(2))
+        assert(player.shipSetList.get(3).contains(3))
+      }
+    }
+
     "ship gets added" should {
       "extend List of ships" in {
         player = player.addShip(ship)
+        player = player.addShip(ship)
         assert(player.shipList.nonEmpty === true)
-        assert(player.shipList.length === 1)
+        assert(player.shipList.length === 2)
       }
     }
     "ship gets updated" should {
       "change value of a ship" in {
         assert(player.shipList.head.shipCoordinates(0).getOrElse("value", Int.MaxValue) === 1)
-        player = player.updateShip(0, updatedShip)
+        player = player.updateShip(ship, updatedShip)
         assert(player.shipList.head.shipCoordinates(0).getOrElse("value", Int.MaxValue) === 0)
+      }
+      "replace whole list" in {
+        player = player.updateShip(Vector(updatedShip))
+        assert(player.shipList.length === 1)
       }
     }
   }

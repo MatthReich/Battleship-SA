@@ -3,14 +3,19 @@ package Battleship.model.shipComponent
 import Battleship.model.shipComponent.shipImplemenation.Ship
 import org.scalatest.wordspec.AnyWordSpec
 
+import scala.util.{Failure, Success}
+
 class ShipSpec extends AnyWordSpec {
 
-  val shipLength = 3
-  val shipArray: Array[scala.collection.mutable.Map[String, Int]] = Array(
-    scala.collection.mutable.Map("x" -> 0, "y" -> 0, "value" -> 1),
-    scala.collection.mutable.Map("x" -> 0, "y" -> 1, "value" -> 1),
-    scala.collection.mutable.Map("x" -> 0, "y" -> 2, "value" -> 1)
+  val shipArray: Vector[Map[String, Int]] = Vector(
+    Map("x" -> 0, "y" -> 0, "value" -> 1),
+    Map("x" -> 0, "y" -> 1, "value" -> 1),
+    Map("x" -> 0, "y" -> 2, "value" -> 1)
   )
+  private val fieldIsNotHit: Int = 1
+
+  val shipLength = 3
+  private val fieldIsHit: Int = 0
   val status = false
 
   "A Ship" when {
@@ -23,9 +28,9 @@ class ShipSpec extends AnyWordSpec {
       }
 
       "have the correct array for the whole length" in {
-        assert(ship.shipCoordinates(0) get "value" contains 1)
-        assert(ship.shipCoordinates(1) get "value" contains 1)
-        assert(ship.shipCoordinates(2) get "value" contains 1)
+        assert(ship.shipCoordinates(0) get "value" contains fieldIsNotHit)
+        assert(ship.shipCoordinates(1) get "value" contains fieldIsNotHit)
+        assert(ship.shipCoordinates(2) get "value" contains fieldIsNotHit)
       }
 
       "have a status which is false" in {
@@ -35,43 +40,52 @@ class ShipSpec extends AnyWordSpec {
 
     "get hit" should {
       "change value of hit field" in {
-        ship = ship.hit(0, 0)
+        ship.hit(0, 0) match {
+          case Success(newShip) =>
+            ship = newShip
+            assert(ship.shipCoordinates(0) get "value" contains fieldIsHit)
+            assert(ship.shipCoordinates(1) get "value" contains fieldIsNotHit)
+            assert(ship.shipCoordinates(2) get "value" contains fieldIsNotHit)
+            assert(ship.status === false)
+          case _ => fail("should work, but didnt though")
+        }
 
-        assert(ship.shipCoordinates(0) get "value" contains 0)
-        assert(ship.shipCoordinates(1) get "value" contains 1)
-        assert(ship.shipCoordinates(2) get "value" contains 1)
-
-        assert(ship.status === false)
       }
 
       "not sunk when a second hit but three can be taken" in {
-        ship = ship.hit(0, 1)
-
-        assert(ship.shipCoordinates(0) get "value" contains 0)
-        assert(ship.shipCoordinates(1) get "value" contains 0)
-        assert(ship.shipCoordinates(2) get "value" contains 1)
-
-        assert(ship.status === false)
+        ship.hit(0, 1) match {
+          case Success(newShip) =>
+            ship = newShip
+            assert(ship.shipCoordinates(0) get "value" contains fieldIsHit)
+            assert(ship.shipCoordinates(1) get "value" contains fieldIsHit)
+            assert(ship.shipCoordinates(2) get "value" contains fieldIsNotHit)
+            assert(ship.status === false)
+          case _ => fail("should work, but didnt though")
+        }
       }
 
       "return false when wrong coordinates are given and not change any value" in {
-        ship = ship.hit(7, 7)
-
-        assert(ship.shipCoordinates(0) get "value" contains 0)
-        assert(ship.shipCoordinates(1) get "value" contains 0)
-        assert(ship.shipCoordinates(2) get "value" contains 1)
-
-        assert(ship.status === false)
+        ship.hit(7, 11) match {
+          case Success(_) => fail("should not change something")
+          case Failure(exception) =>
+            assert(exception.getMessage == "failed to hit a ship")
+            assert(ship.shipCoordinates(0) get "value" contains fieldIsHit)
+            assert(ship.shipCoordinates(1) get "value" contains fieldIsHit)
+            assert(ship.shipCoordinates(2) get "value" contains fieldIsNotHit)
+            assert(ship.status === false)
+        }
       }
 
       "change status when sunk" in {
-        ship = ship.hit(0, 2)
-
-        assert(ship.shipCoordinates(0) get "value" contains 0)
-        assert(ship.shipCoordinates(1) get "value" contains 0)
-        assert(ship.shipCoordinates(2) get "value" contains 0)
-
-        assert(ship.status === true)
+        ship.hit(0, 2) match {
+          case Success(newShip) =>
+            ship = newShip
+            assert(ship.shipCoordinates(0) get "value" contains fieldIsHit)
+            assert(ship.shipCoordinates(1) get "value" contains fieldIsHit)
+            assert(ship.shipCoordinates(2) get "value" contains fieldIsHit)
+            assert(ship.status === true)
+          case _ => fail("should work, but didnt though")
+        }
       }
     }
   }

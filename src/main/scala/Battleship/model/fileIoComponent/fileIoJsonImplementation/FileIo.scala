@@ -7,6 +7,7 @@ import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.fileIoComponent.InterfaceFileIo
 import Battleship.model.playerComponent.InterfacePlayer
+import Battleship.model.shipComponent.shipImplemenation.Ship
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Json, Writes}
 
@@ -24,7 +25,7 @@ class FileIo @Inject()() extends InterfaceFileIo {
   implicit val gameStateToJson: Writes[GameState] = (gameState: GameState) => Json.obj(
     "gameState" -> Json.toJson(gameState.toString)
   )
-  implicit val playerToJson: Writes[Array[InterfacePlayer]] = (player: Array[InterfacePlayer]) =>
+  implicit val playerToJson: Writes[Vector[InterfacePlayer]] = (player: Vector[InterfacePlayer]) =>
     Json.obj(
       "players" -> Json.obj(
         "name_01" -> Json.toJson(player(0).name),
@@ -42,8 +43,8 @@ class FileIo @Inject()() extends InterfaceFileIo {
     val json: JsValue = Json.parse(source)
     rawSource.close()
 
-    controller.player_01.updateName((json \\ "name_01").head.as[String])
-    controller.player_02.updateName((json \\ "name_02").head.as[String])
+    controller.player_01 = controller.player_01.updateName((json \\ "name_01").head.as[String])
+    controller.player_02 = controller.player_02.updateName((json \\ "name_02").head.as[String]).updateShip(Vector(Ship(3, Vector[Map[String, Int]](), false)))
 
     controller.gameState = (json \\ "gameState").head.as[String] match {
       case "PLAYERSETTING" => GameState.PLAYERSETTING
@@ -64,7 +65,7 @@ class FileIo @Inject()() extends InterfaceFileIo {
   )
 
   private def getAllObj(player_01: InterfacePlayer, player_02: InterfacePlayer, gameState: GameState, playerState: PlayerState): JsValue = {
-    Json.toJson(List(playerToJson.writes(Array(player_01, player_02)), playerStateToJson.writes(playerState), gameStateToJson.writes(gameState)))
+    Json.toJson(List(playerToJson.writes(Vector(player_01, player_02)), playerStateToJson.writes(playerState), gameStateToJson.writes(gameState)))
   }
 
 }

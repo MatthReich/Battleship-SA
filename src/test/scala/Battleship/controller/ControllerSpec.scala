@@ -10,17 +10,14 @@ import Battleship.model.playerComponent.playerImplementation.Player
 import Battleship.model.shipComponent.InterfaceShip
 import org.scalatest.wordspec.AnyWordSpec
 
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
-
 class ControllerSpec extends AnyWordSpec {
 
   val shipSet = Map(0 -> 0)
-  val gridPlayer_01: InterfaceGrid = Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](0)).initGrid()
-  val player_01: InterfacePlayer = Player("", shipSet, new ListBuffer[InterfaceShip], gridPlayer_01)
+  val gridPlayer_01: InterfaceGrid = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
+  val player_01: InterfacePlayer = Player("", shipSet, Vector[InterfaceShip](), gridPlayer_01)
 
-  val gridPlayer_02: InterfaceGrid = Grid(10, new StrategyCollideNormal, new Array[mutable.Map[String, Int]](0)).initGrid()
-  val player_02: InterfacePlayer = Player("", shipSet, new ListBuffer[InterfaceShip], gridPlayer_02)
+  val gridPlayer_02: InterfaceGrid = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
+  val player_02: InterfacePlayer = Player("", shipSet, Vector[InterfaceShip](), gridPlayer_02)
 
   val name_01: String = "Matthias"
   val name_02: String = "Marcel"
