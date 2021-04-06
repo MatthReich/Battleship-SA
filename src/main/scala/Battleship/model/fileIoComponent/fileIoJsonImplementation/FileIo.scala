@@ -7,7 +7,6 @@ import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.fileIoComponent.InterfaceFileIo
 import Battleship.model.playerComponent.InterfacePlayer
-import Battleship.model.shipComponent.shipImplemenation.Ship
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Json, Writes}
 
@@ -25,17 +24,20 @@ class FileIo @Inject()() extends InterfaceFileIo {
   implicit val gameStateToJson: Writes[GameState] = (gameState: GameState) => Json.obj(
     "gameState" -> Json.toJson(gameState.toString)
   )
+
   implicit val playerToJson: Writes[Vector[InterfacePlayer]] = (player: Vector[InterfacePlayer]) =>
     Json.obj(
       "players" -> Json.obj(
         "name_01" -> Json.toJson(player(0).name),
-        "shipSetList_01" -> Json.toJson(""),
+        "shipSetList_01" -> Json.toJson(player(0).shipSetList),
         "shipList_01" -> Json.toJson(""),
-        "grid_01" -> Json.toJson("")),
-      "name_02" -> Json.toJson(player(1).name),
-      "shipSetList_02" -> Json.toJson(""),
-      "shipList_02" -> Json.toJson(""),
-      "grid_02" -> Json.toJson(""))
+        "grid_01" -> Json.toJson(""),
+        "name_02" -> Json.toJson(player(1).name),
+        "shipSetList_02" -> Json.toJson(player(1).shipSetList),
+        "shipList_02" -> Json.toJson(""),
+        "grid_02" -> Json.toJson("")
+      )
+    )
 
   override def load(controller: Controller): Unit = {
     val rawSource = Source.fromFile("saveFile.json")
@@ -44,7 +46,7 @@ class FileIo @Inject()() extends InterfaceFileIo {
     rawSource.close()
 
     controller.player_01 = controller.player_01.updateName((json \\ "name_01").head.as[String])
-    controller.player_02 = controller.player_02.updateName((json \\ "name_02").head.as[String]).updateShip(Vector(Ship(3, Vector[Map[String, Int]](), false)))
+    controller.player_02 = controller.player_02.updateName((json \\ "name_02").head.as[String]) // .updateShip(Vector(Ship(3, Vector[Map[String, Int]](), false)))
 
     controller.gameState = (json \\ "gameState").head.as[String] match {
       case "PLAYERSETTING" => GameState.PLAYERSETTING
