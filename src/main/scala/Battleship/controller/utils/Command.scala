@@ -1,4 +1,4 @@
-package Battleship.utils
+package Battleship.controller.utils
 
 trait Command {
 

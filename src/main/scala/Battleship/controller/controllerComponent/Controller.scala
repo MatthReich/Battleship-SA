@@ -1,14 +1,14 @@
 package Battleship.controller.controllerComponent
 
-import Battleship.config.GameModule
 import Battleship.controller.InterfaceController
+import Battleship.controller.config.GameModule
 import Battleship.controller.controllerComponent.commands.{CommandIdle, CommandPlayerSetting, CommandShipSetting}
 import Battleship.controller.controllerComponent.states.GameState
 import Battleship.controller.controllerComponent.states.GameState.GameState
 import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
+import Battleship.controller.utils.UndoManager
 import Battleship.model.fileIoComponent.InterfaceFileIo
 import Battleship.model.playerComponent.InterfacePlayer
-import Battleship.utils.UndoManager
 import com.google.inject.{Guice, Inject, Injector}
 
 import scala.annotation.tailrec

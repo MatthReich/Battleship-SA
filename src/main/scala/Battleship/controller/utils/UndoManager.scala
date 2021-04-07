@@ -1,13 +1,15 @@
-package Battleship.utils
+package Battleship.controller.utils
 
 class UndoManager {
-  private var undoStack: List[Command]= Nil
-  private var redoStack: List[Command]= Nil
+  private var undoStack: List[Command] = Nil
+  private var redoStack: List[Command] = Nil
+
   def doStep(command: Command): Unit = {
-    undoStack = command::undoStack
+    undoStack = command :: undoStack
     command.doStep()
   }
-  def undoStep():Unit  = {
+
+  def undoStep(): Unit = {
     undoStack match {
       case  Nil =>
       case head::stack =>
