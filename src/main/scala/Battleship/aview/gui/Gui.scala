@@ -1,5 +1,7 @@
 package Battleship.aview.gui
 
+import java.awt.Color
+
 import Battleship.aview.gui.panel.FieldPanel
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.events._
@@ -7,7 +9,6 @@ import Battleship.controller.controllerComponent.states.GameState
 import Battleship.controller.controllerComponent.states.PlayerState.{PLAYER_ONE, PLAYER_TWO}
 import Battleship.model.playerComponent.InterfacePlayer
 
-import java.awt.Color
 import scala.swing._
 
 class Gui(controller: InterfaceController) extends Frame {
@@ -19,6 +20,10 @@ class Gui(controller: InterfaceController) extends Frame {
   preferredSize = new Dimension(dimWidth, dimHeight)
   val gridSize: Int = controller.player_01.grid.size
   redraw()
+
+  override def closeOperation() {
+    System.exit(0)
+  }
 
   reactions += {
     case _: PlayerChanged =>
