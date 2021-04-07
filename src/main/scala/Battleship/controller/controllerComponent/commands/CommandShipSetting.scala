@@ -22,7 +22,6 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
             handleFieldSetting(functionHelper(controller.player_01), PlayerState.PLAYER_ONE, coords.length) match {
               case Failure(exception) => publishFailure(exception.getMessage)
               case Success(newGameState) => handleShipSetFinishing(controller.player_01, PlayerState.PLAYER_TWO, newGameState)
-
             }
           case PlayerState.PLAYER_TWO =>
             handleFieldSetting(functionHelper(controller.player_02), PlayerState.PLAYER_TWO, coords.length) match {
