@@ -30,7 +30,7 @@ class FieldPanel(showAllShips: Boolean, x: Int, y: Int, controller: InterfaceCon
           contents += new Label("~")
         }
       case this.shipHit => background = Color.RED; contents += new Label("x")
-      case this.waterHit => background = Color.BLUE; contents += new Label("0")
+      case this.waterHit => background = Color.CYAN; contents += new Label("0")
       case _ =>
     }
     border = Swing.LineBorder(java.awt.Color.BLACK, 1)

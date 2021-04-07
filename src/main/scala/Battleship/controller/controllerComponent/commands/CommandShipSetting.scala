@@ -21,12 +21,13 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
           case PlayerState.PLAYER_ONE =>
             handleFieldSetting(functionHelper(controller.player_01), PlayerState.PLAYER_ONE, coords.length) match {
               case Failure(exception) => publishFailure(exception.getMessage)
-              case _ =>
+              case Success(newGameState) => handleShipSetFinishing(controller.player_01, PlayerState.PLAYER_TWO, newGameState)
+
             }
           case PlayerState.PLAYER_TWO =>
             handleFieldSetting(functionHelper(controller.player_02), PlayerState.PLAYER_TWO, coords.length) match {
               case Failure(exception) => publishFailure(exception.getMessage)
-              case _ =>
+              case Success(newGameState) => handleShipSetFinishing(controller.player_02, PlayerState.PLAYER_ONE, newGameState)
             }
         }
       case Failure(exception) => publishFailure(exception.getMessage)
@@ -48,19 +49,17 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
     }
   }
 
-  private def handleFieldSetting(way: Either[InterfacePlayer, Throwable], state: PlayerState.Value, shipLength: Int): Try[_] = {
+  private def handleFieldSetting(way: Either[InterfacePlayer, Throwable], state: PlayerState.Value, shipLength: Int): Try[GameState.GameState] = {
     way match {
       case Left(value) =>
         if (state == PlayerState.PLAYER_ONE) {
           controller.player_01 = value
           controller.player_01 = controller.player_01.updateShipSetList(shipLength)
-          handleShipSetFinishing(controller.player_01, PlayerState.PLAYER_TWO, GameState.SHIPSETTING)
-          Success()
+          Success(GameState.SHIPSETTING)
         } else {
           controller.player_02 = value
           controller.player_02 = controller.player_02.updateShipSetList(shipLength)
-          handleShipSetFinishing(controller.player_02, PlayerState.PLAYER_ONE, GameState.IDLE)
-          Success()
+          Success(GameState.IDLE)
         }
       case Right(exception) => Failure(exception)
     }

@@ -38,12 +38,11 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
         val newPlayer = player.updateGrid(value)
         for (ship <- newPlayer.shipList) yield ship.hit(x, y) match {
           case Success(newShip) => return Success(Left(newPlayer.updateShip(ship, newShip)))
-          case Failure(_) =>
+          case _ =>
         }
         Success(Right(newPlayer))
       case Failure(exception) => Failure(exception)
     }
-
   }
 
   private def handleFieldSetting(tryWay: Try[Either[InterfacePlayer, InterfacePlayer]], state: PlayerState.Value): Unit = {
