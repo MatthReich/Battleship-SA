@@ -10,9 +10,9 @@ class ImagePanel extends Panel {
     bufferedImage = bufferedImageInsert
   }
 
-  override def paintComponent(g: Graphics2D) = {
-    if (null != bufferedImage) g.drawImage(bufferedImage, 0, 0, null)
-  }
+   override def paintComponent(g: Graphics2D) = {
+     if (null != bufferedImage) g.drawImage(bufferedImage, 0, 0, null)
+   }
 }
 
 object ImagePanel {

@@ -1,9 +1,9 @@
-package Battleship.controller.controllerComponent.commands
+package Battleship.controller.controllerComponent.commands.commandComponents
 
 import Battleship.controller.controllerComponent._
+import Battleship.controller.controllerComponent.commands.Command
 import Battleship.controller.controllerComponent.events.{FailureEvent, GridUpdated, PlayerChanged, RedoTurn}
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
-import Battleship.controller.utils.Command
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.shipComponent.shipImplemenation.Ship
 

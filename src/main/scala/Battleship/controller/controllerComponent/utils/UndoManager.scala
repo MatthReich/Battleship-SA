@@ -1,4 +1,6 @@
-package Battleship.controller.utils
+package Battleship.controller.controllerComponent.utils
+
+import Battleship.controller.controllerComponent.commands.Command
 
 class UndoManager {
   private var undoStack: List[Command] = Nil

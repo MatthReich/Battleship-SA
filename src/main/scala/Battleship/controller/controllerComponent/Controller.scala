@@ -2,11 +2,11 @@ package Battleship.controller.controllerComponent
 
 import Battleship.controller.InterfaceController
 import Battleship.controller.config.GameModule
-import Battleship.controller.controllerComponent.commands.{CommandIdle, CommandPlayerSetting, CommandShipSetting}
+import Battleship.controller.controllerComponent.commands.commandComponents.{CommandIdle, CommandPlayerSetting, CommandShipSetting}
 import Battleship.controller.controllerComponent.states.GameState
 import Battleship.controller.controllerComponent.states.GameState.GameState
 import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
-import Battleship.controller.utils.UndoManager
+import Battleship.controller.controllerComponent.utils.UndoManager
 import Battleship.model.fileIoComponent.InterfaceFileIo
 import Battleship.model.playerComponent.InterfacePlayer
 import com.google.inject.{Guice, Inject, Injector}
