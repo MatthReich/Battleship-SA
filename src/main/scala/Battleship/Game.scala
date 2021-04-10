@@ -3,13 +3,13 @@ package Battleship
 import Battleship.aview.gui.StartGui
 import Battleship.aview.tui.Tui
 import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent._
+import Battleship.controller.controllerComponent.Controller
 import Battleship.controller.controllerComponent.events.{GameStart, NewGameView, PlayerChanged}
-import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
 import Battleship.model.playerComponent.playerImplementation.Player
 import Battleship.model.shipComponent.InterfaceShip
+import Battleship.model.states.{GameState, PlayerState}
 
 import scala.swing.Reactor
 

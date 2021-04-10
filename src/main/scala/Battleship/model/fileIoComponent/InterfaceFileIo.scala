@@ -1,9 +1,9 @@
 package Battleship.model.fileIoComponent
 
 import Battleship.controller.controllerComponent.Controller
-import Battleship.controller.controllerComponent.states.GameState.GameState
-import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 import Battleship.model.playerComponent.InterfacePlayer
+import Battleship.model.states.GameState.GameState
+import Battleship.model.states.PlayerState.PlayerState
 
 trait InterfaceFileIo {
 

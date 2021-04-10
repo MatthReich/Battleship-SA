@@ -1,8 +1,8 @@
 package Battleship.model.gridComponent
 
-import Battleship.controller.controllerComponent.states.GameState
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
+import Battleship.model.states.GameState
 import org.scalatest.wordspec.AnyWordSpec
 
 class StrategyCollideNormalSpec extends AnyWordSpec {

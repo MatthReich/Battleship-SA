@@ -1,8 +1,8 @@
 package Battleship.controller
 
-import Battleship.controller.controllerComponent.states.GameState.GameState
-import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 import Battleship.model.playerComponent.InterfacePlayer
+import Battleship.model.states.GameState.GameState
+import Battleship.model.states.PlayerState.PlayerState
 
 import scala.swing.Publisher
 

@@ -2,11 +2,11 @@ package Battleship.model.fileIoComponent.fileIoJsonImplementation
 
 import Battleship.controller.controllerComponent.Controller
 import Battleship.controller.controllerComponent.events.PlayerChanged
-import Battleship.controller.controllerComponent.states.GameState.GameState
-import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
-import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.fileIoComponent.InterfaceFileIo
 import Battleship.model.playerComponent.InterfacePlayer
+import Battleship.model.states.GameState.GameState
+import Battleship.model.states.PlayerState.PlayerState
+import Battleship.model.states.{GameState, PlayerState}
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Json, Writes}
 

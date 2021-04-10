@@ -1,13 +1,13 @@
 package Battleship.controller
 
 import Battleship.controller.controllerComponent.Controller
-import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.gridComponent.InterfaceGrid
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.playerComponent.playerImplementation.Player
 import Battleship.model.shipComponent.InterfaceShip
+import Battleship.model.states.{GameState, PlayerState}
 import org.scalatest.wordspec.AnyWordSpec
 
 class ControllerSpec extends AnyWordSpec {

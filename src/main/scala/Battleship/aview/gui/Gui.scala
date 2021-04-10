@@ -1,14 +1,12 @@
 package Battleship.aview.gui
 
-import java.awt.Color
-
 import Battleship.aview.gui.panel.FieldPanel
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.events._
-import Battleship.controller.controllerComponent.states.GameState
-import Battleship.controller.controllerComponent.states.PlayerState.{PLAYER_ONE, PLAYER_TWO}
 import Battleship.model.playerComponent.InterfacePlayer
+import Battleship.model.states.{GameState, PlayerState}
 
+import java.awt.Color
 import scala.swing._
 
 class Gui(controller: InterfaceController) extends Frame {
@@ -109,10 +107,10 @@ class Gui(controller: InterfaceController) extends Frame {
     val showNotAllShips = false
 
     controller.playerState match {
-      case PLAYER_ONE =>
+      case PlayerState.PLAYER_ONE =>
         contents += gridPanel(showAllShips, controller.player_01)
         contents += gridPanel(showNotAllShips, controller.player_02)
-      case PLAYER_TWO =>
+      case PlayerState.PLAYER_TWO =>
         contents += gridPanel(showNotAllShips, controller.player_01)
         contents += gridPanel(showAllShips, controller.player_02)
     }

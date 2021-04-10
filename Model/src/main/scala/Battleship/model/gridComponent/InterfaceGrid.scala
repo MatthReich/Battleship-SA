@@ -1,6 +1,6 @@
 package Battleship.model.gridComponent
 
-import Battleship.controller.controllerComponent.states.GameState.GameState
+import Battleship.model.states.GameState.GameState
 
 import scala.util.Try
 

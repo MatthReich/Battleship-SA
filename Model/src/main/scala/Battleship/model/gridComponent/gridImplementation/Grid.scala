@@ -1,8 +1,8 @@
 package Battleship.model.gridComponent.gridImplementation
 
-import Battleship.controller.controllerComponent.states.GameState
-import Battleship.controller.controllerComponent.states.GameState.GameState
 import Battleship.model.gridComponent.{InterfaceGrid, InterfaceStrategyCollide}
+import Battleship.model.states.GameState
+import Battleship.model.states.GameState.GameState
 import com.google.inject.Inject
 
 import scala.annotation.tailrec

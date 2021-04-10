@@ -2,7 +2,7 @@ package Battleship.aview.tui
 
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.events._
-import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
+import Battleship.model.states.{GameState, PlayerState}
 
 import scala.swing.Reactor
 
