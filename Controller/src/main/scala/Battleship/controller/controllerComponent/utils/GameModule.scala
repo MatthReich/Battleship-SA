@@ -1,4 +1,4 @@
-package Battleship.controller.config
+package Battleship.controller.controllerComponent.utils
 
 import Battleship.model.fileIoComponent.InterfaceFileIo
 import Battleship.model.fileIoComponent.fileIoJsonImplementation.FileIo

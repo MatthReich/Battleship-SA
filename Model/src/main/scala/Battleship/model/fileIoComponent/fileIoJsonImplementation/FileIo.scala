@@ -1,7 +1,5 @@
 package Battleship.model.fileIoComponent.fileIoJsonImplementation
 
-import Battleship.controller.controllerComponent.Controller
-import Battleship.controller.controllerComponent.events.PlayerChanged
 import Battleship.model.fileIoComponent.InterfaceFileIo
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.states.GameState.GameState
@@ -39,27 +37,24 @@ class FileIo @Inject()() extends InterfaceFileIo {
       )
     )
 
-  override def load(controller: Controller): Unit = {
+  override def load(player_01: InterfacePlayer, player_02: InterfacePlayer): (InterfacePlayer, InterfacePlayer, GameState, PlayerState) = {
     val rawSource = Source.fromFile("saveFile.json")
     val source: String = rawSource.getLines.mkString
     val json: JsValue = Json.parse(source)
     rawSource.close()
 
-    controller.player_01 = controller.player_01.updateName((json \\ "name_01").head.as[String])
-    controller.player_02 = controller.player_02.updateName((json \\ "name_02").head.as[String]) // .updateShip(Vector(Ship(3, Vector[Map[String, Int]](), false)))
-
-    controller.gameState = (json \\ "gameState").head.as[String] match {
+    val gameState = (json \\ "gameState").head.as[String] match {
       case "PLAYERSETTING" => GameState.PLAYERSETTING
       case "SHIPSETTING" => GameState.SHIPSETTING
       case "IDLE" => GameState.IDLE
       case "SOLVED" => GameState.SOLVED
     }
 
-    controller.playerState = (json \\ "playerState").head.as[String] match {
+    val playerState = (json \\ "playerState").head.as[String] match {
       case "PLAYER_ONE" => PlayerState.PLAYER_ONE
       case "PLAYER_TWO" => PlayerState.PLAYER_TWO
     }
-    controller.publish(new PlayerChanged)
+    (player_01.updateName((json \\ "name_01").head.as[String]), player_02.updateName((json \\ "name_02").head.as[String]), gameState, playerState)
   }
 
   implicit val playerStateToJson: Writes[PlayerState] = (playerState: PlayerState) => Json.obj(

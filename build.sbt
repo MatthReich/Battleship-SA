@@ -35,6 +35,7 @@ lazy val model = (project in file("Model")).settings(
 
   libraryDependencies += "org.scala-lang.modules" %% "scala-swing" % "3.0.0",
 )
+
 lazy val aview = (project in file("Aview")).settings(
   organization := "Battleship",
   name := "Battleship-SA-Aview",
@@ -52,6 +53,7 @@ lazy val aview = (project in file("Aview")).settings(
 
   libraryDependencies += "org.scala-lang.modules" %% "scala-swing" % "3.0.0",
 )
+
 lazy val controller = (project in file("Controller")).settings(
   organization := "Battleship",
   name := "Battleship-SA-Controller",

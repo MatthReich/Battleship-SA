@@ -1,9 +1,8 @@
 package Battleship.controller.controllerComponent
 
 import Battleship.controller.InterfaceController
-import Battleship.controller.config.GameModule
 import Battleship.controller.controllerComponent.commands.commandComponents.{CommandIdle, CommandPlayerSetting, CommandShipSetting}
-import Battleship.controller.controllerComponent.utils.UndoManager
+import Battleship.controller.controllerComponent.utils.{GameModule, UndoManager}
 import Battleship.model.fileIoComponent.InterfaceFileIo
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.states.GameState
@@ -26,7 +25,7 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
 
   override def save(): Unit = fileIo.save(player_01, player_02, gameState, playerState)
 
-  override def load(): Unit = fileIo.load(this)
+  override def load(): Unit = fileIo.load(player_01, player_02)
 
   override def redoTurn(): Unit = undoManager.undoStep()
 
