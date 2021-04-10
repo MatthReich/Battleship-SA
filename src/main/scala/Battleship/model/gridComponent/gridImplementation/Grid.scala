@@ -16,12 +16,10 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
   private val waterHit: Int = 2
   private val shipHit: Int = 3
 
-  override def setField(gameState: GameState, fields: Vector[Map[String, Int]]): Try[InterfaceGrid] = {
+  override def setField(gameState: GameState, fields: Vector[Map[String, Int]]): Either[Try[InterfaceGrid], Try[InterfaceGrid]] = {
     strategyCollide.collide(fields, grid) match {
-      case Left(indexes) =>
-        if (gameState == GameState.SHIPSETTING) Failure(new Exception("there is already a ship placed"))
-        else updateGridIfIndexesAreRight(indexes, gameState)
-      case Right(indexes) => updateGridIfIndexesAreRight(indexes, gameState)
+      case Left(indexes) => Left(updateGridIfIndexesAreRight(indexes, gameState))
+      case Right(indexes) => Right(updateGridIfIndexesAreRight(indexes, gameState))
     }
   }
 

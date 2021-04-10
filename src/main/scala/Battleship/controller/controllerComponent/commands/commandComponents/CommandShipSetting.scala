@@ -41,10 +41,12 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
   private def changePlayerStats(coords: Vector[Map[String, Int]])(player: InterfacePlayer): Either[InterfacePlayer, Throwable] = {
     if (!shipSettingAllowsNewShip(coords.length, player)) return Right(new Exception("no more ships of this length can be placed"))
     player.grid.setField(controller.gameState, coords) match {
-      case Failure(exception) => Right(exception)
-      case Success(updatedGrid) =>
-        val ship = Ship(coords.length, coords, shipNotSunk)
-        Left(player.addShip(ship).updateGrid(updatedGrid))
+      case Left(_) => Right(new Exception("there is already a ship placed"))
+      case Right(value) => value match {
+        case Failure(exception) => Right(exception)
+        case Success(updatedGrid) => val ship = Ship(coords.length, coords, shipNotSunk)
+          Left(player.addShip(ship).updateGrid(updatedGrid))
+      }
     }
   }
 

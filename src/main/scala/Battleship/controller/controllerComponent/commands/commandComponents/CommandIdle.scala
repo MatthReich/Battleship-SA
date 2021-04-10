@@ -4,6 +4,7 @@ import Battleship.controller.controllerComponent._
 import Battleship.controller.controllerComponent.commands.Command
 import Battleship.controller.controllerComponent.events._
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
+import Battleship.model.gridComponent.InterfaceGrid
 import Battleship.model.playerComponent.InterfacePlayer
 
 import scala.util.{Failure, Success, Try}
@@ -34,6 +35,13 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
 
   private def handleGuess(x: Int, y: Int)(player: InterfacePlayer): Try[Either[InterfacePlayer, InterfacePlayer]] = {
     player.grid.setField(controller.gameState, Vector(Map("x" -> x, "y" -> y))) match {
+      case Left(value) => doSame(value, player, x, y)
+      case Right(value) => doSame(value, player, x, y)
+    }
+  }
+
+  private def doSame(value: Try[InterfaceGrid], player: InterfacePlayer, x: Int, y: Int): Try[Either[InterfacePlayer, InterfacePlayer]] = {
+    value match {
       case Success(value) =>
         val newPlayer = player.updateGrid(value)
         for (ship <- newPlayer.shipList) yield ship.hit(x, y) match {
