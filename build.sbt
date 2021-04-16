@@ -1,4 +1,6 @@
 organization := "Battleship"
+val AkkaVersion = "2.6.8"
+val AkkaHttpVersion = "10.2.4"
 
 lazy val rootProject = (project in file(".")).settings(
 
@@ -17,6 +19,12 @@ lazy val rootProject = (project in file(".")).settings(
   libraryDependencies += "org.scalatest" %% "scalatest-wordspec" % "3.2.5" % "test",
 
   libraryDependencies += "org.scala-lang.modules" %% "scala-swing" % "3.0.0",
+
+  libraryDependencies ++= Seq(
+    "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
+    "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
+    "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion
+  ),
 
 ).dependsOn(model, controller, gui, tui)
 
