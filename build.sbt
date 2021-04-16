@@ -1,6 +1,7 @@
 organization := "Battleship"
 
 lazy val rootProject = (project in file(".")).settings(
+
   organization := "Battleship",
   name := "Battleship-SA",
   version := "1.1",
@@ -16,6 +17,7 @@ lazy val rootProject = (project in file(".")).settings(
   libraryDependencies += "org.scalatest" %% "scalatest-wordspec" % "3.2.5" % "test",
 
   libraryDependencies += "org.scala-lang.modules" %% "scala-swing" % "3.0.0",
+
 ).dependsOn(model, controller, gui, tui)
 
 lazy val model = (project in file("Model"))
