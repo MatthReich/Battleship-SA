@@ -60,20 +60,23 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     }
   }
 
-  def requestSetField(player: String, coords: Vector[Map[String, Int]]): Unit = {
+  def requestSetField(player: String, coords: Vector[Map[String, Int]]): Try[String] = {
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
-    println("http://localhost:8080/model/player/grid/update?playerName=" + player + "&gameState=" + gameState + "&coords=" + Json.toJson(coords))
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Post("http://localhost:8080/model/player/grid/update?playerName=" + player + "&gameState=" + gameState + "&coords=" + Json.toJson(coords)))
-    responseFuture.onComplete{
-      case Success(res) => {
+    val payload = Json.obj(
+      "player" -> player,
+      "coords" -> Json.toJson(coords)
+    )
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Post("http://localhost:8080/model/player/grid/update", payload.toString()))
+    responseFuture.onComplete {
+      case Success(res) =>
         if (res.status != StatusCodes.OK)
-          publish(new FailureEvent("request status was: " + res.status))
-      }
-      case Failure(exeption) => {
-        publish(new FailureEvent(exeption.getMessage))
-      }
+          return Failure(new Exception("request status was: " + res.status))
+        return Success("success")
+      case Failure(exeption) =>
+        return Failure(new Exception(exeption.getMessage))
     }
+    Failure(new Exception("unexpected Error"))
   }
 
   override def changeGameState(gameState: GameState): Unit = this.gameState = gameState

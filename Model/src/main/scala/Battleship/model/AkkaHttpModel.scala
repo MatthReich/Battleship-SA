@@ -6,13 +6,13 @@ import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.playerComponent.playerImplementation.Player
 import Battleship.model.shipComponent.InterfaceShip
 import Battleship.model.states.GameState
-import Battleship.model.states.GameState.GameState
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.JsValue.jsValueToJsLookup
+import play.api.libs.json.{JsLookupResult, JsValue, Json}
 
 import scala.io.StdIn
 
@@ -87,9 +87,23 @@ object AkkaHttpModel {
       },
       path("model" / "player" / "grid" / "update") {
         post {
-          println("lol")
-          complete(StatusCodes.OK)
+          entity(as[String]) { jsonString => {
+            val json = Json.parse(jsonString)
+            (json \ "player").as[String] match {
+              case "player_01" =>
+                player_01.grid.setField(GameState.SHIPSETTING, coordsToVectorMap(json \ "coords"))
+                complete(StatusCodes.OK)
+              case "player_02" =>
+                player_02.grid.setField(GameState.SHIPSETTING, coordsToVectorMap(json \ "coords"))
+                complete(StatusCodes.OK)
+              case _ => complete(StatusCodes.BadRequest)
+            }
+          }
+          }
         }
+      },
+      path("model" / "player" / "grid" / "update") {
+
         parameters("playerName", "gameState", "coords") { (player, gameState, coordsJs) =>
           player match {
             case "player_01" =>
@@ -100,7 +114,6 @@ object AkkaHttpModel {
               complete(StatusCodes.OK)
             case _ => complete(StatusCodes.BadRequest)
           }
-
         }
       }
     )
@@ -114,13 +127,17 @@ object AkkaHttpModel {
       .onComplete(_ => system.terminate()) // and shutdown when done
   }
 
-  private def coordsToVectorMap(coordsJs: String): Vector[Map[String, Int]] = {
+  private def coordsToVectorMap(coordsJs: JsLookupResult): Vector[Map[String, Int]] = {
+    coordsJs.result.toOption match {
+      case Some(value) => return value.as[Vector[Map[String, Int]]]
+      case None => return Vector[Map[String, Int]]()
+    }
     Vector[Map[String, Int]]()
   }
 
   private def convertGameState(gameStateJson: String): GameState.GameState = {
     val json: JsValue = Json.parse(gameStateJson)
-     val gameState = (json \\ "gameState").head.as[String] match {
+    val gameState = (json \\ "gameState").head.as[String] match {
       case "PLAYERSETTING" => GameState.PLAYERSETTING
       case "SHIPSETTING" => GameState.SHIPSETTING
       case "IDLE" => GameState.IDLE

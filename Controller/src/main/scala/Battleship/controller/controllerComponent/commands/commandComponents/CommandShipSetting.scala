@@ -4,7 +4,6 @@ import Battleship.controller.controllerComponent._
 import Battleship.controller.controllerComponent.commands.Command
 import Battleship.controller.controllerComponent.events.{FailureEvent, GridUpdated, PlayerChanged, RedoTurn}
 import Battleship.model.playerComponent.InterfacePlayer
-import Battleship.model.shipComponent.shipImplemenation.Ship
 import Battleship.model.states.{GameState, PlayerState}
 
 import scala.util.{Failure, Success, Try}
@@ -41,7 +40,10 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
   private def changePlayerStats(coords: Vector[Map[String, Int]])(player: InterfacePlayer): Either[InterfacePlayer, Throwable] = {
     if (!shipSettingAllowsNewShip(coords.length, player)) return Right(new Exception("no more ships of this length can be placed"))
     // outsource :: set field -- get back failure or success
-    controller.requestSetField("player_01", coords)
+    controller.requestSetField("player_01", coords) match {
+      case Success(value) => Right(new Exception(value))
+      case Failure(exception) => Right(exception)
+    }
     // player.grid.setField(controller.gameState, coords) match {
     //   case Left(_) => Right(new Exception("there is already a ship placed"))
     //   case Right(value) => value match {
@@ -50,7 +52,6 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
     //       Left(player.addShip(ship).updateGrid(updatedGrid))
     //   }
     // }
-    Right(new Exception)
   }
 
   private def handleFieldSetting(way: Either[InterfacePlayer, Throwable], state: PlayerState.Value, shipLength: Int): Try[GameState.GameState] = {
