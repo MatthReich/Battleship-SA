@@ -8,9 +8,15 @@ import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.states.GameState
 import Battleship.model.states.GameState.GameState
 import Battleship.model.states.PlayerState.PlayerState
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.Behaviors
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.client.RequestBuilding.{Get, Post}
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import com.google.inject.{Guice, Inject, Injector}
 
 import scala.annotation.tailrec
+import scala.concurrent.Future
 import scala.swing.Publisher
 import scala.util.{Failure, Success, Try}
 
@@ -18,6 +24,24 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
   private val undoManager = new UndoManager
   private val injector: Injector = Guice.createInjector(new GameModule)
   private val fileIo: InterfaceFileIo = injector.getInstance(classOf[InterfaceFileIo])
+
+  def getPlayer(player:String): Unit/*(String,Map[Int, Int], Vector[Map[String, Int]])*/ ={
+    implicit val system = ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext = system.executionContext
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayer="+player))
+    responseFuture.onComplete{
+      case Success(res) => {
+        if (res.status == StatusCodes.OK) {
+          println(res.entity)
+        } else {
+          sys.error("Error")
+        }
+      }
+      case Failure(_) => {
+        sys.error("Error")
+      }
+    }
+  }
 
   override def changeGameState(gameState: GameState): Unit = this.gameState = gameState
 
