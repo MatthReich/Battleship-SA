@@ -97,7 +97,7 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
   private def handleInput(input: String, state: Either[Int, Int]): Try[Vector[Map[String, Int]]] = {
     Try(input.split(" ").map(_.toInt)) match {
       case Success(convertedInput) =>
-        if (convertedInput.exists(_.>=(player_01.grid.size))) return Failure(new Exception("input is out of scope"))
+        if (convertedInput.exists(_.>=(10))) return Failure(new Exception("input is out of scope"))
         state match {
           case Left(lengthOfArguments) => calculateCoords(lengthOfArguments, convertedInput.toVector)
           case Right(lengthOfArguments) => calculateCoords(lengthOfArguments, convertedInput.toVector)

@@ -1,3 +1,5 @@
+import play.api.libs.json.JsValue
+
 import scala.util.Try
 
 val shipArray: Vector[Map[String, Int]] = Vector(

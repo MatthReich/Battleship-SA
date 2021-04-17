@@ -40,7 +40,6 @@ object Game extends Reactor {
 
   private def initNewGame(): Unit = {
     controller = initController()
-    controller.getPlayer("player_01")
     tui = new Tui(controller)
     gui = new StartGui(controller)
     controller.publish(new GameStart)

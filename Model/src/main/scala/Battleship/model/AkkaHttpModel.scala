@@ -5,6 +5,8 @@ import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
 import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.playerComponent.playerImplementation.Player
 import Battleship.model.shipComponent.InterfaceShip
+import Battleship.model.states.GameState
+import Battleship.model.states.GameState.GameState
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
@@ -28,15 +30,45 @@ object AkkaHttpModel {
     // needed for the future flatMap/onComplete in the end
     implicit val executionContext = system.executionContext
 
+    /*
+    * getPlayerName
+    * getPlayerShipSetList
+    * getPlayerGrid
+    * */
+
     val route = concat(
       path("model") {
-        parameters("getPlayer"){ (player)=>
-          player match {
-            case "player_01" => complete(HttpEntity(ContentTypes.`application/json`, ""+
-              Json.toJson(player_01.name,player_01.shipSetList, player_01.grid.grid)))
-            case "player_02" => complete(HttpEntity(ContentTypes.`application/json`, ""+
-              Json.toJson(player_02.name,player_02.shipSetList, player_02.grid.grid)))
-            case _ => complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "Failed"))
+        parameters("getPlayerName".optional, "getPlayerShipSetList".optional, "getPlayerGrid".optional) { (name, shipSetList, grid) =>
+          var answer: String = ""
+          name match {
+            case Some(player) => player match {
+              case "player_01" => answer += player_01.name
+              case "player_02" => answer += player_02.name
+              case _ => complete(StatusCodes.BadRequest)
+            }
+            case None =>
+          }
+          shipSetList match {
+            case Some(player) => player match {
+              case "player_01" => answer += player_01.shipSetList
+              case "player_02" => answer += player_02.shipSetList
+              case _ => complete(StatusCodes.BadRequest)
+            }
+            case None =>
+          }
+          grid match {
+            case Some(player) => player match {
+              case "player_01" => answer += player_01.grid.grid
+              case "player_02" => answer += player_02.grid.grid
+              case _ =>
+                complete(StatusCodes.BadRequest)
+            }
+            case None =>
+          }
+          if (answer.nonEmpty) {
+            complete(HttpEntity(ContentTypes.`application/json`, "" + Json.toJson(answer)))
+          } else {
+            complete(StatusCodes.BadRequest)
           }
         }
       },
