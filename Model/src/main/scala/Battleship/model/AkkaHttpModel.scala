@@ -2,6 +2,7 @@ package Battleship.model
 
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
+import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.playerComponent.playerImplementation.Player
 import Battleship.model.shipComponent.InterfaceShip
 import akka.actor.typed.ActorSystem
@@ -20,8 +21,8 @@ object AkkaHttpModel {
     val grid_player_01 = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
     val grid_player_02 = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
 
-    val player_01 = Player("player_01",Map[Int, Int](),Vector[InterfaceShip](), grid_player_01)
-    val player_02 = Player("player_02",Map[Int, Int](),Vector[InterfaceShip](), grid_player_02)
+    var player_01: InterfacePlayer = Player("player_01", Map[Int, Int](), Vector[InterfaceShip](), grid_player_01)
+    var player_02: InterfacePlayer = Player("player_02", Map[Int, Int](), Vector[InterfaceShip](), grid_player_02)
 
     implicit val system = ActorSystem(Behaviors.empty, "my-system")
     // needed for the future flatMap/onComplete in the end
@@ -39,6 +40,37 @@ object AkkaHttpModel {
           }
         }
       },
+      path("model" / "update") {
+        parameters("playerName", "newPlayerName") { (player, newName) =>
+          player match {
+            case "player_01" =>
+              player_01 = player_01.updateName(newName)
+              complete(StatusCodes.OK)
+            case "player_02" =>
+              player_02 = player_02.updateName(newName)
+              complete(StatusCodes.OK)
+            case _ => complete(StatusCodes.BadRequest)
+          }
+        }
+      },
+      path("model" / "player" / "grid" / "update") {
+        post {
+          println("lol")
+          complete(StatusCodes.OK)
+        }
+        parameters("playerName", "gameState", "coords") { (player, gameState, coordsJs) =>
+          player match {
+            case "player_01" =>
+              val coords = Json.toJson(coordsJs).as[Vector[Map[String, Int]]]
+              player_01.grid.setField(convertGameState(gameState), coords)
+              complete(StatusCodes.OK)
+            case "player_02" =>
+              complete(StatusCodes.OK)
+            case _ => complete(StatusCodes.BadRequest)
+          }
+
+        }
+      }
     )
 
     val bindingFuture = Http().newServerAt("localhost", 8080).bind(route)
@@ -48,5 +80,20 @@ object AkkaHttpModel {
     bindingFuture
       .flatMap(_.unbind()) // trigger unbinding from the port
       .onComplete(_ => system.terminate()) // and shutdown when done
+  }
+
+  private def coordsToVectorMap(coordsJs: String): Vector[Map[String, Int]] = {
+    Vector[Map[String, Int]]()
+  }
+
+  private def convertGameState(gameStateJson: String): GameState.GameState = {
+    val json: JsValue = Json.parse(gameStateJson)
+     val gameState = (json \\ "gameState").head.as[String] match {
+      case "PLAYERSETTING" => GameState.PLAYERSETTING
+      case "SHIPSETTING" => GameState.SHIPSETTING
+      case "IDLE" => GameState.IDLE
+      case "SOLVED" => GameState.SOLVED
+    }
+    gameState
   }
 }

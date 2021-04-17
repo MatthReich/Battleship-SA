@@ -2,6 +2,7 @@ package Battleship.controller.controllerComponent
 
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.commands.commandComponents.{CommandIdle, CommandPlayerSetting, CommandShipSetting}
+import Battleship.controller.controllerComponent.events.FailureEvent
 import Battleship.controller.controllerComponent.utils.{GameModule, UndoManager}
 import Battleship.model.fileIoComponent.InterfaceFileIo
 import Battleship.model.playerComponent.InterfacePlayer
@@ -14,9 +15,10 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.{Get, Post}
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import com.google.inject.{Guice, Inject, Injector}
+import play.api.libs.json.Json
 
 import scala.annotation.tailrec
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.swing.Publisher
 import scala.util.{Failure, Success, Try}
 
@@ -39,6 +41,37 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
       }
       case Failure(_) => {
         sys.error("Error")
+      }
+    }
+  }
+
+  def requestChangePlayerName(player: String, newName: String) : Unit = {
+    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor = system.executionContext
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/update?playerName=" + player + "&newPlayerName=" + newName))
+    responseFuture.onComplete{
+      case Success(res) => {
+        if (res.status != StatusCodes.OK)
+          publish(new FailureEvent("request status was: " + res.status))
+      }
+      case Failure(exeption) => {
+        publish(new FailureEvent(exeption.getMessage))
+      }
+    }
+  }
+
+  def requestSetField(player: String, coords: Vector[Map[String, Int]]): Unit = {
+    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor = system.executionContext
+    println("http://localhost:8080/model/player/grid/update?playerName=" + player + "&gameState=" + gameState + "&coords=" + Json.toJson(coords))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Post("http://localhost:8080/model/player/grid/update?playerName=" + player + "&gameState=" + gameState + "&coords=" + Json.toJson(coords)))
+    responseFuture.onComplete{
+      case Success(res) => {
+        if (res.status != StatusCodes.OK)
+          publish(new FailureEvent("request status was: " + res.status))
+      }
+      case Failure(exeption) => {
+        publish(new FailureEvent(exeption.getMessage))
       }
     }
   }

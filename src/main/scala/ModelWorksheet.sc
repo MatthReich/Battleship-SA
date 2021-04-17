@@ -19,3 +19,6 @@ for (ship <- shipArray) yield ship.get("x") match {
 val z = Vector(1, 2, 3)
 z.appended(5)
 z
+import play.api.libs.json.Json
+val value: JsValue = Json.toJson(Vector[Map[String, Int]](Map("x" -> 0, "y" -> 1), Map("x" -> 0, "y" -> 2)))
+value.as[Vector[Map[String, Int]]]
