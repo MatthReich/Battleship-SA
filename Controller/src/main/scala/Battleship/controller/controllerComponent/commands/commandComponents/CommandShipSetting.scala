@@ -14,21 +14,26 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
   val shipNotSunk = false
 
   override def doStep(): Unit = {
+    // rest call
+    // -> on success == publishen state changen
+    // -> on failure == failure (rest call http response)
+
     coordsCalculation(input, Right(4)) match {
       case Success(coords) =>
-        val functionHelper = changePlayerStats(coords) _
+        // call rest
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
-            handleFieldSetting(functionHelper(controller.player_01), PlayerState.PLAYER_ONE, coords.length) match {
+            handleFieldSetting(changePlayerStats(coords)(controller.player_01), PlayerState.PLAYER_ONE, coords.length) match {
               case Failure(exception) => publishFailure(exception.getMessage)
               case Success(newGameState) => handleShipSetFinishing(controller.player_01, PlayerState.PLAYER_TWO, newGameState)
             }
           case PlayerState.PLAYER_TWO =>
-            handleFieldSetting(functionHelper(controller.player_02), PlayerState.PLAYER_TWO, coords.length) match {
+            handleFieldSetting(changePlayerStats(coords)(controller.player_02), PlayerState.PLAYER_TWO, coords.length) match {
               case Failure(exception) => publishFailure(exception.getMessage)
               case Success(newGameState) => handleShipSetFinishing(controller.player_02, PlayerState.PLAYER_ONE, newGameState)
             }
         }
+
       case Failure(exception) => publishFailure(exception.getMessage)
     }
   }
@@ -40,19 +45,14 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
 
   private def changePlayerStats(coords: Vector[Map[String, Int]])(player: InterfacePlayer): Either[InterfacePlayer, Throwable] = {
     if (!shipSettingAllowsNewShip(coords.length, player)) return Right(new Exception("no more ships of this length can be placed"))
-    // outsource :: set field -- get back failure or success
-    controller.requestSetField("player_01", coords) match {
-      case Success(value) => Right(new Exception(value))
-      case Failure(exception) => Right(exception)
+    player.grid.setField(controller.gameState.toString.toUpperCase, coords) match {
+      case Left(_) => Right(new Exception("there is already a ship placed"))
+      case Right(value) => value match {
+        case Failure(exception) => Right(exception)
+        case Success(updatedGrid) => val ship = Ship(coords.length, coords, shipNotSunk)
+          Left(player.addShip(ship).updateGrid(updatedGrid))
+      }
     }
-    // player.grid.setField(controller.gameState, coords) match {
-    //   case Left(_) => Right(new Exception("there is already a ship placed"))
-    //   case Right(value) => value match {
-    //     case Failure(exception) => Right(exception)
-    //     case Success(updatedGrid) => val ship = Ship(coords.length, coords, shipNotSunk)
-    //       Left(player.addShip(ship).updateGrid(updatedGrid))
-    //   }
-    // }
   }
 
   private def handleFieldSetting(way: Either[InterfacePlayer, Throwable], state: PlayerState.Value, shipLength: Int): Try[GameState.GameState] = {

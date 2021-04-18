@@ -34,7 +34,7 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
   }
 
   private def handleGuess(x: Int, y: Int)(player: InterfacePlayer): Try[Either[InterfacePlayer, InterfacePlayer]] = {
-    player.grid.setField(controller.gameState, Vector(Map("x" -> x, "y" -> y))) match {
+    player.grid.setField(controller.gameState.toString.toUpperCase, Vector(Map("x" -> x, "y" -> y))) match {
       case Left(value) => doSame(value, player, x, y)
       case Right(value) => doSame(value, player, x, y)
     }

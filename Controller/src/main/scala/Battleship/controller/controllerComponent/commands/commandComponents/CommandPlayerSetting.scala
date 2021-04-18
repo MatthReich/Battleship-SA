@@ -9,14 +9,15 @@ class CommandPlayerSetting(input: String, controller: Controller) extends Comman
   override def doStep(): Unit = {
     controller.playerState match {
       case PlayerState.PLAYER_ONE =>
-        if (input != "") {
-          controller.requestChangePlayerName("player_01", input)
+        controller.requestChangePlayerName("player_01", input) match {
+          case None => handlePlayerNameSetting(PlayerState.PLAYER_TWO, GameState.PLAYERSETTING)
+          case Some(exception) => controller.publish(new FailureEvent(exception.getMessage))
         }
-        handlePlayerNameSetting(PlayerState.PLAYER_TWO, GameState.PLAYERSETTING)
       case PlayerState.PLAYER_TWO =>
-        if (input != "")
-          controller.requestChangePlayerName("player_02", input)
-        handlePlayerNameSetting(PlayerState.PLAYER_ONE, GameState.SHIPSETTING)
+        controller.requestChangePlayerName("player_02", input) match {
+          case None => handlePlayerNameSetting(PlayerState.PLAYER_ONE, GameState.SHIPSETTING)
+          case Some(exception) => controller.publish(new FailureEvent(exception.getMessage))
+        }
     }
   }
 

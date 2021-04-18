@@ -2,7 +2,6 @@ package Battleship.controller.controllerComponent
 
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.commands.commandComponents.{CommandIdle, CommandPlayerSetting, CommandShipSetting}
-import Battleship.controller.controllerComponent.events.FailureEvent
 import Battleship.controller.controllerComponent.utils.{GameModule, UndoManager}
 import Battleship.model.fileIoComponent.InterfaceFileIo
 import Battleship.model.playerComponent.InterfacePlayer
@@ -28,11 +27,11 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
   private val injector: Injector = Guice.createInjector(new GameModule)
   private val fileIo: InterfaceFileIo = injector.getInstance(classOf[InterfaceFileIo])
 
-  def getPlayer(player:String): Unit/*(String,Map[Int, Int], Vector[Map[String, Int]])*/ ={
+  def getPlayer(player: String): Unit /*(String,Map[Int, Int], Vector[Map[String, Int]])*/ = {
     implicit val system = ActorSystem(Behaviors.empty, "my-system")
     implicit val executionContext = system.executionContext
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayer="+player))
-    responseFuture.onComplete{
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayer=" + player))
+    responseFuture.onComplete {
       case Success(res) => {
         if (res.status == StatusCodes.OK) {
           println(res.entity)
@@ -46,18 +45,15 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     }
   }
 
-  def requestChangePlayerName(player: String, newName: String) : Unit = {
+  def requestChangePlayerName(player: String, newName: String): Option[Throwable] = {
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/update?playerName=" + player + "&newPlayerName=" + newName))
-    responseFuture.onComplete{
-      case Success(res) => {
-        if (res.status != StatusCodes.OK)
-          publish(new FailureEvent("request status was: " + res.status))
-      }
-      case Failure(exeption) => {
-        publish(new FailureEvent(exeption.getMessage))
-      }
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/name/update?playerName=" + player + "&newPlayerName=" + newName))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    if (result.status != StatusCodes.OK) {
+      Some(new Exception("request status was: " + result.status))
+    } else {
+      None
     }
   }
 
