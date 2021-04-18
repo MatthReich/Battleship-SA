@@ -68,10 +68,18 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Post("http://localhost:8080/model/player/shipsetting/update", payload.toString()))
     val result = Await.result(responseFuture, atMost = 10.second)
     if (result.status != StatusCodes.OK) {
-      Some(new Exception("request status was: " + result.status))
+      Some(new Exception(result.status.toString()))
     } else {
       None
     }
+  }
+
+  def requestShipSettingFinished(player: String): Boolean = {
+    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor = system.executionContext
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/shipsetting/request?shipSettingFinished=" + player))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    result.status == StatusCodes.OK
   }
 
   override def changeGameState(gameState: GameState): Unit = this.gameState = gameState

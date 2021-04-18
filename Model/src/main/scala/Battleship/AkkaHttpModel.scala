@@ -23,20 +23,14 @@ object AkkaHttpModel {
     val grid_player_01 = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
     val grid_player_02 = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
 
-    var player_01: InterfacePlayer = Player("player_01", Map[Int, Int](), Vector[InterfaceShip](), grid_player_01)
-    var player_02: InterfacePlayer = Player("player_02", Map[Int, Int](), Vector[InterfaceShip](), grid_player_02)
+    var player_01: InterfacePlayer = Player("player_01", Map(2 -> 2, 3 -> 1, 4 -> 1, 5 -> 2), Vector[InterfaceShip](), grid_player_01)
+    var player_02: InterfacePlayer = Player("player_02", Map(2 -> 2, 3 -> 1, 4 -> 1, 5 -> 2), Vector[InterfaceShip](), grid_player_02)
 
     val requestHandler = RequestHandler()
 
     implicit val system = ActorSystem(Behaviors.empty, "my-system")
     // needed for the future flatMap/onComplete in the end
     implicit val executionContext = system.executionContext
-
-    /*
-    * getPlayerName
-    * getPlayerShipSetList
-    * getPlayerGrid
-    * */
 
     val route = concat(
       path("model") {
@@ -74,6 +68,23 @@ object AkkaHttpModel {
           }
         }
       },
+      path("model" / "init") {
+        post {
+          entity(as[String]) { string => {
+            val json = Json.parse(string)
+            (json \ "player").as[String] match {
+              case "player_01" =>
+                player_01 = player_01.updateName("player_01").updateShipSetList(payloadExtractMap(json \ "shipSetList")).updateGrid(grid_player_01)
+                complete(StatusCodes.OK)
+              case "player_02" =>
+                player_02 = player_02.updateName("player_02").updateShipSetList(payloadExtractMap(json \ "shipSetList")).updateGrid(grid_player_02)
+                complete(StatusCodes.OK)
+              case _ => complete(StatusCodes.BadRequest)
+            }
+          }
+          }
+        }
+      },
       path("model" / "player" / "name" / "update") {
         parameters("playerName", "newPlayerName") { (player, newName) =>
           requestHandler.commandPlayerSetting(player, newName, player_01, player_02) match {
@@ -83,7 +94,7 @@ object AkkaHttpModel {
                 case "player_02" => player_02 = newPlayer
               }
               complete(StatusCodes.OK)
-            case Failure(exception) => complete(StatusCodes.custom(55, exception.getMessage, "default lul"))
+            case Failure(exception) => complete(HttpResponse(StatusCodes.custom(469, exception.getMessage)))
           }
         }
       },
@@ -113,24 +124,33 @@ object AkkaHttpModel {
                 requestHandler.commandShipSetting(coordsToVectorMap(json \ "coords"), player_01, payloadExtractGameState(json \ "gameState")) match {
                   case Success(newPlayer) =>
                     player_01 = newPlayer
-                    complete(StatusCodes.OK)
-                  case Failure(exception) => complete(StatusCodes.BadRequest)
+                    complete(HttpResponse(status = StatusCodes.OK))
+                  case Failure(exception) => complete(HttpResponse(StatusCodes.custom(469, exception.getMessage)))
                 }
-                player_01.grid.setField("SHIPSETTING", coordsToVectorMap(json \ "coords"))
-                complete(StatusCodes.OK)
               case "player_02" =>
                 requestHandler.commandShipSetting(coordsToVectorMap(json \ "coords"), player_02, payloadExtractGameState(json \ "gameState")) match {
                   case Success(newPlayer) =>
                     player_02 = newPlayer
-                    complete(StatusCodes.OK)
-                  case Failure(exception) => complete(StatusCodes.BadRequest)
+                    complete(HttpResponse(status = StatusCodes.OK))
+                  case Failure(exception) => complete(HttpResponse(StatusCodes.custom(469, exception.getMessage)))
                 }
               case _ => complete(StatusCodes.BadRequest)
             }
           }
           }
         }
-      }
+      },
+      path("model" / "player" / "shipsetting" / "request") {
+        parameters("shipSettingFinished") {
+          case "player_01" =>
+            if (!player_01.shipSetList.exists(_._2 != 0)) complete(StatusCodes.OK)
+            else complete(StatusCodes.BadRequest)
+          case "player_02" =>
+            if (!player_02.shipSetList.exists(_._2 != 0)) complete(StatusCodes.OK)
+            else complete(StatusCodes.BadRequest)
+          case _ => complete(StatusCodes.BadRequest)
+        }
+      },
     )
 
     val bindingFuture = Http().newServerAt("localhost", 8080).bind(route)
@@ -144,14 +164,20 @@ object AkkaHttpModel {
 
   private def coordsToVectorMap(coordsJs: JsLookupResult): Vector[Map[String, Int]] = {
     coordsJs.result.toOption match {
-      case Some(value) => return value.as[Vector[Map[String, Int]]]
-      case None => return Vector[Map[String, Int]]()
+      case Some(value) => value.as[Vector[Map[String, Int]]]
+      case None => Vector[Map[String, Int]]()
     }
-    Vector[Map[String, Int]]()
   }
 
   private def payloadExtractGameState(gameStateJs: JsLookupResult): String = {
     gameStateJs.as[String]
+  }
+
+  private def payloadExtractMap(jsmap: JsLookupResult): Map[Int, Int] = {
+    jsmap.result.toOption match {
+      case Some(_) => Map(2 -> 2, 3 -> 1, 4 -> 1, 5 -> 2)
+      case None => Map(2 -> 2, 3 -> 1, 4 -> 1, 5 -> 2)
+    }
   }
 
 }
