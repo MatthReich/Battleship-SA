@@ -1,6 +1,7 @@
 package Battleship.requestHandling
 
 import Battleship.model.playerComponent.InterfacePlayer
+import Battleship.model.shipComponent.shipImplemenation.Ship
 
 import scala.util.{Failure, Success, Try}
 
