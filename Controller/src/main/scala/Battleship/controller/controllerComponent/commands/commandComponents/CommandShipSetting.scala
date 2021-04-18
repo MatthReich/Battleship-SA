@@ -16,12 +16,12 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
       case Success(coords) =>
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
-            controller.requestHandleFieldSetting("player_01", coords) match {
+            controller.requestHandleFieldSettingShipSetting("player_01", coords) match {
               case Some(exception) => publishFailure(exception.getMessage)
               case None => handleShipSetFinishing("player_01", PlayerState.PLAYER_TWO, GameState.SHIPSETTING)
             }
           case PlayerState.PLAYER_TWO =>
-            controller.requestHandleFieldSetting("player_02", coords) match {
+            controller.requestHandleFieldSettingShipSetting("player_02", coords) match {
               case Some(exception) => publishFailure(exception.getMessage)
               case None => handleShipSetFinishing("player_02", PlayerState.PLAYER_ONE, GameState.IDLE)
             }

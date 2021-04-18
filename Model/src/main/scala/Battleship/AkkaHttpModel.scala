@@ -151,6 +151,41 @@ object AkkaHttpModel {
           case _ => complete(StatusCodes.BadRequest)
         }
       },
+      path("model" / "player" / "idle" / "update") {
+        post {
+          entity(as[String]) { jsonString => {
+            val json = Json.parse(jsonString)
+            (json \ "player").as[String] match {
+              case "player_01" =>
+                requestHandler.commandIdle(coordsToVectorMap(json \ "coords"), player_01, payloadExtractGameState(json \ "gameState")) match {
+                  case Left(way) => way match {
+                    case Left(newPlayer) => // nochmal dran
+                      player_01 = newPlayer
+                      complete(StatusCodes.OK)
+                    case Right(newPlayer) => // player change
+                      player_01 = newPlayer
+                      complete(HttpResponse(StatusCodes.custom(468, "change player")))
+                  }
+                  case Right(exception) => complete(HttpResponse(StatusCodes.custom(469, exception.getMessage)))
+                }
+              case "player_02" =>
+                requestHandler.commandIdle(coordsToVectorMap(json \ "coords"), player_02, payloadExtractGameState(json \ "gameState")) match {
+                  case Left(way) => way match {
+                    case Left(newPlayer) => // nochmal dran
+                      player_02 = newPlayer
+                      complete(StatusCodes.OK)
+                    case Right(newPlayer) => // player change
+                      player_02 = newPlayer
+                      complete(HttpResponse(StatusCodes.custom(468, "change player")))
+                  }
+                  case Right(exception) => complete(HttpResponse(StatusCodes.custom(469, exception.getMessage)))
+                }
+              case _ => complete(StatusCodes.BadRequest)
+            }
+          }
+          }
+        }
+      },
     )
 
     val bindingFuture = Http().newServerAt("localhost", 8080).bind(route)

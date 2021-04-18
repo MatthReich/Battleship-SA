@@ -17,12 +17,17 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
         val x = coords(0).getOrElse("x", Int.MaxValue)
         val y = coords(0).getOrElse("y", Int.MaxValue)
 
-        val functionHelper = handleGuess(x, y) _
         controller.playerState match {
           case PlayerState.PLAYER_ONE =>
-            handleFieldSetting(functionHelper(controller.player_02), PlayerState.PLAYER_ONE)
+            controller.requestHandleFieldSettingIdle("player_01", Vector[Map[String, Int]](Map("x" -> x, "y" -> y))) match {
+              case Some(exception) => publishFailure(exception.getMessage)
+              case None => handleNewGameSituationAndEndGameIfFinished(controller.player_01)
+            }
+
+
+            handleFieldSetting(handleGuess(x, y)(controller.player_02), PlayerState.PLAYER_ONE)
           case PlayerState.PLAYER_TWO =>
-            handleFieldSetting(functionHelper(controller.player_01), PlayerState.PLAYER_TWO)
+            handleFieldSetting(handleGuess(x, y)(controller.player_01), PlayerState.PLAYER_TWO)
         }
       case Failure(exception) => publishFailure(exception.getMessage)
     }
@@ -59,10 +64,10 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
         case Left(newPlayer) =>
           if (state == PlayerState.PLAYER_ONE) {
             controller.player_02 = newPlayer
-            handleNewGameSituationAndEndGameIfFinished(controller.player_02)
+            // handleNewGameSituationAndEndGameIfFinished(controller.player_02)
           } else {
             controller.player_01 = newPlayer
-            handleNewGameSituationAndEndGameIfFinished(controller.player_01)
+            // handleNewGameSituationAndEndGameIfFinished(controller.player_01)
           }
         case Right(newPlayer) =>
           if (state == PlayerState.PLAYER_ONE) {
