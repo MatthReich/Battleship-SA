@@ -186,6 +186,17 @@ object AkkaHttpModel {
           }
         }
       },
+      path("model" / "player" / "idle" / "request") {
+        parameters("gameIsWon") {
+          case "player_01" =>
+            if (!player_01.shipList.exists(_.status == false)) complete(StatusCodes.OK)
+            else complete(StatusCodes.BadRequest)
+          case "player_02" =>
+            if (!player_02.shipList.exists(_.status == false)) complete(StatusCodes.OK)
+            else complete(StatusCodes.BadRequest)
+          case _ => complete(StatusCodes.BadRequest)
+        }
+      },
     )
 
     val bindingFuture = Http().newServerAt("localhost", 8080).bind(route)

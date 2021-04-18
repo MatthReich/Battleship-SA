@@ -68,7 +68,7 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Post("http://localhost:8080/model/player/shipsetting/update", payload.toString()))
     val result = Await.result(responseFuture, atMost = 10.second)
     if (result.status != StatusCodes.OK) {
-      Some(new Exception(result.status.toString()))
+      Some(new Exception(result.status.reason()))
     } else {
       None
     }
@@ -82,7 +82,7 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     result.status == StatusCodes.OK
   }
 
-  def requestHandleFieldSettingIdle(player: String, coords: Vector[Map[String, Int]]): Option[Throwable] = {
+  def requestHandleFieldSettingIdle(player: String, coords: Vector[Map[String, Int]]): Either[Boolean, Throwable] = {
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val payload = Json.obj(
@@ -92,11 +92,22 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
     )
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Post("http://localhost:8080/model/player/idle/update", payload.toString()))
     val result = Await.result(responseFuture, atMost = 10.second)
-    if (result.status != StatusCodes.OK) {
-      Some(new Exception(result.status.toString()))
+    if (result.status.toString() == "468 change player") {
+      Left(true)
+    } else if (result.status != StatusCodes.OK) {
+      Right(new Exception(result.status.reason()))
     } else {
-      None
+      Left(false)
     }
+
+  }
+
+  def requestGameIsWon(player: String) = {
+    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor = system.executionContext
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/idle/request?gameIsWon=" + player))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    result.status == StatusCodes.OK
   }
 
   override def changeGameState(gameState: GameState): Unit = this.gameState = gameState
