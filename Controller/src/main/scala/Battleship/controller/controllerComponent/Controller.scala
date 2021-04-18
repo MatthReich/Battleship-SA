@@ -18,7 +18,8 @@ import com.google.inject.{Guice, Inject, Injector}
 import play.api.libs.json.Json
 
 import scala.annotation.tailrec
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.swing.Publisher
 import scala.util.{Failure, Success, Try}
 

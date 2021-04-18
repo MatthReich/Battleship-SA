@@ -1,4 +1,4 @@
-package Battleship.model
+package Battleship
 
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
@@ -6,15 +6,16 @@ import Battleship.model.playerComponent.InterfacePlayer
 import Battleship.model.playerComponent.playerImplementation.Player
 import Battleship.model.shipComponent.InterfaceShip
 import Battleship.model.states.GameState
+import Battleship.requestHandling.RequestHandler
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
-import play.api.libs.json.JsValue.jsValueToJsLookup
 import play.api.libs.json.{JsLookupResult, JsValue, Json}
 
 import scala.io.StdIn
+import scala.util.{Failure, Success}
 
 object AkkaHttpModel {
 
@@ -25,6 +26,8 @@ object AkkaHttpModel {
 
     var player_01: InterfacePlayer = Player("player_01", Map[Int, Int](), Vector[InterfaceShip](), grid_player_01)
     var player_02: InterfacePlayer = Player("player_02", Map[Int, Int](), Vector[InterfaceShip](), grid_player_02)
+
+    val requestHandler = RequestHandler()
 
     implicit val system = ActorSystem(Behaviors.empty, "my-system")
     // needed for the future flatMap/onComplete in the end
@@ -72,16 +75,16 @@ object AkkaHttpModel {
           }
         }
       },
-      path("model" / "update") {
+      path("model" / "player" / "name" / "update") {
         parameters("playerName", "newPlayerName") { (player, newName) =>
-          player match {
-            case "player_01" =>
-              player_01 = player_01.updateName(newName)
+          requestHandler.commandPlayerSetting(player, newName, player_01, player_02) match {
+            case Success(newPlayer) =>
+              player match {
+                case "player_01" => player_01 = newPlayer
+                case "player_02" => player_02 = newPlayer
+              }
               complete(StatusCodes.OK)
-            case "player_02" =>
-              player_02 = player_02.updateName(newName)
-              complete(StatusCodes.OK)
-            case _ => complete(StatusCodes.BadRequest)
+            case Failure(exception) => complete(StatusCodes.custom(55, exception.getMessage, "default lul"))
           }
         }
       },
@@ -91,10 +94,10 @@ object AkkaHttpModel {
             val json = Json.parse(jsonString)
             (json \ "player").as[String] match {
               case "player_01" =>
-                player_01.grid.setField(GameState.SHIPSETTING, coordsToVectorMap(json \ "coords"))
+                player_01.grid.setField("SHIPSETTING", coordsToVectorMap(json \ "coords"))
                 complete(StatusCodes.OK)
               case "player_02" =>
-                player_02.grid.setField(GameState.SHIPSETTING, coordsToVectorMap(json \ "coords"))
+                player_02.grid.setField("SHIPSETTING", coordsToVectorMap(json \ "coords"))
                 complete(StatusCodes.OK)
               case _ => complete(StatusCodes.BadRequest)
             }
@@ -108,7 +111,7 @@ object AkkaHttpModel {
           player match {
             case "player_01" =>
               val coords = Json.toJson(coordsJs).as[Vector[Map[String, Int]]]
-              player_01.grid.setField(convertGameState(gameState), coords)
+              player_01.grid.setField(gameState, coords)
               complete(StatusCodes.OK)
             case "player_02" =>
               complete(StatusCodes.OK)
@@ -135,14 +138,4 @@ object AkkaHttpModel {
     Vector[Map[String, Int]]()
   }
 
-  private def convertGameState(gameStateJson: String): GameState.GameState = {
-    val json: JsValue = Json.parse(gameStateJson)
-    val gameState = (json \\ "gameState").head.as[String] match {
-      case "PLAYERSETTING" => GameState.PLAYERSETTING
-      case "SHIPSETTING" => GameState.SHIPSETTING
-      case "IDLE" => GameState.IDLE
-      case "SOLVED" => GameState.SOLVED
-    }
-    gameState
-  }
 }
