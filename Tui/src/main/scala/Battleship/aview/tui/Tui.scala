@@ -83,20 +83,21 @@ class Tui(controller: InterfaceController) extends Reactor {
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerName=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
     if (result.status == StatusCodes.OK) {
-      convertAnswer(result, player)
-    }
-    else
+      convertAnswer(result).replace("\"", "")
+    } else {
       player
+    }
   }
 
-  private def convertAnswer(result: HttpResponse, player: String): String = {
+  private def requestGrid(player: String, showAll: Boolean): String = {
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
-    var name = player
-    result.entity.dataBytes.runFold(ByteString(""))(_ ++ _).foreach { body =>
-      name = body.utf8String
-    }
-    name
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerGrid=" + player + showAll))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    if (result.status == StatusCodes.OK)
+      convertAnswer(result)
+    else
+      ""
   }
 
   private def gridAsString(): String = {
@@ -106,15 +107,10 @@ class Tui(controller: InterfaceController) extends Reactor {
     }
   }
 
-  private def requestGrid(player: String, showAll: Boolean): String = {
+  private def convertAnswer(result: HttpResponse): String = {
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerName=" + player + showAll))
-    val result = Await.result(responseFuture, atMost = 10.second)
-    if (result.status == StatusCodes.OK)
-      result.entity.toString
-    else
-      ""
+    Await.result(result.entity.dataBytes.runFold(ByteString(""))(_ ++ _).map(_.utf8String), atMost = 10.second)
   }
 
   private def enemyGridAsString(): String = {
