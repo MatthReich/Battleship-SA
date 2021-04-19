@@ -124,11 +124,23 @@ class Tui(controller: InterfaceController) extends Reactor {
     val field = new StringBuilder()
     controller.playerState match {
       case PlayerState.PLAYER_ONE =>
-        //controller.player_01.shipSetList.foreach(field.append(_).append("\n")) // @TODO http call
-        field.toString()
+        requestPlayerShipSetList("player_01") //.asInstanceOf[Map[String, Int]].foreach(field.append(_).append("\n")) //controller.player_01.shipSetList.foreach(field.append(_).append("\n")) // @TODO http call
+      // field.toString()
       case PlayerState.PLAYER_TWO =>
-        //  controller.player_02.shipSetList.foreach(field.append(_).append("\n")) // @TODO http call
-        field.toString()
+        requestPlayerShipSetList("player_02") //.asInstanceOf[Map[String, Int]].foreach(field.append(_).append("\n")) //  controller.player_02.shipSetList.foreach(field.append(_).append("\n")) // @TODO http call
+      // field.toString()
+    }
+  }
+
+  private def requestPlayerShipSetList(player: String): String = {
+    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor = system.executionContext
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerShipSetList=" + player))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    if (result.status == StatusCodes.OK) {
+      convertAnswer(result).replace("\"", "")
+    } else {
+      ""
     }
   }
 
