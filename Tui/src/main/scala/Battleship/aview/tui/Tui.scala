@@ -7,9 +7,12 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import akka.util.ByteString
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import play.api.libs.json.Json
 
+import scala.annotation.tailrec
+import scala.collection.mutable
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.swing.Reactor
@@ -77,15 +80,24 @@ class Tui(controller: InterfaceController) extends Reactor {
     }
   }
 
+  val size = 10
+  private val water: Int = 0
+  private val ship: Int = 1
+  private val waterHit: Int = 2
+  private val shipHit: Int = 3
+  var grid: Vector[Map[String, Int]] = Vector[Map[String, Int]]()
+
+  def toStringGrid(showAllShips: Boolean): String = toStringRek(0, 0, showAllShips, initRek())
+
   private def requestPlayerName(player: String): String = {
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerName=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
-    if (result.status == StatusCodes.OK) {
-      convertAnswer(result).replace("\"", "")
-    } else {
-      player
+    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
+    tmp.result.toOption match {
+      case Some(value) => value.toString()
+      case None => player
     }
   }
 
@@ -94,41 +106,34 @@ class Tui(controller: InterfaceController) extends Reactor {
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerGrid=" + player + showAll))
     val result = Await.result(responseFuture, atMost = 10.second)
-    if (result.status == StatusCodes.OK)
-      convertAnswer(result)
-    else
-      ""
+    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
+    tmp.result.toOption match {
+      case Some(value) => grid = value.as[Vector[Map[String, Int]]]
+      case None => println("dully")
+    }
+    toStringGrid(showAll)
   }
 
   private def gridAsString(): String = {
     controller.playerState match {
-      case PlayerState.PLAYER_ONE => requestGrid("player_01", showAllShips) //controller.player_01.grid.toString(showAllShips) // @TODO http call
-      case PlayerState.PLAYER_TWO => requestGrid("player_02", showAllShips) // controller.player_02.grid.toString(showAllShips) // @TODO http call
+      case PlayerState.PLAYER_ONE => requestGrid("player_01", showAllShips)
+      case PlayerState.PLAYER_TWO => requestGrid("player_02", showAllShips)
     }
-  }
-
-  private def convertAnswer(result: HttpResponse): String = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
-    Await.result(result.entity.dataBytes.runFold(ByteString(""))(_ ++ _).map(_.utf8String), atMost = 10.second)
   }
 
   private def enemyGridAsString(): String = {
     controller.playerState match {
-      case PlayerState.PLAYER_ONE => requestGrid("player_02", showNotAllShips) //controller.player_02.grid.toString(showNotAllShips) // @TODO http call
-      case PlayerState.PLAYER_TWO => requestGrid("player_01", showNotAllShips) // controller.player_01.grid.toString(showNotAllShips) // @TODO http call
+      case PlayerState.PLAYER_ONE => requestGrid("player_02", showNotAllShips)
+      case PlayerState.PLAYER_TWO => requestGrid("player_01", showNotAllShips)
     }
   }
 
   private def shipSetListAsString(): String = {
-    val field = new StringBuilder()
     controller.playerState match {
       case PlayerState.PLAYER_ONE =>
-        requestPlayerShipSetList("player_01") //.asInstanceOf[Map[String, Int]].foreach(field.append(_).append("\n")) //controller.player_01.shipSetList.foreach(field.append(_).append("\n")) // @TODO http call
-      // field.toString()
+        requestPlayerShipSetList("player_01")
       case PlayerState.PLAYER_TWO =>
-        requestPlayerShipSetList("player_02") //.asInstanceOf[Map[String, Int]].foreach(field.append(_).append("\n")) //  controller.player_02.shipSetList.foreach(field.append(_).append("\n")) // @TODO http call
-      // field.toString()
+        requestPlayerShipSetList("player_02")
     }
   }
 
@@ -137,11 +142,48 @@ class Tui(controller: InterfaceController) extends Reactor {
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerShipSetList=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
-    if (result.status == StatusCodes.OK) {
-      convertAnswer(result).replace("\"", "")
+    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
+    tmp.toString()
+  }
+
+  @tailrec
+  private def toStringRek(idx: Int, idy: Int, showAllShips: Boolean, result: mutable.StringBuilder): String = {
+    if (idx == 0 && idy == size) {
+      result.toString()
+    } else if (idx == size) {
+      val newY = idy + 1
+      result ++= "\n"
+      if (newY < size) {
+        result ++= newY + " "
+      }
+      toStringRek(0, newY, showAllShips, result)
     } else {
-      ""
+      val fieldValue = grid(grid.indexWhere(mapping => mapping.get("x").contains(idx) && mapping.get("y").contains(idy))).getOrElse("value", Int.MaxValue)
+      result ++= getFieldValueInString(fieldValue, showAllShips)
+      toStringRek(idx + 1, idy, showAllShips, result)
     }
+  }
+
+  private def getFieldValueInString(fieldValue: Int, showAllShips: Boolean): String = {
+    fieldValue match {
+      case this.water => Console.BLUE + "  ~  " + Console.RESET
+      case this.ship =>
+        if (showAllShips) Console.GREEN + "  x  " + Console.RESET
+        else Console.BLUE + "  ~  " + Console.RESET
+      case this.shipHit => Console.RED + "  x  " + Console.RESET
+      case this.waterHit => Console.BLUE + "  0  " + Console.RESET
+    }
+  }
+
+  private def initRek(): mutable.StringBuilder = {
+    val stringOfGrid = new mutable.StringBuilder("  ")
+    var ids = 0
+    while (ids < size) {
+      stringOfGrid ++= "  " + ids + "  "
+      ids += 1
+    }
+    stringOfGrid ++= "\n0 "
+    stringOfGrid
   }
 
 }

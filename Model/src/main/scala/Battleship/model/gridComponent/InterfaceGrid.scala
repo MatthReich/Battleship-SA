@@ -1,7 +1,5 @@
 package Battleship.model.gridComponent
 
-import Battleship.model.states.GameState.GameState
-
 import scala.util.Try
 
 trait InterfaceGrid {

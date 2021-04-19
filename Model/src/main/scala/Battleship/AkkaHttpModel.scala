@@ -11,7 +11,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
-import play.api.libs.json.{JsLookupResult, Json}
+import play.api.libs.json.{JsLookupResult, JsValue, Json}
 
 import scala.io.StdIn
 import scala.util.{Failure, Success}
@@ -35,35 +35,35 @@ object AkkaHttpModel {
     val route = concat(
       path("model") {
         parameters("getPlayerName".optional, "getPlayerShipSetList".optional, "getPlayerGrid".optional) { (name, shipSetList, grid) =>
-          var answer: String = ""
+          var answer: JsValue = Json.toJson("")
           name match {
             case Some(player) => player match {
-              case "player_01" => answer += player_01.name
-              case "player_02" => answer += player_02.name
+              case "player_01" => answer = Json.toJson(player_01.name)
+              case "player_02" => answer = Json.toJson(player_02.name)
               case _ => complete(StatusCodes.BadRequest)
             }
             case None =>
           }
           shipSetList match {
             case Some(player) => player match {
-              case "player_01" => answer += player_01.shipSetList
-              case "player_02" => answer += player_02.shipSetList
+              case "player_01" => answer = Json.toJson(player_01.shipSetList)
+              case "player_02" => answer = Json.toJson(player_02.shipSetList)
               case _ => complete(StatusCodes.BadRequest)
             }
             case None =>
           }
           grid match {
             case Some(player) => player match {
-              case "player_01true" => answer += player_01.grid.toString(true)
-              case "player_02true" => answer += player_02.grid.toString(true)
-              case "player_01false" => answer += player_01.grid.toString(false)
-              case "player_02false" => answer += player_02.grid.toString(false)
+              case "player_01true" => answer = Json.toJson(player_01.grid.grid)
+              case "player_02true" => answer = Json.toJson(player_02.grid.grid)
+              case "player_01false" => answer = Json.toJson(player_01.grid.grid)
+              case "player_02false" => answer = Json.toJson(player_02.grid.grid)
               case _ =>
                 complete(StatusCodes.BadRequest)
             }
             case None =>
           }
-          if (answer != "") {
+          if (answer.toString() != "") {
             complete(HttpEntity(ContentTypes.`application/json`, "" + Json.toJson(answer)))
           } else {
             complete(StatusCodes.BadRequest)
