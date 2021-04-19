@@ -3,8 +3,8 @@ package Battleship.aview.gui
 import Battleship.aview.gui.panel.FieldPanel
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.events._
+import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.playerComponent.InterfacePlayer
-import Battleship.model.states.{GameState, PlayerState}
 
 import java.awt.Color
 import scala.swing._
@@ -16,7 +16,7 @@ class Gui(controller: InterfaceController) extends Frame {
   title = "Battleship"
   background = Color.GRAY
   preferredSize = new Dimension(dimWidth, dimHeight)
-  val gridSize: Int = controller.player_01.grid.size
+  val gridSize: Int = 10
   redraw()
 
   override def closeOperation() {
@@ -63,8 +63,8 @@ class Gui(controller: InterfaceController) extends Frame {
   }
 
   private def textGrid = new GridPanel(1, 2) {
-    contents += new TextArea(controller.player_01.name)
-    contents += new TextArea(controller.player_02.name)
+    contents += new TextArea("player_01") // @TODO http call
+    contents += new TextArea("player_02") // @TODO http call
   }
 
   var ship: String = ""
@@ -108,11 +108,11 @@ class Gui(controller: InterfaceController) extends Frame {
 
     controller.playerState match {
       case PlayerState.PLAYER_ONE =>
-        contents += gridPanel(showAllShips, controller.player_01)
-        contents += gridPanel(showNotAllShips, controller.player_02)
+        contents += gridPanel(showAllShips, null) // @TODO http call
+        contents += gridPanel(showNotAllShips, null) // @TODO http call
       case PlayerState.PLAYER_TWO =>
-        contents += gridPanel(showNotAllShips, controller.player_01)
-        contents += gridPanel(showAllShips, controller.player_02)
+        contents += gridPanel(showNotAllShips, null) // @TODO http call
+        contents += gridPanel(showAllShips, null) // @TODO http call
     }
   }
 

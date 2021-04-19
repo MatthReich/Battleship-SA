@@ -2,12 +2,11 @@ package Battleship.controller.controllerComponent
 
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.commands.commandComponents.{CommandIdle, CommandPlayerSetting, CommandShipSetting}
+import Battleship.controller.controllerComponent.events.FailureEvent
+import Battleship.controller.controllerComponent.states.GameState
+import Battleship.controller.controllerComponent.states.GameState.GameState
+import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 import Battleship.controller.controllerComponent.utils.{GameModule, UndoManager}
-import Battleship.model.fileIoComponent.InterfaceFileIo
-import Battleship.model.playerComponent.InterfacePlayer
-import Battleship.model.states.GameState
-import Battleship.model.states.GameState.GameState
-import Battleship.model.states.PlayerState.PlayerState
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
@@ -22,10 +21,10 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.swing.Publisher
 import scala.util.{Failure, Success, Try}
 
-class Controller @Inject()(var player_01: InterfacePlayer, var player_02: InterfacePlayer, var gameState: GameState, var playerState: PlayerState) extends InterfaceController with Publisher {
+class Controller @Inject()(var gameState: GameState, var playerState: PlayerState) extends InterfaceController with Publisher {
   private val undoManager = new UndoManager
   private val injector: Injector = Guice.createInjector(new GameModule)
-  private val fileIo: InterfaceFileIo = injector.getInstance(classOf[InterfaceFileIo])
+  // private val fileIo: InterfaceFileIo = injector.getInstance(classOf[InterfaceFileIo])
 
   def getPlayer(player: String): Unit /*(String,Map[Int, Int], Vector[Map[String, Int]])*/ = {
     implicit val system = ActorSystem(Behaviors.empty, "my-system")
@@ -102,7 +101,7 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
 
   }
 
-  def requestGameIsWon(player: String) = {
+  def requestGameIsWon(player: String): Boolean = {
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/idle/request?gameIsWon=" + player))
@@ -114,9 +113,9 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
 
   override def changePlayerState(playerState: PlayerState): Unit = this.playerState = playerState
 
-  override def save(): Unit = fileIo.save(player_01, player_02, gameState, playerState)
+  override def save(): Unit = publish(new FailureEvent("saving will getting implemented"))
 
-  override def load(): Unit = fileIo.load(player_01, player_02)
+  override def load(): Unit = publish(new FailureEvent("loading will getting implemented"))
 
   override def redoTurn(): Unit = undoManager.undoStep()
 

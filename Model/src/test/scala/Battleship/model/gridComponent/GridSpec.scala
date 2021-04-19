@@ -2,7 +2,6 @@ package Battleship.model.gridComponent
 
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
-import Battleship.model.states.GameState
 import org.scalatest.wordspec.AnyWordSpec
 
 class GridSpec extends AnyWordSpec {
@@ -20,8 +19,8 @@ class GridSpec extends AnyWordSpec {
     Map("x" -> 0, "y" -> 2)
   )
 
-  private val IDLE: GameState.Value = GameState.IDLE
-  private val SHIP_SETTING: GameState.Value = GameState.SHIPSETTING
+  private val IDLE: String = "IDLE"
+  private val SHIP_SETTING: String = "SHIPSETTING"
   private val waterVector: Vector[Map[String, Int]] = Vector(Map("x" -> 5, "y" -> 5))
   private val shipVector: Vector[Map[String, Int]] = Vector(Map("x" -> 0, "y" -> 0))
   private val water: Int = 0

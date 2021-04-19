@@ -3,8 +3,7 @@ package Battleship.controller.controllerComponent.commands.commandComponents
 import Battleship.controller.controllerComponent._
 import Battleship.controller.controllerComponent.commands.Command
 import Battleship.controller.controllerComponent.events._
-import Battleship.model.playerComponent.InterfacePlayer
-import Battleship.model.states.{GameState, PlayerState}
+import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 
 import scala.util.{Failure, Success, Try}
 
@@ -55,52 +54,6 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
     }
   }
 
-  // private def handleGuess(x: Int, y: Int)(player: InterfacePlayer): Try[Either[InterfacePlayer, InterfacePlayer]] = {
-  //   player.grid.setField(controller.gameState.toString.toUpperCase, Vector(Map("x" -> x, "y" -> y))) match {
-  //     case Left(value) => doSame(value, player, x, y)
-  //     case Right(value) => doSame(value, player, x, y)
-  //   }
-  // }
-  //
-  // private def doSame(value: Try[InterfaceGrid], player: InterfacePlayer, x: Int, y: Int): Try[Either[InterfacePlayer, InterfacePlayer]] = {
-  //   value match {
-  //     case Success(value) =>
-  //       val newPlayer = player.updateGrid(value)
-  //       for (ship <- newPlayer.shipList) yield ship.hit(x, y) match {
-  //         case Success(newShip) => return Success(Left(newPlayer.updateShip(ship, newShip)))
-  //         case _ =>
-  //       }
-  //       Success(Right(newPlayer))
-  //     case Failure(exception) => Failure(exception)
-  //   }
-  // }
-
-  // private def handleFieldSetting(tryWay: Try[Either[InterfacePlayer, InterfacePlayer]], state: PlayerState.Value): Unit = {
-  //   tryWay match {
-  //     case Success(way) => way match {
-  //       case Left(newPlayer) =>
-  //         if (state == PlayerState.PLAYER_ONE) {
-  //           controller.player_02 = newPlayer
-  //           // handleNewGameSituationAndEndGameIfFinished(controller.player_02)
-  //         } else {
-  //           controller.player_01 = newPlayer
-  //           // handleNewGameSituationAndEndGameIfFinished(controller.player_01)
-  //         }
-  //       case Right(newPlayer) =>
-  //         if (state == PlayerState.PLAYER_ONE) {
-  //           controller.player_02 = newPlayer
-  //           controller.changePlayerState(PlayerState.PLAYER_TWO)
-  //           controller.publish(new PlayerChanged)
-  //         } else {
-  //           controller.player_01 = newPlayer
-  //           controller.changePlayerState(PlayerState.PLAYER_ONE)
-  //           controller.publish(new PlayerChanged)
-  //         }
-  //     }
-  //     case Failure(exception) => controller.publish(new FailureEvent(exception.getMessage))
-  //   }
-  // }
-
   private def handleNewGameSituationAndEndGameIfFinished(player: String): Unit = {
 
     if (controller.requestGameIsWon(player)) {
@@ -110,8 +63,6 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
       controller.publish(new TurnAgain)
     }
   }
-
-  private def gameIsWonOf(player: InterfacePlayer): Boolean = !player.shipList.exists(_.status == false)
 
   override def undoStep(): Unit = {
 

@@ -54,8 +54,10 @@ object AkkaHttpModel {
           }
           grid match {
             case Some(player) => player match {
-              case "player_01" => answer += player_01.grid.grid
-              case "player_02" => answer += player_02.grid.grid
+              case "player_01true" => answer += player_01.grid.toString(true)
+              case "player_02true" => answer += player_02.grid.toString(true)
+              case "player_01false" => answer += player_01.grid.toString(false)
+              case "player_02false" => answer += player_02.grid.toString(false)
               case _ =>
                 complete(StatusCodes.BadRequest)
             }

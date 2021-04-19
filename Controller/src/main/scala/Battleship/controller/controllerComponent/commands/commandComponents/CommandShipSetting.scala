@@ -3,7 +3,7 @@ package Battleship.controller.controllerComponent.commands.commandComponents
 import Battleship.controller.controllerComponent._
 import Battleship.controller.controllerComponent.commands.Command
 import Battleship.controller.controllerComponent.events.{FailureEvent, GridUpdated, PlayerChanged, RedoTurn}
-import Battleship.model.states.{GameState, PlayerState}
+import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 
 import scala.util.{Failure, Success, Try}
 

@@ -2,8 +2,8 @@ package Battleship.aview.gui.panel
 
 import Battleship.aview.gui.Gui
 import Battleship.controller.InterfaceController
+import Battleship.controller.controllerComponent.states.GameState
 import Battleship.model.playerComponent.InterfacePlayer
-import Battleship.model.states.GameState
 
 import java.awt.Color
 import scala.swing._

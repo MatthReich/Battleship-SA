@@ -3,7 +3,7 @@ package Battleship.controller.controllerComponent.commands.commandComponents
 import Battleship.controller.controllerComponent.Controller
 import Battleship.controller.controllerComponent.commands.Command
 import Battleship.controller.controllerComponent.events.{FailureEvent, PlayerChanged}
-import Battleship.model.states.{GameState, PlayerState}
+import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 
 class CommandPlayerSetting(input: String, controller: Controller) extends Command {
   override def doStep(): Unit = {
