@@ -2,7 +2,6 @@ package Battleship.controller.controllerComponent.commands.commandComponents
 
 import Battleship.controller.controllerComponent._
 import Battleship.controller.controllerComponent.commands.Command
-import Battleship.controller.controllerComponent.events.{FailureEvent, GridUpdated, PlayerChanged, RedoTurn}
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 
 import scala.util.{Failure, Success, Try}
@@ -34,15 +33,19 @@ class CommandShipSetting(input: String, controller: Controller, coordsCalculatio
     if (controller.requestShipSettingFinished(player)) {
       controller.changeGameState(newGameState)
       controller.changePlayerState(newPlayerState)
-      controller.publish(new PlayerChanged)
+      controller.requestNewReaction("PLAYERCHANGED", "")
+      // controller.publish(new PlayerChanged)
     } else {
-      controller.publish(new GridUpdated)
+      controller.requestNewReaction("GRIDUPDATE", "")
+      // controller.publish(new GridUpdated)
     }
   }
 
   private def publishFailure(cause: String): Unit = {
-    controller.publish(new FailureEvent(cause))
-    controller.publish(new RedoTurn)
+    controller.requestNewReaction("FAILUREEVENT", cause)
+    controller.requestNewReaction("REDOTURN", "")
+    // controller.publish(new FailureEvent(cause))
+    // controller.publish(new RedoTurn)
   }
 
   override def undoStep(): Unit = {}

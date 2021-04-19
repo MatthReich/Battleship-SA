@@ -2,7 +2,6 @@ package Battleship.aview.gui
 
 import Battleship.aview.gui.panel.FieldPanel
 import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent.events._
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.model.playerComponent.InterfacePlayer
 

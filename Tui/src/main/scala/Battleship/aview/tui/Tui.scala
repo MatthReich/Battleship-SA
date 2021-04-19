@@ -1,8 +1,7 @@
 package Battleship.aview.tui
 
+import Battleship.AkkaHttpTui
 import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent.events._
-import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
@@ -21,39 +20,42 @@ class Tui(controller: InterfaceController) extends Reactor {
 
   val showAllShips = true
   val showNotAllShips = false
+  val publisherTui: PublisherTui = AkkaHttpTui.publisherTui
 
-  listenTo(controller)
+  listenTo(publisherTui)
+
+  publisherTui.publish(new GameStart)
 
   reactions += {
     case _: GameStart =>
       println("Yeah you play the best game in the world... probably :)")
     case _: PlayerChanged =>
-      controller.gameState match {
-        case GameState.PLAYERSETTING =>
+      getGameState() match {
+        case "PLAYERSETTING" =>
           printTui("set your Name")
-        case GameState.SHIPSETTING =>
+        case "SHIPSETTING" =>
           printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
-        case GameState.IDLE =>
+        case "IDLE" =>
           printTui("guess the enemy ship <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
         case _ =>
       }
     case _: GridUpdated =>
-      controller.gameState match {
-        case GameState.SHIPSETTING =>
+      getGameState() match {
+        case "SHIPSETTING" =>
           printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
         case _ =>
       }
     case _: RedoTurn =>
-      controller.gameState match {
-        case GameState.SHIPSETTING =>
+      getGameState() match {
+        case "SHIPSETTING" =>
           printTui("try again .. set your Ship <x y x y>\n" + gridAsString() + "left:\n" + shipSetListAsString())
-        case GameState.IDLE =>
+        case "IDLE" =>
           printTui("try again <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
         case _ =>
       }
     case _: TurnAgain =>
-      controller.gameState match {
-        case GameState.IDLE =>
+      getGameState() match {
+        case "IDLE" =>
           printTui("that was a hit! guess again <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
         case _ =>
       }
@@ -61,23 +63,31 @@ class Tui(controller: InterfaceController) extends Reactor {
       printTui("has won")
       println("<n> for new game <q> for end")
     case exception: FailureEvent => println(exception.getMessage())
-    case _ =>
+    case _ => println("lellsajdfhölisdhf")
   }
 
   def tuiProcessLine(input: String): Unit = {
     if (input == "q") System.exit(0)
-    else if (input == "n") controller.publish(new NewGameView)
-    else if (input == "s") controller.save()
-    else if (input == "l") controller.load()
-    else if (input == "r") controller.redoTurn()
-    else controller.doTurn(input)
+    else if (input == "n") controller.publish(new NewGameView) // @TODO post request for public events
+    else if (input == "s") controller.save() // @TODO post request for save
+    else if (input == "l") controller.load() // @TODO post request for load
+    else if (input == "r") controller.redoTurn() // @TODO post request for redo
+    else controller.doTurn(input) // @TODO post request for turn
+  }
+
+  private def getGameState(): String = {
+    controller.gameState.toString.toUpperCase
   }
 
   private def printTui(string: String): Unit = {
-    controller.playerState match {
-      case PlayerState.PLAYER_ONE => println(Console.MAGENTA + requestPlayerName("player_01") + Console.RESET + " " + string)
-      case PlayerState.PLAYER_TWO => println(Console.CYAN + requestPlayerName("player_02") + Console.RESET + " " + string)
+    getPlayerState() match {
+      case "PLAYER_ONE" => println(Console.MAGENTA + requestPlayerName("player_01") + Console.RESET + " " + string)
+      case "PLAYER_TWO" => println(Console.CYAN + requestPlayerName("player_02") + Console.RESET + " " + string)
     }
+  }
+
+  private def getPlayerState(): String = {
+    controller.playerState.toString.toUpperCase
   }
 
   val size = 10
@@ -115,24 +125,24 @@ class Tui(controller: InterfaceController) extends Reactor {
   }
 
   private def gridAsString(): String = {
-    controller.playerState match {
-      case PlayerState.PLAYER_ONE => requestGrid("player_01", showAllShips)
-      case PlayerState.PLAYER_TWO => requestGrid("player_02", showAllShips)
+    getPlayerState() match {
+      case "PLAYER_ONE" => requestGrid("player_01", showAllShips)
+      case "PLAYER_TWO" => requestGrid("player_02", showAllShips)
     }
   }
 
   private def enemyGridAsString(): String = {
-    controller.playerState match {
-      case PlayerState.PLAYER_ONE => requestGrid("player_02", showNotAllShips)
-      case PlayerState.PLAYER_TWO => requestGrid("player_01", showNotAllShips)
+    getPlayerState() match {
+      case "PLAYER_ONE" => requestGrid("player_02", showNotAllShips)
+      case "PLAYER_TWO" => requestGrid("player_01", showNotAllShips)
     }
   }
 
   private def shipSetListAsString(): String = {
-    controller.playerState match {
-      case PlayerState.PLAYER_ONE =>
+    getPlayerState() match {
+      case "PLAYER_ONE" =>
         requestPlayerShipSetList("player_01")
-      case PlayerState.PLAYER_TWO =>
+      case "PLAYER_TWO" =>
         requestPlayerShipSetList("player_02")
     }
   }
