@@ -12,7 +12,7 @@ import scala.swing.Reactor
 object Game extends Reactor {
   var controller: InterfaceController = initController()
   var tui = new Tui(controller)
-  var gui = new StartGui(controller)
+  // var gui = new StartGui(controller)
 
   listenTo(controller)
 
@@ -37,7 +37,7 @@ object Game extends Reactor {
   private def initNewGame(): Unit = {
     controller = initController()
     tui = new Tui(controller)
-    gui = new StartGui(controller)
+    // gui = new StartGui(controller)
     controller.publish(new GameStart)
     controller.publish(new PlayerChanged)
   }

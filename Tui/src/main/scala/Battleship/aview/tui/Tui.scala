@@ -83,12 +83,20 @@ class Tui(controller: InterfaceController) extends Reactor {
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerName=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
     if (result.status == StatusCodes.OK) {
-      println(result)
-      println(result.entity.)
-      "he"
+      convertAnswer(result, player)
     }
     else
       player
+  }
+
+  private def convertAnswer(result: HttpResponse, player: String): String = {
+    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor = system.executionContext
+    var name = player
+    result.entity.dataBytes.runFold(ByteString(""))(_ ++ _).foreach { body =>
+      name = body.utf8String
+    }
+    name
   }
 
   private def gridAsString(): String = {

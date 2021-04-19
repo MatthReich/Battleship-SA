@@ -63,7 +63,7 @@ object AkkaHttpModel {
             }
             case None =>
           }
-          if (answer.nonEmpty) {
+          if (answer != "") {
             complete(HttpEntity(ContentTypes.`application/json`, "" + Json.toJson(answer)))
           } else {
             complete(StatusCodes.BadRequest)
