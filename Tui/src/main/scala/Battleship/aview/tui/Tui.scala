@@ -85,7 +85,6 @@ class Tui() extends Reactor {
     requestState("getPlayerState") match {
       case "PLAYER_ONE" => println(Console.MAGENTA + requestPlayerName("player_01") + Console.RESET + " " + string)
       case "PLAYER_TWO" => println(Console.CYAN + requestPlayerName("player_02") + Console.RESET + " " + string)
-      case value => println("hate my self much more and " + value)
     }
   }
 

@@ -102,9 +102,8 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
       "event" -> event.toUpperCase,
       "message" -> message
     )
-    val responseFuture = Http().singleRequest(Post("http://localhost:8082/tui/reactor", payload.toString()))
-    val result = Await.result(responseFuture, atMost = 10.second)
-    println(result.status)
+    Http().singleRequest(Post("http://localhost:8082/tui/reactor", payload.toString()))
+    Http().singleRequest(Post("http://localhost:8083/gui/reactor", payload.toString()))
   }
 
   override def load(): Unit = requestNewReaction("FAILUREEVENT", "loading will getting implemented") // publish(new FailureEvent("loading will getting implemented"))
