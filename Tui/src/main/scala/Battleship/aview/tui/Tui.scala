@@ -20,7 +20,7 @@ class Tui() extends Reactor {
   val showAllShips = true
   val showNotAllShips = false
 
-  listenTo(AkkaHttpTui.publisherTui)
+  listenTo(AkkaHttpTui)
 
   reactions += {
     case _: GameStart =>

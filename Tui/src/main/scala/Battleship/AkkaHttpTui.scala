@@ -10,10 +10,10 @@ import akka.http.scaladsl.server.Route
 import play.api.libs.json.Json
 
 import scala.concurrent.ExecutionContextExecutor
+import scala.swing.Publisher
 
-object AkkaHttpTui {
+object AkkaHttpTui extends Publisher {
 
-  val publisherTui = new PublisherTui
   val tui = new Tui()
 
   def main(args: Array[String]): Unit = {
@@ -29,25 +29,25 @@ object AkkaHttpTui {
             val json = Json.parse(jsonString)
             (json \ "event").as[String] match {
               case "GAMESTART" =>
-                publisherTui.publish(new GameStart)
+                publish(new GameStart)
                 complete(StatusCodes.OK)
               case "PLAYERCHANGED" =>
-                publisherTui.publish(new PlayerChanged)
+                publish(new PlayerChanged)
                 complete(StatusCodes.OK)
               case "GRIDUPDATE" =>
-                publisherTui.publish(new GridUpdated)
+                publish(new GridUpdated)
                 complete(StatusCodes.OK)
               case "REDOTURN" =>
-                publisherTui.publish(new RedoTurn)
+                publish(new RedoTurn)
                 complete(StatusCodes.OK)
               case "TURNAGAIN" =>
-                publisherTui.publish(new TurnAgain)
+                publish(new TurnAgain)
                 complete(StatusCodes.OK)
               case "GAMEWON" =>
-                publisherTui.publish(new GameWon)
+                publish(new GameWon)
                 complete(StatusCodes.OK)
               case "FAILUREEVENT" =>
-                publisherTui.publish(new FailureEvent((json \ "message").as[String]))
+                publish(new FailureEvent((json \ "message").as[String]))
                 complete(StatusCodes.OK)
               case _ => complete(StatusCodes.BadRequest)
             }
