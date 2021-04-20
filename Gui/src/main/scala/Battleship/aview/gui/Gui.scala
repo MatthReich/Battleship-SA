@@ -62,7 +62,7 @@ class Gui() extends Frame {
       last = input
       if (shipCoords == 1) ship += " "
       else {
-        controller.doTurn(ship)
+        requestGameTurn("DOTURN", ship)
         ship = ""
         shipCoords = 0
         redraw()
@@ -70,16 +70,7 @@ class Gui() extends Frame {
     }
   }
 
-  private def textGrid = new GridPanel(1, 2) {
-    contents += new TextArea("player_01") // @TODO http call
-    contents += new TextArea("player_02") // @TODO http call
-  }
-
-  var ship: String = ""
-  var last: String = ""
-  var shipCoords: Int = 0
-
-  def gridPanel(showAllShips: Boolean, player: InterfacePlayer): GridPanel = new GridPanel(gridSize + 1, gridSize) {
+  def gridPanel(showAllShips: Boolean, grid: Vector[Map[String, Int]]): GridPanel = new GridPanel(gridSize + 1, gridSize) {
     border = Swing.LineBorder(java.awt.Color.BLACK, 1)
     for {
       row <- 0 until gridSize
@@ -97,7 +88,7 @@ class Gui() extends Frame {
         contents += new Label("" + row)
 
       }
-      val fieldPanel = new FieldPanel(showAllShips, column, row, controller, Gui.this, player)
+      val fieldPanel = new FieldPanel(showAllShips, column, row, requestState("getGameState"), Gui.this, grid)
       contents += fieldPanel.field
       listenTo(fieldPanel)
     }
