@@ -1,11 +1,10 @@
 package Battleship.aview.tui
 
 import Battleship.AkkaHttpTui
-import Battleship.controller.InterfaceController
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.client.RequestBuilding.Get
+import akka.http.scaladsl.client.RequestBuilding.{Get, Post}
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import play.api.libs.json.Json
@@ -16,15 +15,12 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.swing.Reactor
 
-class Tui(controller: InterfaceController) extends Reactor {
+class Tui() extends Reactor {
 
   val showAllShips = true
   val showNotAllShips = false
-  val publisherTui: PublisherTui = AkkaHttpTui.publisherTui
 
-  listenTo(publisherTui)
-
-  publisherTui.publish(new GameStart)
+  listenTo(AkkaHttpTui.publisherTui)
 
   reactions += {
     case _: GameStart =>
@@ -63,20 +59,26 @@ class Tui(controller: InterfaceController) extends Reactor {
       printTui("has won")
       println("<n> for new game <q> for end")
     case exception: FailureEvent => println(exception.getMessage())
-    case _ => println("lellsajdfhölisdhf")
+    case _ =>
   }
 
   def tuiProcessLine(input: String): Unit = {
     if (input == "q") System.exit(0)
-    else if (input == "n") controller.publish(new NewGameView) // @TODO post request for public events
-    else if (input == "s") controller.save() // @TODO post request for save
-    else if (input == "l") controller.load() // @TODO post request for load
-    else if (input == "r") controller.redoTurn() // @TODO post request for redo
-    else controller.doTurn(input) // @TODO post request for turn
+    else if (input == "n") requestGameTurn("NEWGAMEVIEW", input) // controller.publish(new NewGameView)
+    else if (input == "s") requestGameTurn("SAVE", input) // controller.save()
+    else if (input == "l") requestGameTurn("LOAD", input) // controller.load()
+    else if (input == "r") requestGameTurn("REDO", input) // controller.redoTurn()
+    else requestGameTurn("DOTURN", input) //controller.doTurn(input)
   }
 
-  private def getGameState(): String = {
-    controller.gameState.toString.toUpperCase
+  private def requestGameTurn(event: String, input: String): Unit = {
+    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor = system.executionContext
+    val payload = Json.obj(
+      "event" -> event.toUpperCase,
+      "input" -> input
+    )
+    Http().singleRequest(Post("http://localhost:8080/controller/update", payload.toString()))
   }
 
   private def printTui(string: String): Unit = {
@@ -86,8 +88,8 @@ class Tui(controller: InterfaceController) extends Reactor {
     }
   }
 
-  private def getPlayerState(): String = {
-    controller.playerState.toString.toUpperCase
+  private def getGameState(): String = {
+    requestGameState()
   }
 
   val size = 10
@@ -124,6 +126,18 @@ class Tui(controller: InterfaceController) extends Reactor {
     toStringGrid(showAll)
   }
 
+  private def requestGameState(): String = {
+    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor = system.executionContext
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/controller/request?getGameState=" + "gameState"))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
+    tmp.result.toOption match {
+      case Some(value) => value.toString()
+      case None => ""
+    }
+  }
+
   private def gridAsString(): String = {
     getPlayerState() match {
       case "PLAYER_ONE" => requestGrid("player_01", showAllShips)
@@ -154,6 +168,22 @@ class Tui(controller: InterfaceController) extends Reactor {
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.toString()
+  }
+
+  private def getPlayerState(): String = {
+    requestPlayerState()
+  }
+
+  private def requestPlayerState(): String = {
+    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor = system.executionContext
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/controller/request?getPlayerState=" + "playerState"))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
+    tmp.result.toOption match {
+      case Some(value) => value.toString()
+      case None => ""
+    }
   }
 
   @tailrec

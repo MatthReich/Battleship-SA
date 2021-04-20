@@ -23,7 +23,7 @@ object AkkaHttpTui {
 
 
     val route: Route = concat(
-      path("tui" / "reactor") {
+      path("tui" / "reacto") {
         post {
           entity(as[String]) { jsonString => {
             val json = Json.parse(jsonString)

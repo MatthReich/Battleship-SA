@@ -34,4 +34,4 @@ lazy val controller = project in file("Controller")
 
 lazy val gui = (project in file("Gui")).dependsOn(controller, model)
 
-lazy val tui = (project in file("Tui")).dependsOn(controller)
+lazy val tui = (project in file("Tui"))
