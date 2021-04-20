@@ -10,11 +10,8 @@ import scala.concurrent.ExecutionContextExecutor
 import scala.swing.Reactor
 
 object Game extends Reactor {
-  //var controller: InterfaceController = initController()
-  // var tui = new Tui(controller)
-  // var gui = new StartGui(controller)
-
-  // listenTo(controller) // @TODO change here to requests
+  // init controller / model / and so
+  // listenTo(controller) // @TODO change here to akka publisher
 
 
   def main(args: Array[String]): Unit = {
@@ -22,35 +19,22 @@ object Game extends Reactor {
 
     requestNewEvent("GAMESTART")
     requestNewEvent("PLAYERCHANGED")
-    //controller.requestNewReaction("GAMESTART", "") // publish(new GameStart)
-    //controller.requestNewReaction("PLAYERCHANGED", "") // publish(new PlayerChanged)
 
-    //listenTo(controller)
+    //listenTo(controller) // @TODO change here to akka publisher
 
     reactions += {
       case _: NewGameView => initNewGame()
     }
 
-    // do {
-    //   tui.tuiProcessLine(scala.io.StdIn.readLine())
-    // } while (true)
-
   }
 
   private def initNewGame(): Unit = {
-    //controller = initController()
-    // tui = new Tui(controller)
-    // gui = new StartGui(controller)
+    //controller = initController()   // @TODO change here to akka requests
+    // tui = new Tui(controller)      // @TODO change here to akka requests
+    // gui = new StartGui(controller) // @TODO change here to akka requests
     requestNewEvent("GAMESTART")
     requestNewEvent("PLAYERCHANGED")
-    // controller.requestNewReaction("GAMESTART", "") // publish(new GameStart)
-    // controller.requestNewReaction("PLAYERCHANGED", "") // publish(new PlayerChanged)
   }
-
-  // private def initController(): InterfaceController = {
-  //   new Controller( // @TODO change here to requests
-  //     GameState.PLAYERSETTING, PlayerState.PLAYER_ONE)
-  // }
 
   private def requestNewEvent(event: String): Unit = {
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
@@ -59,7 +43,7 @@ object Game extends Reactor {
       "event" -> event.toUpperCase,
       "message" -> ""
     )
-    Http().singleRequest(Post("http://localhost:8080/controller/update/event", payload.toString()))
+    Http().singleRequest(Post("http://localhost:8081/controller/update/event", payload.toString()))
   }
 
 }

@@ -42,6 +42,7 @@ object AkkaHttpController {
       },
       path("controller" / "update") {
         post {
+          complete(StatusCodes.BadRequest)
           entity(as[String]) { string => {
             val json = Json.parse(string)
             (json \ "event").as[String] match {
@@ -67,7 +68,6 @@ object AkkaHttpController {
           }
           }
         }
-        complete(StatusCodes.OK)
       },
       path("controller" / "update" / "event") {
         post {
@@ -84,9 +84,9 @@ object AkkaHttpController {
       }
     )
 
-    val bindingFuture = Http().newServerAt("localhost", 8080).bind(route)
+    val bindingFuture = Http().newServerAt("localhost", 8081).bind(route)
 
-    println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+    println(s"Server online at http://localhost:8081/\nPress RETURN to stop...")
     StdIn.readLine() // let it run until user presses return
     bindingFuture
       .flatMap(_.unbind()) // trigger unbinding from the port
@@ -95,7 +95,7 @@ object AkkaHttpController {
 
   private def payloadExtractInput(jsinput: JsLookupResult): String = {
     jsinput.result.toOption match {
-      case Some(value) => value.toString()
+      case Some(value) => value.as[String]
       case None => ""
     }
   }

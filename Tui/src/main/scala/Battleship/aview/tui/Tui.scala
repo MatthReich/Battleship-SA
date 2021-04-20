@@ -26,7 +26,7 @@ class Tui() extends Reactor {
     case _: GameStart =>
       println("Yeah you play the best game in the world... probably :)")
     case _: PlayerChanged =>
-      getGameState() match {
+      requestState("getGameState") match {
         case "PLAYERSETTING" =>
           printTui("set your Name")
         case "SHIPSETTING" =>
@@ -36,13 +36,13 @@ class Tui() extends Reactor {
         case _ =>
       }
     case _: GridUpdated =>
-      getGameState() match {
+      requestState("getGameState") match {
         case "SHIPSETTING" =>
           printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
         case _ =>
       }
     case _: RedoTurn =>
-      getGameState() match {
+      requestState("getGameState") match {
         case "SHIPSETTING" =>
           printTui("try again .. set your Ship <x y x y>\n" + gridAsString() + "left:\n" + shipSetListAsString())
         case "IDLE" =>
@@ -50,7 +50,7 @@ class Tui() extends Reactor {
         case _ =>
       }
     case _: TurnAgain =>
-      getGameState() match {
+      requestState("getGameState") match {
         case "IDLE" =>
           printTui("that was a hit! guess again <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
         case _ =>
@@ -64,11 +64,11 @@ class Tui() extends Reactor {
 
   def tuiProcessLine(input: String): Unit = {
     if (input == "q") System.exit(0)
-    else if (input == "n") requestGameTurn("NEWGAMEVIEW", input) // controller.publish(new NewGameView)
-    else if (input == "s") requestGameTurn("SAVE", input) // controller.save()
-    else if (input == "l") requestGameTurn("LOAD", input) // controller.load()
-    else if (input == "r") requestGameTurn("REDO", input) // controller.redoTurn()
-    else requestGameTurn("DOTURN", input) //controller.doTurn(input)
+    else if (input == "n") requestGameTurn("NEWGAMEVIEW", input)
+    else if (input == "s") requestGameTurn("SAVE", input)
+    else if (input == "l") requestGameTurn("LOAD", input)
+    else if (input == "r") requestGameTurn("REDO", input)
+    else requestGameTurn("DOTURN", input)
   }
 
   private def requestGameTurn(event: String, input: String): Unit = {
@@ -78,18 +78,15 @@ class Tui() extends Reactor {
       "event" -> event.toUpperCase,
       "input" -> input
     )
-    Http().singleRequest(Post("http://localhost:8080/controller/update", payload.toString()))
+    Http().singleRequest(Post("http://localhost:8081/controller/update", payload.toString()))
   }
 
   private def printTui(string: String): Unit = {
-    getPlayerState() match {
+    requestState("getPlayerState") match {
       case "PLAYER_ONE" => println(Console.MAGENTA + requestPlayerName("player_01") + Console.RESET + " " + string)
       case "PLAYER_TWO" => println(Console.CYAN + requestPlayerName("player_02") + Console.RESET + " " + string)
+      case value => println("hate my self much more and " + value)
     }
-  }
-
-  private def getGameState(): String = {
-    requestGameState()
   }
 
   val size = 10
@@ -108,7 +105,7 @@ class Tui() extends Reactor {
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {
-      case Some(value) => value.toString()
+      case Some(value) => value.as[String]
       case None => player
     }
   }
@@ -126,38 +123,29 @@ class Tui() extends Reactor {
     toStringGrid(showAll)
   }
 
-  private def requestGameState(): String = {
+  private def requestState(state: String): String = {
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/controller/request?getGameState=" + "gameState"))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8081/controller/request?" + state + "=state"))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {
-      case Some(value) => value.toString()
+      case Some(value) => value.as[String]
       case None => ""
     }
   }
 
   private def gridAsString(): String = {
-    getPlayerState() match {
+    requestState("getPlayerState") match {
       case "PLAYER_ONE" => requestGrid("player_01", showAllShips)
       case "PLAYER_TWO" => requestGrid("player_02", showAllShips)
     }
   }
 
   private def enemyGridAsString(): String = {
-    getPlayerState() match {
+    requestState("getPlayerState") match {
       case "PLAYER_ONE" => requestGrid("player_02", showNotAllShips)
       case "PLAYER_TWO" => requestGrid("player_01", showNotAllShips)
-    }
-  }
-
-  private def shipSetListAsString(): String = {
-    getPlayerState() match {
-      case "PLAYER_ONE" =>
-        requestPlayerShipSetList("player_01")
-      case "PLAYER_TWO" =>
-        requestPlayerShipSetList("player_02")
     }
   }
 
@@ -170,19 +158,12 @@ class Tui() extends Reactor {
     tmp.toString()
   }
 
-  private def getPlayerState(): String = {
-    requestPlayerState()
-  }
-
-  private def requestPlayerState(): String = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/controller/request?getPlayerState=" + "playerState"))
-    val result = Await.result(responseFuture, atMost = 10.second)
-    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
-    tmp.result.toOption match {
-      case Some(value) => value.toString()
-      case None => ""
+  private def shipSetListAsString(): String = {
+    requestState("getPlayerState") match {
+      case "PLAYER_ONE" =>
+        requestPlayerShipSetList("player_01")
+      case "PLAYER_TWO" =>
+        requestPlayerShipSetList("player_02")
     }
   }
 

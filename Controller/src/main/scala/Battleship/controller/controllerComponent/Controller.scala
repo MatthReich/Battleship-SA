@@ -102,7 +102,7 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
       "event" -> event.toUpperCase,
       "message" -> message
     )
-    val responseFuture = Http().singleRequest(Post("http://localhost:8080/tui/reactor", payload.toString()))
+    val responseFuture = Http().singleRequest(Post("http://localhost:8082/tui/reactor", payload.toString()))
     val result = Await.result(responseFuture, atMost = 10.second)
     println(result.status)
   }

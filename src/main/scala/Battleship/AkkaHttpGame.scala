@@ -1,6 +1,5 @@
 package Battleship
 
-import Battleship.aview.tui._
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
