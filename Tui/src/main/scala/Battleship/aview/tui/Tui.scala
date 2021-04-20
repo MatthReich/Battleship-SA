@@ -19,6 +19,8 @@ class Tui() extends Reactor {
 
   val showAllShips = true
   val showNotAllShips = false
+  implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
   listenTo(AkkaHttpTui)
 
@@ -98,8 +100,6 @@ class Tui() extends Reactor {
   def toStringGrid(showAllShips: Boolean): String = toStringRek(0, 0, showAllShips, initRek())
 
   private def requestPlayerName(player: String): String = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerName=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
@@ -110,8 +110,6 @@ class Tui() extends Reactor {
   }
 
   private def requestGrid(player: String, showAll: Boolean): String = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerGrid=" + player + showAll))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
@@ -123,8 +121,6 @@ class Tui() extends Reactor {
   }
 
   private def requestState(state: String): String = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8081/controller/request?" + state + "=state"))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
@@ -149,8 +145,6 @@ class Tui() extends Reactor {
   }
 
   private def requestPlayerShipSetList(player: String): String = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerShipSetList=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))

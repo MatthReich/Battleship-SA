@@ -5,13 +5,13 @@ import Battleship.controller.controllerComponent.commands.commandComponents.{Com
 import Battleship.controller.controllerComponent.states.GameState.GameState
 import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
-import Battleship.controller.controllerComponent.utils.{GameModule, UndoManager}
+import Battleship.controller.controllerComponent.utils.UndoManager
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.{Get, Post}
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import com.google.inject.{Guice, Inject, Injector}
+import com.google.inject.Inject
 import play.api.libs.json.Json
 
 import scala.annotation.tailrec
@@ -21,12 +21,11 @@ import scala.util.{Failure, Success, Try}
 
 class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, var playerState: PlayerState = PlayerState.PLAYER_ONE) extends InterfaceController {
   private val undoManager = new UndoManager
-  private val injector: Injector = Guice.createInjector(new GameModule)
-  // private val fileIo: InterfaceFileIo = injector.getInstance(classOf[InterfaceFileIo])
+
+  implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
   def requestChangePlayerName(player: String, newName: String): Option[Throwable] = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/name/update?playerName=" + player + "&newPlayerName=" + newName))
     val result = Await.result(responseFuture, atMost = 10.second)
     if (result.status != StatusCodes.OK) {
@@ -37,8 +36,6 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
   }
 
   def requestHandleFieldSettingShipSetting(player: String, coords: Vector[Map[String, Int]]): Option[Throwable] = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val payload = Json.obj(
       "player" -> player,
       "coords" -> Json.toJson(coords),
@@ -54,16 +51,12 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
   }
 
   def requestShipSettingFinished(player: String): Boolean = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/shipsetting/request?shipSettingFinished=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
     result.status == StatusCodes.OK
   }
 
   def requestHandleFieldSettingIdle(player: String, coords: Vector[Map[String, Int]]): Either[Boolean, Throwable] = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val payload = Json.obj(
       "player" -> player,
       "coords" -> Json.toJson(coords),
@@ -82,8 +75,6 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
   }
 
   def requestGameIsWon(player: String): Boolean = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/idle/request?gameIsWon=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
     result.status == StatusCodes.OK
@@ -96,8 +87,6 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
   override def changePlayerState(playerState: PlayerState): Unit = this.playerState = playerState
 
   def requestNewReaction(event: String, message: String): Unit = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val payload = Json.obj(
       "event" -> event.toUpperCase,
       "message" -> message
