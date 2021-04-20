@@ -2,30 +2,100 @@ package Battleship.controller.controllerComponent
 
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.commands.commandComponents.{CommandIdle, CommandPlayerSetting, CommandShipSetting}
-import Battleship.controller.controllerComponent.utils.{GameModule, UndoManager}
-import Battleship.model.fileIoComponent.InterfaceFileIo
-import Battleship.model.playerComponent.InterfacePlayer
-import Battleship.model.states.GameState
-import Battleship.model.states.GameState.GameState
-import Battleship.model.states.PlayerState.PlayerState
-import com.google.inject.{Guice, Inject, Injector}
+import Battleship.controller.controllerComponent.states.GameState.GameState
+import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
+import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
+import Battleship.controller.controllerComponent.utils.UndoManager
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.Behaviors
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.client.RequestBuilding.{Get, Post}
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
+import com.google.inject.Inject
+import play.api.libs.json.Json
 
 import scala.annotation.tailrec
-import scala.swing.Publisher
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success, Try}
 
-class Controller @Inject()(var player_01: InterfacePlayer, var player_02: InterfacePlayer, var gameState: GameState, var playerState: PlayerState) extends InterfaceController with Publisher {
+class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, var playerState: PlayerState = PlayerState.PLAYER_ONE) extends InterfaceController {
   private val undoManager = new UndoManager
-  private val injector: Injector = Guice.createInjector(new GameModule)
-  private val fileIo: InterfaceFileIo = injector.getInstance(classOf[InterfaceFileIo])
+
+  implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
+
+  def requestChangePlayerName(player: String, newName: String): Option[Throwable] = {
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/name/update?playerName=" + player + "&newPlayerName=" + newName))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    if (result.status != StatusCodes.OK) {
+      Some(new Exception("request status was: " + result.status))
+    } else {
+      None
+    }
+  }
+
+  def requestHandleFieldSettingShipSetting(player: String, coords: Vector[Map[String, Int]]): Option[Throwable] = {
+    val payload = Json.obj(
+      "player" -> player,
+      "coords" -> Json.toJson(coords),
+      "gameState" -> gameState.toString.toUpperCase
+    )
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Post("http://localhost:8080/model/player/shipsetting/update", payload.toString()))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    if (result.status != StatusCodes.OK) {
+      Some(new Exception(result.status.reason()))
+    } else {
+      None
+    }
+  }
+
+  def requestShipSettingFinished(player: String): Boolean = {
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/shipsetting/request?shipSettingFinished=" + player))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    result.status == StatusCodes.OK
+  }
+
+  def requestHandleFieldSettingIdle(player: String, coords: Vector[Map[String, Int]]): Either[Boolean, Throwable] = {
+    val payload = Json.obj(
+      "player" -> player,
+      "coords" -> Json.toJson(coords),
+      "gameState" -> gameState.toString.toUpperCase
+    )
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Post("http://localhost:8080/model/player/idle/update", payload.toString()))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    if (result.status.toString() == "468 change player") {
+      Left(true)
+    } else if (result.status != StatusCodes.OK) {
+      Right(new Exception(result.status.reason()))
+    } else {
+      Left(false)
+    }
+
+  }
+
+  def requestGameIsWon(player: String): Boolean = {
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/idle/request?gameIsWon=" + player))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    result.status == StatusCodes.OK
+  }
+
+  override def save(): Unit = requestNewReaction("FAILUREEVENT", "saving will getting implemented") // publish(new FailureEvent("saving will getting implemented"))
 
   override def changeGameState(gameState: GameState): Unit = this.gameState = gameState
 
   override def changePlayerState(playerState: PlayerState): Unit = this.playerState = playerState
 
-  override def save(): Unit = fileIo.save(player_01, player_02, gameState, playerState)
+  def requestNewReaction(event: String, message: String): Unit = {
+    val payload = Json.obj(
+      "event" -> event.toUpperCase,
+      "message" -> message
+    )
+    Http().singleRequest(Post("http://localhost:8082/tui/reactor", payload.toString()))
+    Http().singleRequest(Post("http://localhost:8083/gui/reactor", payload.toString()))
+  }
 
-  override def load(): Unit = fileIo.load(player_01, player_02)
+  override def load(): Unit = requestNewReaction("FAILUREEVENT", "loading will getting implemented") // publish(new FailureEvent("loading will getting implemented"))
 
   override def redoTurn(): Unit = undoManager.undoStep()
 
@@ -40,7 +110,7 @@ class Controller @Inject()(var player_01: InterfacePlayer, var player_02: Interf
   private def handleInput(input: String, state: Either[Int, Int]): Try[Vector[Map[String, Int]]] = {
     Try(input.split(" ").map(_.toInt)) match {
       case Success(convertedInput) =>
-        if (convertedInput.exists(_.>=(player_01.grid.size))) return Failure(new Exception("input is out of scope"))
+        if (convertedInput.exists(_.>=(10))) return Failure(new Exception("input is out of scope"))
         state match {
           case Left(lengthOfArguments) => calculateCoords(lengthOfArguments, convertedInput.toVector)
           case Right(lengthOfArguments) => calculateCoords(lengthOfArguments, convertedInput.toVector)

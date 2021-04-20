@@ -1,16 +1,11 @@
 package Battleship.controller
 
-import Battleship.model.playerComponent.InterfacePlayer
-import Battleship.model.states.GameState.GameState
-import Battleship.model.states.PlayerState.PlayerState
+import Battleship.controller.controllerComponent.states.GameState.GameState
+import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 
 import scala.swing.Publisher
 
 trait InterfaceController extends Publisher {
-
-  def player_01: InterfacePlayer
-
-  def player_02: InterfacePlayer
 
   def gameState: GameState
 
@@ -27,6 +22,8 @@ trait InterfaceController extends Publisher {
   def save(): Unit
 
   def load(): Unit
+
+  def requestNewReaction(string: String, string2: String)
 
 }
 

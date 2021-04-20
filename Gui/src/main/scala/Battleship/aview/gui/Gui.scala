@@ -1,22 +1,33 @@
 package Battleship.aview.gui
 
+import Battleship.AkkaHttpGui
 import Battleship.aview.gui.panel.FieldPanel
-import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent.events._
-import Battleship.model.playerComponent.InterfacePlayer
-import Battleship.model.states.{GameState, PlayerState}
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.Behaviors
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.client.RequestBuilding.{Get, Post}
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import play.api.libs.json.Json
 
 import java.awt.Color
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.swing._
 
-class Gui(controller: InterfaceController) extends Frame {
-  listenTo(controller)
+class Gui() extends Frame {
+
+  implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
+
+  listenTo(AkkaHttpGui)
+
   val dimWidth = 1600
   val dimHeight = 900
   title = "Battleship"
   background = Color.GRAY
   preferredSize = new Dimension(dimWidth, dimHeight)
-  val gridSize: Int = controller.player_01.grid.size
+  val gridSize: Int = 10
   redraw()
 
   override def closeOperation() {
@@ -25,18 +36,18 @@ class Gui(controller: InterfaceController) extends Frame {
 
   reactions += {
     case _: PlayerChanged =>
-      controller.gameState match {
-        case GameState.SHIPSETTING => redraw()
-        case GameState.IDLE => redraw()
+      requestState("getGameState") match {
+        case "SHIPSETTING" => redraw()
+        case "IDLE" => redraw()
       }
     case _: GridUpdated =>
-      controller.gameState match {
-        case GameState.SHIPSETTING => redraw()
+      requestState("getGameState") match {
+        case "SHIPSETTING" => redraw()
       }
     case _: RedoTurn =>
-      controller.gameState match {
-        case GameState.SHIPSETTING =>
-        case GameState.IDLE =>
+      requestState("getGameState") match {
+        case "SHIPSETTING" =>
+        case "IDLE" =>
       }
     case _: TurnAgain => redraw()
     case _: GameWon =>
@@ -54,7 +65,7 @@ class Gui(controller: InterfaceController) extends Frame {
       last = input
       if (shipCoords == 1) ship += " "
       else {
-        controller.doTurn(ship)
+        requestGameTurn("DOTURN", ship)
         ship = ""
         shipCoords = 0
         redraw()
@@ -62,16 +73,7 @@ class Gui(controller: InterfaceController) extends Frame {
     }
   }
 
-  private def textGrid = new GridPanel(1, 2) {
-    contents += new TextArea(controller.player_01.name)
-    contents += new TextArea(controller.player_02.name)
-  }
-
-  var ship: String = ""
-  var last: String = ""
-  var shipCoords: Int = 0
-
-  def gridPanel(showAllShips: Boolean, player: InterfacePlayer): GridPanel = new GridPanel(gridSize + 1, gridSize) {
+  def gridPanel(showAllShips: Boolean, grid: Vector[Map[String, Int]], gameState: String): GridPanel = new GridPanel(gridSize + 1, gridSize) {
     border = Swing.LineBorder(java.awt.Color.BLACK, 1)
     for {
       row <- 0 until gridSize
@@ -89,10 +91,19 @@ class Gui(controller: InterfaceController) extends Frame {
         contents += new Label("" + row)
 
       }
-      val fieldPanel = new FieldPanel(showAllShips, column, row, controller, Gui.this, player)
+      val fieldPanel = new FieldPanel(showAllShips, column, row, gameState, Gui.this, grid)
       contents += fieldPanel.field
       listenTo(fieldPanel)
     }
+  }
+
+  var ship: String = ""
+  var last: String = ""
+  var shipCoords: Int = 0
+
+  private def textGrid = new GridPanel(1, 2) {
+    contents += new TextArea("player_01")
+    contents += new TextArea("player_02")
   }
 
   private def redraw(): Unit = {
@@ -105,14 +116,14 @@ class Gui(controller: InterfaceController) extends Frame {
   private def playGrid: GridPanel = new GridPanel(1, 2) {
     val showAllShips = true
     val showNotAllShips = false
-
-    controller.playerState match {
-      case PlayerState.PLAYER_ONE =>
-        contents += gridPanel(showAllShips, controller.player_01)
-        contents += gridPanel(showNotAllShips, controller.player_02)
-      case PlayerState.PLAYER_TWO =>
-        contents += gridPanel(showNotAllShips, controller.player_01)
-        contents += gridPanel(showAllShips, controller.player_02)
+    val gameState: String = requestState("getGameState")
+    requestState("getPlayerState") match {
+      case "PLAYER_ONE" =>
+        contents += gridPanel(showAllShips, requestGrid("player_01", showAllShips), gameState)
+        contents += gridPanel(showNotAllShips, requestGrid("player_02", showNotAllShips), gameState)
+      case "PLAYER_TWO" =>
+        contents += gridPanel(showNotAllShips, requestGrid("player_01", showNotAllShips), gameState)
+        contents += gridPanel(showAllShips, requestGrid("player_02", showAllShips), gameState)
     }
   }
 
@@ -125,17 +136,17 @@ class Gui(controller: InterfaceController) extends Frame {
     if (retVal == Dialog.Result.No) sys.exit(0)
     else if (retVal == Dialog.Result.Yes) {
       this.visible = false
-      controller.publish(new NewGameView)
+      requestGameTurn("NEWGAMEVIEW", "")
     }
   }
 
   menuBar = new MenuBar {
     contents += new Menu("File") {
       contents += new MenuItem(Action("save") {
-        controller.save()
+        requestGameTurn("SAVE", "")
       })
       contents += new MenuItem(Action("load") {
-        controller.load()
+        requestGameTurn("LOAD", "")
       })
       contents += new MenuItem(Action("quit") {
         newGameOrQuit()
@@ -143,10 +154,39 @@ class Gui(controller: InterfaceController) extends Frame {
     }
     contents += new Menu("Edit") {
       contents += new MenuItem(Action("Undo") {
-        controller.redoTurn()
+        requestGameTurn("REDOTURN", "")
       })
     }
   }
 
   centerOnScreen()
+
+  private def requestGameTurn(event: String, input: String): Unit = {
+    val payload = Json.obj(
+      "event" -> event.toUpperCase,
+      "input" -> input
+    )
+    Http().singleRequest(Post("http://localhost:8081/controller/update", payload.toString()))
+  }
+
+  private def requestState(state: String): String = {
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8081/controller/request?" + state + "=state"))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
+    tmp.result.toOption match {
+      case Some(value) => value.as[String]
+      case None => ""
+    }
+  }
+
+  private def requestGrid(player: String, showAll: Boolean): Vector[Map[String, Int]] = {
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerGrid=" + player + showAll))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
+    tmp.result.toOption match {
+      case Some(value) => value.as[Vector[Map[String, Int]]]
+      case None => Vector[Map[String, Int]]()
+    }
+  }
+
 }

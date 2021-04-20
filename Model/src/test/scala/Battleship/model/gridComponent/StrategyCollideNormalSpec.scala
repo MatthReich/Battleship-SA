@@ -2,7 +2,6 @@ package Battleship.model.gridComponent
 
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
-import Battleship.model.states.GameState
 import org.scalatest.wordspec.AnyWordSpec
 
 class StrategyCollideNormalSpec extends AnyWordSpec {
@@ -14,7 +13,7 @@ class StrategyCollideNormalSpec extends AnyWordSpec {
     Map("x" -> 0, "y" -> 1),
     Map("x" -> 0, "y" -> 2)
   )
-  val shipSet: GameState.Value = GameState.SHIPSETTING
+  val shipSet: String = "SHIPSETTING"
   var grid: InterfaceGrid = Grid(size, strategyCollide, Vector(Map())).initGrid()
 
   "A collision" when {
