@@ -2,7 +2,6 @@ package Battleship.controller.controllerComponent.commands.commandComponents
 
 import Battleship.controller.controllerComponent._
 import Battleship.controller.controllerComponent.commands.Command
-import Battleship.controller.controllerComponent.events._
 import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 
 import scala.util.{Failure, Success, Try}
@@ -39,18 +38,24 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
     }
   }
 
+  override def undoStep(): Unit = {}
+
   private def publishFailure(cause: String): Unit = {
-    controller.publish(new FailureEvent(cause))
-    controller.publish(new RedoTurn)
+    controller.requestNewReaction("FAILUREEVENT", cause)
+    controller.requestNewReaction("REDOTURN", "")
+    // controller.publish(new FailureEvent(cause))
+    // controller.publish(new RedoTurn)
   }
 
   private def changePlayer(): Unit = {
     if (controller.playerState == PlayerState.PLAYER_ONE) {
       controller.changePlayerState(PlayerState.PLAYER_TWO)
-      controller.publish(new PlayerChanged)
+      controller.requestNewReaction("PLAYERCHANGED", "")
+      // controller.publish(new PlayerChanged)
     } else {
       controller.changePlayerState(PlayerState.PLAYER_ONE)
-      controller.publish(new PlayerChanged)
+      controller.requestNewReaction("PLAYERCHANGED", "")
+      // controller.publish(new PlayerChanged)
     }
   }
 
@@ -58,14 +63,12 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
 
     if (controller.requestGameIsWon(player)) {
       controller.changeGameState(GameState.SOLVED)
-      controller.publish(new GameWon)
+      controller.requestNewReaction("GAMEWON", "")
+      // controller.publish(new GameWon)
     } else {
-      controller.publish(new TurnAgain)
+      controller.requestNewReaction("TURNAGAIN", "")
+      // controller.publish(new TurnAgain)
     }
-  }
-
-  override def undoStep(): Unit = {
-
   }
 
 }

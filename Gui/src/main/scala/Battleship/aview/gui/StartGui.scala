@@ -1,20 +1,27 @@
 package Battleship.aview.gui
 
+import Battleship.AkkaHttpGui
 import Battleship.aview.gui.panel.ImagePanel
-import Battleship.controller.InterfaceController
-import Battleship.controller.controllerComponent.events.{GameStart, PlayerChanged}
-import Battleship.controller.controllerComponent.states.GameState
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.Behaviors
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.client.RequestBuilding.{Get, Post}
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import play.api.libs.json.Json
 
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import javax.swing.JTextField
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.swing._
 import scala.swing.event.ButtonClicked
 
-class StartGui(controller: InterfaceController) extends MainFrame {
-  listenTo(controller)
+class StartGui() extends MainFrame {
+  listenTo(AkkaHttpGui)
   val dimWidth = 1600
   val dimHeight = 900
   title = "Battleship"
@@ -25,9 +32,9 @@ class StartGui(controller: InterfaceController) extends MainFrame {
     case _: GameStart =>
       this.visible = true
     case _: PlayerChanged =>
-      if (this.visible && controller.gameState == GameState.SHIPSETTING) {
+      if (this.visible && requestState("getGameState") == "SHIPSETTING") {
         this.visible = false
-        new Gui(controller).visible = true
+        new Gui().visible = true
       }
   }
 
@@ -56,6 +63,7 @@ class StartGui(controller: InterfaceController) extends MainFrame {
     listenTo(exitButton)
 
     val buttons: List[Button] = List(ButtonStartGame)
+
     reactions += {
       case ButtonClicked(b) =>
 
@@ -77,8 +85,8 @@ class StartGui(controller: InterfaceController) extends MainFrame {
       optionType = Dialog.Options.YesNo,
       title = title)
     if (res == Dialog.Result.Ok) {
-      controller.doTurn(player_one.getText())
-      controller.doTurn(player_two.getText())
+      requestGameTurn("DOTURN", player_one.getText())
+      requestGameTurn("DOTURN", player_two.getText())
     }
     res
   }
@@ -102,4 +110,25 @@ class StartGui(controller: InterfaceController) extends MainFrame {
 
   centerOnScreen()
 
+  private def requestGameTurn(event: String, input: String): Unit = {
+    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor = system.executionContext
+    val payload = Json.obj(
+      "event" -> event.toUpperCase,
+      "input" -> input
+    )
+    Await.result(Http().singleRequest(Post("http://localhost:8081/controller/update", payload.toString())), atMost = 10.second)
+  }
+
+  private def requestState(state: String): String = {
+    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor = system.executionContext
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8081/controller/request?" + state + "=state"))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
+    tmp.result.toOption match {
+      case Some(value) => value.as[String]
+      case None => ""
+    }
+  }
 }

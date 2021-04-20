@@ -1,4 +1,4 @@
-package Battleship.controller.controllerComponent.events
+package Battleship.aview.gui
 
 import scala.swing.event.Event
 

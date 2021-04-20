@@ -2,51 +2,30 @@ package Battleship.controller.controllerComponent
 
 import Battleship.controller.InterfaceController
 import Battleship.controller.controllerComponent.commands.commandComponents.{CommandIdle, CommandPlayerSetting, CommandShipSetting}
-import Battleship.controller.controllerComponent.events.FailureEvent
-import Battleship.controller.controllerComponent.states.GameState
 import Battleship.controller.controllerComponent.states.GameState.GameState
 import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
-import Battleship.controller.controllerComponent.utils.{GameModule, UndoManager}
+import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
+import Battleship.controller.controllerComponent.utils.UndoManager
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.{Get, Post}
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import com.google.inject.{Guice, Inject, Injector}
+import com.google.inject.Inject
 import play.api.libs.json.Json
 
 import scala.annotation.tailrec
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
-import scala.swing.Publisher
 import scala.util.{Failure, Success, Try}
 
-class Controller @Inject()(var gameState: GameState, var playerState: PlayerState) extends InterfaceController with Publisher {
+class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, var playerState: PlayerState = PlayerState.PLAYER_ONE) extends InterfaceController {
   private val undoManager = new UndoManager
-  private val injector: Injector = Guice.createInjector(new GameModule)
-  // private val fileIo: InterfaceFileIo = injector.getInstance(classOf[InterfaceFileIo])
 
-  def getPlayer(player: String): Unit /*(String,Map[Int, Int], Vector[Map[String, Int]])*/ = {
-    implicit val system = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext = system.executionContext
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayer=" + player))
-    responseFuture.onComplete {
-      case Success(res) => {
-        if (res.status == StatusCodes.OK) {
-          println(res.entity)
-        } else {
-          sys.error("Error")
-        }
-      }
-      case Failure(_) => {
-        sys.error("Error")
-      }
-    }
-  }
+  implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
   def requestChangePlayerName(player: String, newName: String): Option[Throwable] = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/name/update?playerName=" + player + "&newPlayerName=" + newName))
     val result = Await.result(responseFuture, atMost = 10.second)
     if (result.status != StatusCodes.OK) {
@@ -57,8 +36,6 @@ class Controller @Inject()(var gameState: GameState, var playerState: PlayerStat
   }
 
   def requestHandleFieldSettingShipSetting(player: String, coords: Vector[Map[String, Int]]): Option[Throwable] = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val payload = Json.obj(
       "player" -> player,
       "coords" -> Json.toJson(coords),
@@ -74,16 +51,12 @@ class Controller @Inject()(var gameState: GameState, var playerState: PlayerStat
   }
 
   def requestShipSettingFinished(player: String): Boolean = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/shipsetting/request?shipSettingFinished=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
     result.status == StatusCodes.OK
   }
 
   def requestHandleFieldSettingIdle(player: String, coords: Vector[Map[String, Int]]): Either[Boolean, Throwable] = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val payload = Json.obj(
       "player" -> player,
       "coords" -> Json.toJson(coords),
@@ -102,20 +75,27 @@ class Controller @Inject()(var gameState: GameState, var playerState: PlayerStat
   }
 
   def requestGameIsWon(player: String): Boolean = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/idle/request?gameIsWon=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
     result.status == StatusCodes.OK
   }
 
+  override def save(): Unit = requestNewReaction("FAILUREEVENT", "saving will getting implemented") // publish(new FailureEvent("saving will getting implemented"))
+
   override def changeGameState(gameState: GameState): Unit = this.gameState = gameState
 
   override def changePlayerState(playerState: PlayerState): Unit = this.playerState = playerState
 
-  override def save(): Unit = publish(new FailureEvent("saving will getting implemented"))
+  def requestNewReaction(event: String, message: String): Unit = {
+    val payload = Json.obj(
+      "event" -> event.toUpperCase,
+      "message" -> message
+    )
+    Http().singleRequest(Post("http://localhost:8082/tui/reactor", payload.toString()))
+    Http().singleRequest(Post("http://localhost:8083/gui/reactor", payload.toString()))
+  }
 
-  override def load(): Unit = publish(new FailureEvent("loading will getting implemented"))
+  override def load(): Unit = requestNewReaction("FAILUREEVENT", "loading will getting implemented") // publish(new FailureEvent("loading will getting implemented"))
 
   override def redoTurn(): Unit = undoManager.undoStep()
 

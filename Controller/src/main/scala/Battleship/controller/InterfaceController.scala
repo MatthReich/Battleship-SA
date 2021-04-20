@@ -23,7 +23,7 @@ trait InterfaceController extends Publisher {
 
   def load(): Unit
 
-  def getPlayer(player: String): Unit
+  def requestNewReaction(string: String, string2: String)
 
 }
 

@@ -26,12 +26,12 @@ lazy val rootProject = (project in file(".")).settings(
     "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion
   ),
 
-).dependsOn(model, controller, gui, tui)
+)
 
-lazy val model = (project in file("Model"))
+lazy val model = project in file("Model")
 
-lazy val controller = (project in file("Controller"))
+lazy val controller = project in file("Controller")
 
-lazy val gui = (project in file("Gui")).dependsOn(controller, model)
+lazy val gui = project in file("Gui")
 
-lazy val tui = (project in file("Tui")).dependsOn(controller, model)
+lazy val tui = project in file("Tui")
