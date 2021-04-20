@@ -17,6 +17,9 @@ import scala.swing._
 
 class Gui() extends Frame {
 
+  implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
+
   listenTo(AkkaHttpGui)
 
   val dimWidth = 1600
@@ -70,7 +73,7 @@ class Gui() extends Frame {
     }
   }
 
-  def gridPanel(showAllShips: Boolean, grid: Vector[Map[String, Int]]): GridPanel = new GridPanel(gridSize + 1, gridSize) {
+  def gridPanel(showAllShips: Boolean, grid: Vector[Map[String, Int]], gameState: String): GridPanel = new GridPanel(gridSize + 1, gridSize) {
     border = Swing.LineBorder(java.awt.Color.BLACK, 1)
     for {
       row <- 0 until gridSize
@@ -88,7 +91,7 @@ class Gui() extends Frame {
         contents += new Label("" + row)
 
       }
-      val fieldPanel = new FieldPanel(showAllShips, column, row, requestState("getGameState"), Gui.this, grid)
+      val fieldPanel = new FieldPanel(showAllShips, column, row, gameState, Gui.this, grid)
       contents += fieldPanel.field
       listenTo(fieldPanel)
     }
@@ -113,14 +116,14 @@ class Gui() extends Frame {
   private def playGrid: GridPanel = new GridPanel(1, 2) {
     val showAllShips = true
     val showNotAllShips = false
-
+    val gameState: String = requestState("getGameState")
     requestState("getPlayerState") match {
       case "PLAYER_ONE" =>
-        contents += gridPanel(showAllShips, requestGrid("player_01", showAllShips))
-        contents += gridPanel(showNotAllShips, requestGrid("player_02", showNotAllShips))
+        contents += gridPanel(showAllShips, requestGrid("player_01", showAllShips), gameState)
+        contents += gridPanel(showNotAllShips, requestGrid("player_02", showNotAllShips), gameState)
       case "PLAYER_TWO" =>
-        contents += gridPanel(showNotAllShips, requestGrid("player_01", showNotAllShips))
-        contents += gridPanel(showAllShips, requestGrid("player_02", showAllShips))
+        contents += gridPanel(showNotAllShips, requestGrid("player_01", showNotAllShips), gameState)
+        contents += gridPanel(showAllShips, requestGrid("player_02", showAllShips), gameState)
     }
   }
 
@@ -159,8 +162,6 @@ class Gui() extends Frame {
   centerOnScreen()
 
   private def requestGameTurn(event: String, input: String): Unit = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val payload = Json.obj(
       "event" -> event.toUpperCase,
       "input" -> input
@@ -169,8 +170,6 @@ class Gui() extends Frame {
   }
 
   private def requestState(state: String): String = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8081/controller/request?" + state + "=state"))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
@@ -181,8 +180,6 @@ class Gui() extends Frame {
   }
 
   private def requestGrid(player: String, showAll: Boolean): Vector[Map[String, Int]] = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerGrid=" + player + showAll))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
