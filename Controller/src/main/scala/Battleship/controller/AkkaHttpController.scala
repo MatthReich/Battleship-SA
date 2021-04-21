@@ -4,6 +4,7 @@ import Battleship.controller.controllerComponent.Controller
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.client.RequestBuilding.Post
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import play.api.libs.json.{JsLookupResult, JsValue, Json}
@@ -60,8 +61,7 @@ object AkkaHttpController {
                 complete(StatusCodes.OK)
               case "NEWGAMEVIEW" =>
                 class NewGameView extends Event {}
-                controller.publish(new NewGameView)
-                controller.requestNewReaction("NEWGAMEVIEW", "")
+                Http().singleRequest(Post("http://localhost:8079/game/request/newgame", Json.obj("event" -> "NEWGAMEVIEW").toString()))
                 complete(StatusCodes.OK)
               case _ => complete(StatusCodes.BadRequest)
             }
