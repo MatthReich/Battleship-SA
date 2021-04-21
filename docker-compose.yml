@@ -1,0 +1,41 @@
+version: "3.3"
+
+services:
+  root:
+    build: .
+    ports:
+      - "8079:8079"
+    image: maingame:1.0
+    depends_on:
+      - model-api
+      - tui-api
+      - gui-api
+      - controller-api
+
+  model-api:
+    build:
+      context: ./Model
+    ports:
+      - "8080:8080"
+    image: model-api:1.0
+
+  controller-api:
+    build:
+      context: ./Controller
+    ports:
+      - "8081:8081"
+    image: controller-api:1.0
+
+  tui-api:
+    build:
+      context: ./Tui
+    ports:
+      - "8082:8082"
+    image: tui-api:1.0
+
+  gui-api:
+    build:
+      context: ./Gui
+    ports:
+      - "8083:8083"
+    image: gui-api:1.0

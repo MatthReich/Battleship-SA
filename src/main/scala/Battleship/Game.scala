@@ -18,8 +18,14 @@ object Game extends Reactor {
 
     listenTo()
 
-    requestNewEvent("GAMESTART")
-    requestNewEvent("PLAYERCHANGED")
+    println("press any button to start game")
+    do {
+      scala.io.StdIn.readLine()
+      requestNewEvent("GAMESTART")
+      requestNewEvent("PLAYERCHANGED")
+      println("game started,, watch for tui oder gui")
+      println("press any button to restart the game")
+    } while (true)
 
   }
 
