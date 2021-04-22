@@ -17,6 +17,8 @@ import scala.swing._
 
 class Gui() extends Frame {
 
+  val controllerHttp = "controller-api:8081"
+  val modelHttp = "model-api:8080"
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
@@ -166,11 +168,11 @@ class Gui() extends Frame {
       "event" -> event.toUpperCase,
       "input" -> input
     )
-    Http().singleRequest(Post("http://localhost:8081/controller/update", payload.toString()))
+    Http().singleRequest(Post(s"http://${controllerHttp}/controller/update", payload.toString()))
   }
 
   private def requestState(state: String): String = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8081/controller/request?" + state + "=state"))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${controllerHttp}/controller/request?" + state + "=state"))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {
@@ -180,7 +182,7 @@ class Gui() extends Frame {
   }
 
   private def requestGrid(player: String, showAll: Boolean): Vector[Map[String, Int]] = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerGrid=" + player + showAll))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model?getPlayerGrid=" + player + showAll))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {

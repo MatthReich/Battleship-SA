@@ -22,6 +22,7 @@ import scala.swing.event.ButtonClicked
 
 class StartGui() extends MainFrame {
   listenTo(AkkaHttpGui)
+  val controllerHttp = "controller-api:8081"
   val dimWidth = 1600
   val dimHeight = 900
   title = "Battleship"
@@ -117,13 +118,13 @@ class StartGui() extends MainFrame {
       "event" -> event.toUpperCase,
       "input" -> input
     )
-    Await.result(Http().singleRequest(Post("http://localhost:8081/controller/update", payload.toString())), atMost = 10.second)
+    Await.result(Http().singleRequest(Post(s"http://${controllerHttp}/controller/update", payload.toString())), atMost = 10.second)
   }
 
   private def requestState(state: String): String = {
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8081/controller/request?" + state + "=state"))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${controllerHttp}/controller/request?" + state + "=state"))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {

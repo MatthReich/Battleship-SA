@@ -16,6 +16,9 @@ object AkkaHttpGui extends Publisher {
 
   val startGui = new StartGui()
 
+  val interface: String = "0.0.0.0"
+  val port: Int = 8083
+
   def main(args: Array[String]): Unit = {
 
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
@@ -57,7 +60,7 @@ object AkkaHttpGui extends Publisher {
       }
     )
 
-    Http().newServerAt("localhost", 8083).bind(route)
+    Http().newServerAt(interface, port).bind(route)
 
   }
 }

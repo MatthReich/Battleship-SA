@@ -14,6 +14,10 @@ import scala.swing.Reactor
 
 object Game extends Reactor {
 
+  val interface: String = "0.0.0.0"
+  val port: Int = 8079
+  val controllerHttp = "controller:8081"
+
   def main(args: Array[String]): Unit = {
 
     listenTo()
@@ -41,7 +45,7 @@ object Game extends Reactor {
       "event" -> event.toUpperCase,
       "message" -> ""
     )
-    Http().singleRequest(Post("http://localhost:8081/controller/update/event", payload.toString()))
+    Http().singleRequest(Post(s"http://${controllerHttp}/controller/update/event", payload.toString()))
   }
 
   private def listenTo(): Unit = {
@@ -63,7 +67,7 @@ object Game extends Reactor {
         }
       }
     )
-    Http().newServerAt("localhost", 8079).bind(route)
+    Http().newServerAt(interface, port).bind(route)
   }
 
 }

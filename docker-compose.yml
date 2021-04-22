@@ -1,7 +1,7 @@
 version: "3.3"
 
 services:
-  root:
+  game:
     build: .
     ports:
       - "8079:8079"
@@ -15,27 +15,35 @@ services:
   model-api:
     build:
       context: ./Model
+      dockerfile: ./Dockerfile
     ports:
       - "8080:8080"
     image: model-api:1.0
+    container_name: model-api
 
   controller-api:
     build:
       context: ./Controller
+      dockerfile: ./Dockerfile
     ports:
       - "8081:8081"
     image: controller-api:1.0
+    container_name: controller-api
 
   tui-api:
     build:
       context: ./Tui
+      dockerfile: ./Dockerfile
     ports:
       - "8082:8082"
     image: tui-api:1.0
+    container_name: tui-api
 
   gui-api:
     build:
       context: ./Gui
+      dockerfile: ./Dockerfile
     ports:
       - "8083:8083"
     image: gui-api:1.0
+    container_name: gui-api

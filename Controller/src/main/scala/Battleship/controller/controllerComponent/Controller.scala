@@ -21,12 +21,16 @@ import scala.util.{Failure, Success, Try}
 
 class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, var playerState: PlayerState = PlayerState.PLAYER_ONE) extends InterfaceController {
   private val undoManager = new UndoManager
+  private val modelHttp = "model-api:8080"
+  private val tuiHttp = "model-api:8082"
+  private val guiHttp = "model-api:8083"
+
 
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
   def requestChangePlayerName(player: String, newName: String): Option[Throwable] = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/name/update?playerName=" + player + "&newPlayerName=" + newName))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model/player/name/update?playerName=" + player + "&newPlayerName=" + newName))
     val result = Await.result(responseFuture, atMost = 10.second)
     if (result.status != StatusCodes.OK) {
       Some(new Exception("request status was: " + result.status))
@@ -41,7 +45,7 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
       "coords" -> Json.toJson(coords),
       "gameState" -> gameState.toString.toUpperCase
     )
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Post("http://localhost:8080/model/player/shipsetting/update", payload.toString()))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Post(s"http://${modelHttp}/model/player/shipsetting/update", payload.toString()))
     val result = Await.result(responseFuture, atMost = 10.second)
     if (result.status != StatusCodes.OK) {
       Some(new Exception(result.status.reason()))
@@ -51,7 +55,7 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
   }
 
   def requestShipSettingFinished(player: String): Boolean = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/shipsetting/request?shipSettingFinished=" + player))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model/player/shipsetting/request?shipSettingFinished=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
     result.status == StatusCodes.OK
   }
@@ -62,7 +66,7 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
       "coords" -> Json.toJson(coords),
       "gameState" -> gameState.toString.toUpperCase
     )
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Post("http://localhost:8080/model/player/idle/update", payload.toString()))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Post(s"http://${modelHttp}/model/player/idle/update", payload.toString()))
     val result = Await.result(responseFuture, atMost = 10.second)
     if (result.status.toString() == "468 change player") {
       Left(true)
@@ -75,7 +79,7 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
   }
 
   def requestGameIsWon(player: String): Boolean = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model/player/idle/request?gameIsWon=" + player))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model/player/idle/request?gameIsWon=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
     result.status == StatusCodes.OK
   }
@@ -91,8 +95,8 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
       "event" -> event.toUpperCase,
       "message" -> message
     )
-    Http().singleRequest(Post("http://localhost:8082/tui/reactor", payload.toString()))
-    Http().singleRequest(Post("http://localhost:8083/gui/reactor", payload.toString()))
+    Http().singleRequest(Post(s"http://${tuiHttp}/tui/reactor", payload.toString()))
+    Http().singleRequest(Post(s"http://${guiHttp}/gui/reactor", payload.toString()))
   }
 
   override def load(): Unit = requestNewReaction("FAILUREEVENT", "loading will getting implemented") // publish(new FailureEvent("loading will getting implemented"))

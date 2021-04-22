@@ -15,6 +15,8 @@ import scala.swing.Publisher
 object AkkaHttpTui extends Publisher {
 
   val tui = new Tui()
+  val interface: String = "0.0.0.0"
+  val port: Int = 8082
 
   def main(args: Array[String]): Unit = {
 
@@ -57,7 +59,7 @@ object AkkaHttpTui extends Publisher {
       }
     )
 
-    Http().newServerAt("localhost", 8082).bind(route)
+    Http().newServerAt(interface, port).bind(route)
 
     do {
       tui.tuiProcessLine(scala.io.StdIn.readLine())

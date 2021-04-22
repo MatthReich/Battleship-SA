@@ -19,6 +19,9 @@ import scala.util.{Failure, Success}
 
 object AkkaHttpModel {
 
+  val interface: String = "0.0.0.0"
+  val port: Int = 8080
+
   def main(args: Array[String]): Unit = {
 
     val grid_player_01 = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
@@ -201,7 +204,7 @@ object AkkaHttpModel {
       },
     )
 
-    val bindingFuture = Http().newServerAt("localhost", 8080).bind(route)
+    val bindingFuture = Http().newServerAt(interface, port).bind(route)
 
     println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
     StdIn.readLine() // let it run until user presses return

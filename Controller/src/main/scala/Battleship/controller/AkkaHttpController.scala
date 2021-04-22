@@ -16,6 +16,9 @@ import scala.swing.event.Event
 object AkkaHttpController {
 
   val controller = new Controller()
+  val interface: String = "0.0.0.0"
+  val port: Int = 8081
+  val gameHttp = "game:8079"
 
   def main(args: Array[String]): Unit = {
 
@@ -61,7 +64,7 @@ object AkkaHttpController {
                 complete(StatusCodes.OK)
               case "NEWGAMEVIEW" =>
                 class NewGameView extends Event {}
-                Http().singleRequest(Post("http://localhost:8079/game/request/newgame", Json.obj("event" -> "NEWGAMEVIEW").toString()))
+                Http().singleRequest(Post(s"http://${gameHttp}/game/request/newgame", Json.obj("event" -> "NEWGAMEVIEW").toString()))
                 complete(StatusCodes.OK)
               case _ => complete(StatusCodes.BadRequest)
             }
@@ -84,7 +87,7 @@ object AkkaHttpController {
       }
     )
 
-    val bindingFuture = Http().newServerAt("localhost", 8081).bind(route)
+    val bindingFuture = Http().newServerAt(interface, port).bind(route)
 
     println(s"Server online at http://localhost:8081/\nPress RETURN to stop...")
     StdIn.readLine() // let it run until user presses return

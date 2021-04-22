@@ -19,6 +19,8 @@ class Tui() extends Reactor {
 
   val showAllShips = true
   val showNotAllShips = false
+  val controllerHttp = "controller-api:8081"
+  val modelHttp = "model-api:8081"
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
@@ -80,7 +82,7 @@ class Tui() extends Reactor {
       "event" -> event.toUpperCase,
       "input" -> input
     )
-    Http().singleRequest(Post("http://localhost:8081/controller/update", payload.toString()))
+    Http().singleRequest(Post(s"http://${controllerHttp}/controller/update", payload.toString()))
   }
 
   private def printTui(string: String): Unit = {
@@ -100,7 +102,7 @@ class Tui() extends Reactor {
   def toStringGrid(showAllShips: Boolean): String = toStringRek(0, 0, showAllShips, initRek())
 
   private def requestPlayerName(player: String): String = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerName=" + player))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model?getPlayerName=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {
@@ -110,7 +112,7 @@ class Tui() extends Reactor {
   }
 
   private def requestGrid(player: String, showAll: Boolean): String = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerGrid=" + player + showAll))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model?getPlayerGrid=" + player + showAll))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {
@@ -121,7 +123,7 @@ class Tui() extends Reactor {
   }
 
   private def requestState(state: String): String = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8081/controller/request?" + state + "=state"))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${controllerHttp}/controller/request?" + state + "=state"))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {
@@ -145,7 +147,7 @@ class Tui() extends Reactor {
   }
 
   private def requestPlayerShipSetList(player: String): String = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerShipSetList=" + player))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model?getPlayerShipSetList=" + player))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.toString()
