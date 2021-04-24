@@ -10,6 +10,7 @@ import akka.http.scaladsl.server.Route
 import play.api.libs.json.Json
 
 import scala.concurrent.ExecutionContextExecutor
+import scala.io.StdIn
 import scala.swing.Publisher
 
 object AkkaHttpGui extends Publisher {
@@ -60,7 +61,11 @@ object AkkaHttpGui extends Publisher {
       }
     )
 
-    Http().newServerAt(interface, port).bind(route)
-
+    val bindingFuture = Http().newServerAt(interface, port).bind(route)
+    println(s"Server online at: http://${interface}:${port}/\n")
+    StdIn.readLine() // let it run until user presses return
+    bindingFuture
+      .flatMap(_.unbind()) // trigger unbinding from the port
+      .onComplete(_ => system.terminate()) // and shutdown when done
   }
 }

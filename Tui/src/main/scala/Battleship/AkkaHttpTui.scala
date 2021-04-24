@@ -60,6 +60,7 @@ object AkkaHttpTui extends Publisher {
     )
 
     Http().newServerAt(interface, port).bind(route)
+    println(s"Server online at: http://${interface}:${port}/\n")
 
     do {
       tui.tuiProcessLine(scala.io.StdIn.readLine())

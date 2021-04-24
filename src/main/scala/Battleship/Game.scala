@@ -68,6 +68,7 @@ object Game extends Reactor {
       }
     )
     Http().newServerAt(interface, port).bind(route)
+    println(s"Server online at: http://${interface}:${port}/\nPress RETURN to stop...")
   }
 
 }
