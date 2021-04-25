@@ -6,11 +6,8 @@ services:
     ports:
       - "8079:8079"
     image: maingame:1.0
-    depends_on:
-      - model-api
-      - tui-api
-      - gui-api
-      - controller-api
+    container_name: maingame
+    stdin_open: true
 
   model-api:
     build:
@@ -20,6 +17,7 @@ services:
       - "8080:8080"
     image: model-api:1.0
     container_name: model-api
+    stdin_open: true
 
   controller-api:
     build:
@@ -29,6 +27,7 @@ services:
       - "8081:8081"
     image: controller-api:1.0
     container_name: controller-api
+    stdin_open: true
 
   tui-api:
     build:
@@ -38,6 +37,7 @@ services:
       - "8082:8082"
     image: tui-api:1.0
     container_name: tui-api
+    stdin_open: true
 
   gui-api:
     build:
@@ -47,3 +47,4 @@ services:
       - "8083:8083"
     image: gui-api:1.0
     container_name: gui-api
+    stdin_open: true
