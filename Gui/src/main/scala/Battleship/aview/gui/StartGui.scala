@@ -40,7 +40,7 @@ class StartGui() extends MainFrame {
   }
 
   val backgroundIMG: BufferedImage =
-    ImageIO.read(new File("Gui/src/main/scala/Battleship/aview/gui/media/BattleShipPicture.png"))
+    ImageIO.read(new File("src/main/scala/Battleship/aview/gui/media/BattleShipPicture.png"))
 
   val imageLabel: ImagePanel = new ImagePanel {
     imagePath(backgroundIMG)

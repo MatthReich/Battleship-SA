@@ -5,7 +5,7 @@ services:
     build: .
     ports:
       - "8079:8079"
-    image: maingame:1.1.1
+    image: maingame:1.1.3
     container_name: maingame
     stdin_open: true
 
@@ -45,6 +45,11 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8083:8083"
-    image: gui-api:1.0
+    image: gui-api:1.1.7
     container_name: gui-api
     stdin_open: true
+    # launch VcXSrv.exe [multiple windows, start no client, Clipboard & Primary Selection & Native Opengl & Disable access control ]
+    # Altermate Setup from https://sourceforge.net/p/vcxsrv/wiki/VcXsrv%20%26%20Win10/ with WSL2
+    # -> export DISPLAY=$(/sbin/ip route | awk '/default/ { print $3 }'):0 && echo $DISPLAY => IP Needed
+    environment:
+      - DISPLAY=172.30.240.1:0
