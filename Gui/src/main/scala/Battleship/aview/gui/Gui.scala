@@ -17,8 +17,8 @@ import scala.swing._
 
 class Gui() extends Frame {
 
-  val controllerHttp = "controller-api:8081"
-  val modelHttp = "model-api:8080"
+  val controllerHttp: String = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
+  val modelHttp: String = sys.env.getOrElse("MODELHTTPSERVER", "localhost:8080")
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
 

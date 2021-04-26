@@ -19,8 +19,8 @@ class Tui() extends Reactor {
 
   val showAllShips = true
   val showNotAllShips = false
-  val controllerHttp = "controller-api:8081"
-  val modelHttp = "model-api:8080"
+  val controllerHttp = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
+  val modelHttp = sys.env.getOrElse("MODELHTTPSERVER", "localhost:8080")
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
 

@@ -5,9 +5,11 @@ services:
     build: .
     ports:
       - "8079:8079"
-    image: maingame:1.1.3
+    image: maingame:1.2.2
     container_name: maingame
     stdin_open: true
+    environment:
+      - CONTROLLERHTTPSERVER=controller-api:8081
 
   model-api:
     build:
@@ -15,7 +17,7 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8080:8080"
-    image: model-api:1.0
+    image: model-api:1.2.0
     container_name: model-api
     stdin_open: true
 
@@ -25,9 +27,13 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8081:8081"
-    image: controller-api:1.1.2
+    image: controller-api:1.2.0
     container_name: controller-api
     stdin_open: true
+    environment:
+      - GUIHTTPSERVER=gui-api:8083
+      - TUIHTTPSERVER=tui-api:8082
+      - MODELHTTPSERVER=model-api:8080
 
   tui-api:
     build:
@@ -35,9 +41,12 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8082:8082"
-    image: tui-api:1.2.1
+    image: tui-api:1.2.2
     container_name: tui-api
     stdin_open: true
+    environment:
+      - CONTROLLERHTTPSERVER=controller-api:8081
+      - MODELHTTPSERVER=model-api:8080
 
   gui-api:
     build:
@@ -45,7 +54,7 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8083:8083"
-    image: gui-api:1.1.7
+    image: gui-api:1.2.1
     container_name: gui-api
     stdin_open: true
     # launch VcXSrv.exe [multiple windows, start no client, Clipboard & Primary Selection & Native Opengl & Disable access control ]
@@ -53,3 +62,6 @@ services:
     # -> export DISPLAY=$(/sbin/ip route | awk '/default/ { print $3 }'):0 && echo $DISPLAY => IP Needed
     environment:
       - DISPLAY=172.30.240.1:0
+      - CONTROLLERHTTPSERVER=controller-api:8081
+      - MODELHTTPSERVER=model-api:8080
+      - PICTUREPATH=src/main/scala/Battleship/aview/gui/media/BattleShipPicture.png

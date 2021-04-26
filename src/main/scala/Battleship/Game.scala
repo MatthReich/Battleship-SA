@@ -16,18 +16,19 @@ object Game extends Reactor {
 
   val interface: String = "0.0.0.0"
   val port: Int = 8079
-  val controllerHttp = "controller-api:8081"
+  val controllerHttp: String = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
 
   def main(args: Array[String]): Unit = {
 
     listenTo()
 
     println("press any button to start game")
+    Thread.sleep(25000)
     do {
       scala.io.StdIn.readLine()
       requestNewEvent("GAMESTART")
       requestNewEvent("PLAYERCHANGED")
-      println("game started,, watch for tui oder gui")
+      println("game started, watch for tui or gui")
       println("press any button to restart the game")
     } while (true)
 

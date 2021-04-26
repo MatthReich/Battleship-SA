@@ -22,7 +22,8 @@ import scala.swing.event.ButtonClicked
 
 class StartGui() extends MainFrame {
   listenTo(AkkaHttpGui)
-  val controllerHttp = "controller-api:8081"
+  val controllerHttp: String = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
+  val picturePath: String = sys.env.getOrElse("PICTUREPATH", "Gui/src/main/scala/Battleship/aview/gui/media/BattleShipPicture.png")
   val dimWidth = 1600
   val dimHeight = 900
   title = "Battleship"
@@ -40,7 +41,7 @@ class StartGui() extends MainFrame {
   }
 
   val backgroundIMG: BufferedImage =
-    ImageIO.read(new File("src/main/scala/Battleship/aview/gui/media/BattleShipPicture.png"))
+    ImageIO.read(new File(picturePath))
 
   val imageLabel: ImagePanel = new ImagePanel {
     imagePath(backgroundIMG)

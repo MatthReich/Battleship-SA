@@ -20,11 +20,10 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success, Try}
 
 class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, var playerState: PlayerState = PlayerState.PLAYER_ONE) extends InterfaceController {
-  private val undoManager = new UndoManager
-  private val modelHttp = "model-api:8080"
-  private val tuiHttp = "tui-api:8082"
-  private val guiHttp = "gui-api:8083"
-
+  private val undoManager: UndoManager = new UndoManager
+  private val modelHttp: String = sys.env.getOrElse("MODELHTTPSERVER", "localhost:8080")
+  private val tuiHttp: String = sys.env.getOrElse("TUIHTTPSERVER", "localhost:8082")
+  private val guiHttp: String = sys.env.getOrElse("GUIHTTPSERVER", "localhost:8083")
 
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
