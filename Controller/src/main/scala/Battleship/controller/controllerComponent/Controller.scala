@@ -22,8 +22,8 @@ import scala.util.{Failure, Success, Try}
 class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, var playerState: PlayerState = PlayerState.PLAYER_ONE) extends InterfaceController {
   private val undoManager = new UndoManager
   private val modelHttp = "model-api:8080"
-  private val tuiHttp = "model-api:8082"
-  private val guiHttp = "model-api:8083"
+  private val tuiHttp = "tui-api:8082"
+  private val guiHttp = "gui-api:8083"
 
 
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")

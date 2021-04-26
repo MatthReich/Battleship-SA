@@ -5,7 +5,7 @@ services:
     build: .
     ports:
       - "8079:8079"
-    image: maingame:1.0
+    image: maingame:1.1.1
     container_name: maingame
     stdin_open: true
 
@@ -25,7 +25,7 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8081:8081"
-    image: controller-api:1.0
+    image: controller-api:1.1.2
     container_name: controller-api
     stdin_open: true
 
@@ -35,7 +35,7 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8082:8082"
-    image: tui-api:1.0
+    image: tui-api:1.2.1
     container_name: tui-api
     stdin_open: true
 

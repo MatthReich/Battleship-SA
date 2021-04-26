@@ -20,7 +20,7 @@ class Tui() extends Reactor {
   val showAllShips = true
   val showNotAllShips = false
   val controllerHttp = "controller-api:8081"
-  val modelHttp = "model-api:8081"
+  val modelHttp = "model-api:8080"
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
@@ -37,13 +37,13 @@ class Tui() extends Reactor {
           printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
         case "IDLE" =>
           printTui("guess the enemy ship <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
-        case _ =>
+        case value => println(value + " is not defined")
       }
     case _: GridUpdated =>
       requestState("getGameState") match {
         case "SHIPSETTING" =>
           printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
-        case _ =>
+        case value => println(value + " is not defined")
       }
     case _: RedoTurn =>
       requestState("getGameState") match {
@@ -51,19 +51,19 @@ class Tui() extends Reactor {
           printTui("try again .. set your Ship <x y x y>\n" + gridAsString() + "left:\n" + shipSetListAsString())
         case "IDLE" =>
           printTui("try again <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
-        case _ =>
+        case value => println(value + " is not defined")
       }
     case _: TurnAgain =>
       requestState("getGameState") match {
         case "IDLE" =>
           printTui("that was a hit! guess again <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
-        case _ =>
+        case value => println(value + " is not defined")
       }
     case _: GameWon =>
       printTui("has won")
       println("<n> for new game <q> for end")
     case exception: FailureEvent => println(exception.getMessage())
-    case _ =>
+    case value => println(value + " is not defined")
   }
 
   def tuiProcessLine(input: String): Unit = {

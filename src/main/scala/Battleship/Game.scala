@@ -16,7 +16,7 @@ object Game extends Reactor {
 
   val interface: String = "0.0.0.0"
   val port: Int = 8079
-  val controllerHttp = "controller:8081"
+  val controllerHttp = "controller-api:8081"
 
   def main(args: Array[String]): Unit = {
 

@@ -23,7 +23,6 @@ object AkkaHttpTui extends Publisher {
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
-
     val route: Route = concat(
       path("tui" / "reactor") {
         post {
