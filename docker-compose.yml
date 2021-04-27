@@ -61,7 +61,7 @@ services:
     # Altermate Setup from https://sourceforge.net/p/vcxsrv/wiki/VcXsrv%20%26%20Win10/ with WSL2
     # -> export DISPLAY=$(/sbin/ip route | awk '/default/ { print $3 }'):0 && echo $DISPLAY => IP Needed
     environment:
-      - DISPLAY=172.30.240.1:0
+      - DISPLAY=IP-ADRESS:0
       - CONTROLLERHTTPSERVER=controller-api:8081
       - MODELHTTPSERVER=model-api:8080
       - PICTUREPATH=src/main/scala/Battleship/aview/gui/media/BattleShipPicture.png
