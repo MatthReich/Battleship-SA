@@ -34,6 +34,7 @@ services:
       - GUIHTTPSERVER=gui-api:8083
       - TUIHTTPSERVER=tui-api:8082
       - MODELHTTPSERVER=model-api:8080
+      - GAMEHTTPSERVER=gane:8079
 
   tui-api:
     build:

@@ -18,7 +18,7 @@ object AkkaHttpController {
   val controller = new Controller()
   val interface: String = "0.0.0.0"
   val port: Int = 8081
-  val gameHttp = "game:8079"
+  val gameHttp: String = sys.env.getOrElse("GAMEHTTPSERVER", "localhost:8079")
 
   def main(args: Array[String]): Unit = {
 
