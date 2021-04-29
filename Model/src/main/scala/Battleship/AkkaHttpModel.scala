@@ -53,12 +53,11 @@ object AkkaHttpModel {
             case "player_02true" => answer = Json.toJson(player_02.grid.grid)
             case "player_01false" => answer = Json.toJson(player_01.grid.grid)
             case "player_02false" => answer = Json.toJson(player_02.grid.grid)
-            case _ =>
-              complete(StatusCodes.BadRequest)
+            case _ => complete(StatusCodes.BadRequest)
           }
           case None =>
         }
-        if (answer.toString() != "") {
+        if (answer.toString() != "" && answer.toString() != "\"\"") {
           complete(HttpEntity(ContentTypes.`application/json`, "" + Json.toJson(answer)))
         } else {
           complete(StatusCodes.BadRequest)
