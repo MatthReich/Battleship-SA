@@ -1,5 +1,7 @@
 package Battleship
 
+import Battleship.model.databaseComponent.DaoInterface
+import Battleship.model.databaseComponent.slick.DaoSlick
 import Battleship.model.gridComponent.InterfaceGrid
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
@@ -23,6 +25,9 @@ object AkkaHttpModel {
 
   val interface: String = "0.0.0.0"
   val port: Int = 8080
+
+  val injector: Injector = Guice.createInjector(new ModelModule)
+  val dataBase: DaoInterface = injector.getInstance(classOf[DaoInterface])
 
   val grid_player_01: InterfaceGrid = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
   val grid_player_02: InterfaceGrid = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
