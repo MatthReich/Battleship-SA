@@ -1,7 +1,6 @@
 package Battleship
 
 import Battleship.model.databaseComponent.DaoInterface
-import Battleship.model.databaseComponent.slick.DaoSlick
 import Battleship.model.gridComponent.InterfaceGrid
 import Battleship.model.gridComponent.gridImplementation.Grid
 import Battleship.model.gridComponent.strategyCollide.StrategyCollideNormal
