@@ -27,11 +27,3 @@ lazy val rootProject = (project in file(".")).settings(
   ),
 
 )
-
-lazy val model = project in file("Model")
-
-lazy val controller = project in file("Controller")
-
-lazy val gui = project in file("Gui")
-
-lazy val tui = project in file("Tui")

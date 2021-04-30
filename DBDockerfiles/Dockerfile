@@ -1,4 +1,4 @@
-FROM mysql:5.7
+FROM mysql:latest
 EXPOSE 3306
 
 ENV MYSQL_ROOT_PASSWORD=battleship
