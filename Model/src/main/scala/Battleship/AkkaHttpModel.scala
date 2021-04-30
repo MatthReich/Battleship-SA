@@ -20,6 +20,7 @@ import play.api.libs.json.{JsLookupResult, JsValue, Json}
 import scala.concurrent.ExecutionContextExecutor
 import scala.io.StdIn
 import scala.util.{Failure, Success}
+import com.google.inject.{Guice, Injector}
 
 object AkkaHttpModel {
 

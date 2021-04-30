@@ -40,3 +40,8 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-core" % "2.8.47" % "test",
   // "org.mockito" %% "mockito-scala" % "1.15.0" % "test"
 )
+
+/** database dependencies */
+libraryDependencies ++= Seq(
+  "com.typesafe.slick" %% "slick" % "3.3.3",
+)

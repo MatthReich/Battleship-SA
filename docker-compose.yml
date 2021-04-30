@@ -5,11 +5,18 @@ services:
     build: .
     ports:
       - "8079:8079"
-    image: maingame:1.2.2
+    image: maingame:latest
     container_name: maingame
     stdin_open: true
     environment:
       - CONTROLLERHTTPSERVER=controller-api:8081
+
+  mysqldatabase:
+    build:
+      context: ./DBDockerfiles
+      dockerfile: ./Dockerfile
+    image: mysqldatabase:latest
+    container_name: mysqldatabase
 
   model-api:
     build:
@@ -17,9 +24,13 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8080:8080"
-    image: model-api:1.2.0
+    image: model-api:latest
     container_name: model-api
     stdin_open: true
+    depends_on:
+      - mysqldatabase
+    environment:
+      - DATABASEHOST=rootdb:3306
 
   controller-api:
     build:
@@ -27,7 +38,7 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8081:8081"
-    image: controller-api:1.2.0
+    image: controller-api:latest
     container_name: controller-api
     stdin_open: true
     environment:
@@ -42,7 +53,7 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8082:8082"
-    image: tui-api:1.2.2
+    image: tui-api:1latest
     container_name: tui-api
     stdin_open: true
     environment:
@@ -55,7 +66,7 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8083:8083"
-    image: gui-api:1.2.1
+    image: gui-api:latest
     container_name: gui-api
     stdin_open: true
     # launch VcXSrv.exe [multiple windows, start no client, Clipboard & Primary Selection & Native Opengl & Disable access control ]
