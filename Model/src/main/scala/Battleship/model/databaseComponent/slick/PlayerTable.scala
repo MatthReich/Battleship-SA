@@ -6,7 +6,7 @@ class PlayerTable(tag: Tag) extends Table[(Int, String, Int, Int, Int, Int)](tag
 
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
 
-  def name = column[String]("Name")
+  def name = column[String]("PlayerName")
 
   def controllerForeignKey = foreignKey("Controller_FK", controllerId, TableQuery[ControllerTable])(_.id)
 
