@@ -28,6 +28,7 @@ object AkkaHttpModel {
 
   val injector: Injector = Guice.createInjector(new ModelModule)
   val dataBase: DaoInterface = injector.getInstance(classOf[DaoInterface])
+  dataBase.create()
 
   val grid_player_01: InterfaceGrid = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
   val grid_player_02: InterfaceGrid = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
@@ -201,10 +202,10 @@ object AkkaHttpModel {
     path("model" / "database") {
       parameters("request") {
         case "load" =>
-          dataBase.load()
+          dataBase.read()
           complete(StatusCodes.OK)
         case "save" =>
-          dataBase.save("test", "123")
+          dataBase.update("test", "123")
           complete(StatusCodes.OK)
       }
     }

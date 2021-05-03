@@ -1,8 +1,6 @@
 package Battleship.model.databaseComponent.slick
 
 import Battleship.model.databaseComponent.DaoInterface
-import Battleship.model.playerComponent.InterfacePlayer
-import Battleship.model.playerComponent.playerImplementation.Player
 import slick.jdbc.JdbcBackend.Database
 import slick.lifted.TableQuery
 import slick.jdbc.MySQLProfile.api._
@@ -39,19 +37,25 @@ case class DaoSlick() extends DaoInterface {
       ++ shipListTable.schema
       ++ shipSetListTable.schema
     ).createIfNotExists,
-    playerTable += (0, "penis", 1, 2, 3, 4)
   )
-  Await.result(database.run(setup), atMost = 10.second)
 
-  override def load(): (String, String) = {
-    println(playerTable.result)
-    println(playerTable.take(1))
-    println(playerTable.take(1).result)
+  override def create(): Unit = {
+    Await.result(database.run(setup), atMost = 10.second)
+  }
+
+  override def read(): (String, String) = {
+    val query = playerTable.take(0).result
+    val result = Await.result(database.run(query), atMost = 10.second)
+    println(result.head._1)
     ("", "")
   }
 
-  override def save(gameState: String, playerState: String): Unit = {
+  override def update(gameState: String, playerState: String): Unit = {
     Await.result(database.run(playerTable += (0, "Marcel", 0, 0, 0, 0)), Duration.Inf)
     println("First save")
+  }
+
+  override def delete(): Unit = {
+
   }
 }
