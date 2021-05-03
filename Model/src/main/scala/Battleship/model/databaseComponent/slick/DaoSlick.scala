@@ -79,7 +79,11 @@ case class DaoSlick() extends DaoInterface {
   }
 
   override def delete(): Unit = {
-
+    playerTable.delete
+    gridTable.delete
+    shipSetListTable.delete
+    controllerTable.delete
+    shipListTable.delete
   }
 
   private def initControllerTable(id: Int, query: TableQuery[ControllerTable]): Unit = {
