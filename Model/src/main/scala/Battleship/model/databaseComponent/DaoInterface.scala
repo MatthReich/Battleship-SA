@@ -6,7 +6,7 @@ trait DaoInterface {
 
   def read(): (String, String)
 
-  def update(gameState: String, playerState: String): Unit
+  def update(id: Int, playerName: String, grid: Vector[Map[String, Int]] , shipSetList: Map[String, Int], gameState: String, playerState: String): Unit
 
   def delete(): Unit
 }

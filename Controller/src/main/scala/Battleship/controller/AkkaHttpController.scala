@@ -1,6 +1,9 @@
 package Battleship.controller
 
 import Battleship.controller.controllerComponent.Controller
+import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
+import Battleship.controller.controllerComponent.states.GameState.GameState
+import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
@@ -84,7 +87,27 @@ object AkkaHttpController {
           }
           }
         }
+      },
+      path("controller" / "update" / "states") {
+        parameters("setGameState", "setPlayerState") { (gameState, playerState) =>
+          val gameStateToSet: GameState = gameState match {
+            case "PLAYERSETTING" => GameState.PLAYERSETTING
+            case "IDLE" => GameState.IDLE
+            case "SHIPSETTING" => GameState.SHIPSETTING
+            case "SOLVED" => GameState.SOLVED
+            case "SAVED" => GameState.SAVED
+            case "LOADED" => GameState.LOADED
+          }
+          val playerStateToSet: PlayerState = playerState match {
+            case "PLAYER_ONE" => PlayerState.PLAYER_ONE
+            case "PLAYER_TWO" => PlayerState.PLAYER_TWO
+          }
+          controller.changeGameState(gameStateToSet)
+          controller.changePlayerState(playerStateToSet)
+          complete(StatusCodes.OK)
+        }
       }
+
     )
 
     val bindingFuture = Http().newServerAt(interface, port).bind(route)

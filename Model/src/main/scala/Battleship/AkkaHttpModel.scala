@@ -11,15 +11,19 @@ import Battleship.requestHandling.RequestHandler
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import play.api.libs.json.{JsLookupResult, JsValue, Json}
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.io.StdIn
 import scala.util.{Failure, Success}
 import com.google.inject.{Guice, Injector}
+
+import scala.concurrent.duration.DurationInt
 
 object AkkaHttpModel {
 
@@ -32,6 +36,14 @@ object AkkaHttpModel {
 
   val grid_player_01: InterfaceGrid = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
   val grid_player_02: InterfaceGrid = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()
+
+  var player_01: InterfacePlayer = Player("player_01", Map("2" -> 2, "3" -> 1, "4" -> 1, "5" -> 2), Vector[InterfaceShip](), grid_player_01)
+  var player_02: InterfacePlayer = Player("player_02", Map("2" -> 2, "3" -> 1, "4" -> 1, "5" -> 2), Vector[InterfaceShip](), grid_player_02)
+
+  implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
+  val controllerHttp = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
+
   val requestHandler: RequestHandler = RequestHandler()
   val route: Route = concat(
     path("model") {
@@ -202,20 +214,34 @@ object AkkaHttpModel {
     path("model" / "database") {
       parameters("request") {
         case "load" =>
-          dataBase.read()
+          val newPlayer1 = dataBase.read(1)
+          val newPlayer2 = dataBase.read(2)
+          player_01 = Player(newPlayer1._1, newPlayer1._3, player_01.shipList, Grid(10,new StrategyCollideNormal, newPlayer1._2))
+          player_02 = Player(newPlayer2._1, newPlayer2._3, player_02.shipList, Grid(10,new StrategyCollideNormal, newPlayer2._2))
+          setControllerStates(newPlayer1._4, newPlayer1._5)
           complete(StatusCodes.OK)
         case "save" =>
-          dataBase.update("test", "123")
+          dataBase.update(1, player_01.name, player_01.grid.grid, player_01.shipSetList, requestState("getGameState"), requestState("getPlayerState"))
+          dataBase.update(2, player_02.name, player_02.grid.grid, player_02.shipSetList, requestState("getGameState"), requestState("getPlayerState"))
           complete(StatusCodes.OK)
       }
     }
   )
 
-  var player_01: InterfacePlayer = Player("player_01", Map(2 -> 2, 3 -> 1, 4 -> 1, 5 -> 2), Vector[InterfaceShip](), grid_player_01)
+  private def requestState(state: String): String = {
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${controllerHttp}/controller/request?" + state + "=state"))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
+    tmp.result.toOption match {
+      case Some(value) => value.as[String]
+      case None => ""
+    }
+  }
 
-  implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-  implicit val executionContext: ExecutionContextExecutor = system.executionContext
-  var player_02: InterfacePlayer = Player("player_02", Map(2 -> 2, 3 -> 1, 4 -> 1, 5 -> 2), Vector[InterfaceShip](), grid_player_02)
+  private def setControllerStates(gameState: String, playerState: String): Unit = {
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${controllerHttp}/controller/update/states?setGameState=" + gameState + "&setPlayerState=" + playerState))
+    Await.result(responseFuture, atMost = 10.second)
+  }
 
   def main(args: Array[String]): Unit = {
 
@@ -239,10 +265,10 @@ object AkkaHttpModel {
     gameStateJs.as[String]
   }
 
-  private def payloadExtractMap(jsmap: JsLookupResult): Map[Int, Int] = {
+  private def payloadExtractMap(jsmap: JsLookupResult): Map[String, Int] = {
     jsmap.result.toOption match {
-      case Some(_) => Map(2 -> 2, 3 -> 1, 4 -> 1, 5 -> 2)
-      case None => Map(2 -> 2, 3 -> 1, 4 -> 1, 5 -> 2)
+      case Some(_) => Map("2" -> 2, "3" -> 1, "4" -> 1, "2" -> 2)
+      case None => Map("2" -> 2, "3" -> 1, "2" -> 1, "5" -> 2)
     }
   }
 

@@ -2,17 +2,12 @@ package Battleship.model.databaseComponent.slick
 
 import slick.jdbc.MySQLProfile.api._
 
-class GridTable(tag: Tag) extends Table[(Int, Int, Int, Int, Int)](tag, "GridTable") {
-
-  override def * = (id, field, x_value, y_value, value)
+class GridTable(tag: Tag) extends Table[(Int, String)](tag, "GridTable") {
 
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
 
-  def field = column[Int]("Field")
+  def field = column[String]("Field")
 
-  def x_value = column[Int]("XValue")
+  override def * = (id, field)
 
-  def y_value = column[Int]("YValue")
-
-  def value = column[Int]("Value")
 }

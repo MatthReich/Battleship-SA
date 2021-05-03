@@ -2,14 +2,12 @@ package Battleship.model.databaseComponent.slick
 
 import slick.jdbc.MySQLProfile.api._
 
-class ShipSetListTable(tag: Tag) extends Table[(Int, Int, Int)](tag, "ShipSetListTable") {
-
-  override def * = (id, length, remaining)
+class ShipSetListTable(tag: Tag) extends Table[(Int, String)](tag, "ShipSetListTable") {
 
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
 
-  def length = column[Int]("ShipLength")
+  def shipList = column[String]("ShipList")
 
-  def remaining = column[Int]("Remaining")
+  override def * = (id, shipList)
 
 }

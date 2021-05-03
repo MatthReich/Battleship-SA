@@ -32,7 +32,7 @@ class PlayerSpec extends AnyWordSpec {
 
   "A Player" when {
 
-    var player: InterfacePlayer = Player(name, Map(2 -> 2), shipList, grid)
+    var player: InterfacePlayer = Player(name, Map("2" -> 2), shipList, grid)
 
     "new" should {
       "have a name" in {
@@ -64,17 +64,17 @@ class PlayerSpec extends AnyWordSpec {
     "ship set list is updated" should {
       "reduce the right ship by one" in {
         player = player.updateShipSetList(2)
-        assert(player.shipSetList.get(2).contains(1))
+        assert(player.shipSetList.get("2").contains(1))
       }
       "replace the list" in {
-        player = player.updateShipSetList(Map(2 -> 2, 3 -> 3))
-        assert(player.shipSetList.get(2).contains(2))
-        assert(player.shipSetList.get(3).contains(3))
+        player = player.updateShipSetList(Map("2" -> 2, "3" -> 3))
+        assert(player.shipSetList.get("2").contains(2))
+        assert(player.shipSetList.get("3").contains(3))
       }
       "return old when expected does not exists" in {
         player = player.updateShipSetList(5)
-        assert(player.shipSetList.get(2).contains(2))
-        assert(player.shipSetList.get(3).contains(3))
+        assert(player.shipSetList.get("2").contains(2))
+        assert(player.shipSetList.get("3").contains(3))
       }
     }
 
