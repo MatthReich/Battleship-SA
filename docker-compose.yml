@@ -17,6 +17,8 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "3306:3306"
+    security_opt:
+      - seccomp:unconfined
     image: mysqldatabase:latest
     container_name: mysqldatabase
 
@@ -58,7 +60,7 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8082:8082"
-    image: tui-api:1latest
+    image: tui-api:latest
     container_name: tui-api
     stdin_open: true
     environment:

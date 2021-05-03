@@ -3,7 +3,6 @@ package Battleship.model.databaseComponent.slick
 import slick.jdbc.MySQLProfile.api._
 
 class PlayerTable(tag: Tag) extends Table[(Int, String, Int, Int, Int, Int)](tag, "PlayerTable") {
-  override def * = (id, name, shipSetListId, shipListId, gridId, controllerId)
 
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
 
@@ -24,5 +23,7 @@ class PlayerTable(tag: Tag) extends Table[(Int, String, Int, Int, Int, Int)](tag
   def gridForeignKey = foreignKey("Grid_FK", gridId, TableQuery[GridTable])(_.id)
 
   def gridId = column[Int]("Grid")
+
+  override def * = (id, name, shipSetListId, shipListId, gridId, controllerId)
 
 }

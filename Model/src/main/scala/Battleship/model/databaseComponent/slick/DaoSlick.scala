@@ -8,7 +8,7 @@ import slick.lifted.TableQuery
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, DurationInt}
 
 case class DaoSlick() extends DaoInterface {
 
@@ -19,9 +19,9 @@ case class DaoSlick() extends DaoInterface {
 
   val database = Database.forURL(
     url = databaseUrl,
-    driver = "com.mysql.cj.jdbc.Driver",
     user = databaseUser,
-    password = databasePassword
+    password = databasePassword,
+    driver = "com.mysql.cj.jdbc.Driver",
   )
 
   val playerTable = TableQuery[PlayerTable]
@@ -38,16 +38,20 @@ case class DaoSlick() extends DaoInterface {
       ++ shipCoordinatesTable.schema
       ++ shipListTable.schema
       ++ shipSetListTable.schema
-    ).createIfNotExists)
-  database.run(setup)
-  save("a", "b")
+    ).createIfNotExists,
+    playerTable += (0, "penis", 1, 2, 3, 4)
+  )
+  Await.result(database.run(setup), atMost = 10.second)
 
   override def load(): (String, String) = {
+    println(playerTable.result)
+    println(playerTable.take(1))
+    println(playerTable.take(1).result)
     ("", "")
   }
 
   override def save(gameState: String, playerState: String): Unit = {
-    Await.ready(database.run(playerTable += (0, "Marcel", 0, 0, 0, 0)), Duration.Inf)
+    Await.result(database.run(playerTable += (0, "Marcel", 0, 0, 0, 0)), Duration.Inf)
     println("First save")
   }
 }

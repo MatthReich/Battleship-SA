@@ -1,5 +1,7 @@
 package Battleship
 
+import Battleship.model.databaseComponent.DaoInterface
+import Battleship.model.databaseComponent.slick.DaoSlick
 import com.google.inject.AbstractModule
 import net.codingwell.scalaguice.ScalaModule
 

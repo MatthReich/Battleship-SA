@@ -198,7 +198,18 @@ object AkkaHttpModel {
         case _ => complete(StatusCodes.BadRequest)
       }
     },
+    path("model" / "database") {
+      parameters("request") {
+        case "load" =>
+          dataBase.load()
+          complete(StatusCodes.OK)
+        case "save" =>
+          dataBase.save("test", "123")
+          complete(StatusCodes.OK)
+      }
+    }
   )
+
   var player_01: InterfacePlayer = Player("player_01", Map(2 -> 2, 3 -> 1, 4 -> 1, 5 -> 2), Vector[InterfaceShip](), grid_player_01)
 
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
