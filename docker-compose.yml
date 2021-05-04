@@ -10,6 +10,7 @@ services:
     stdin_open: true
     environment:
       - CONTROLLERHTTPSERVER=controller-api:8081
+      - GAMEMODE=docker
 
   mysqldatabase:
     build:
