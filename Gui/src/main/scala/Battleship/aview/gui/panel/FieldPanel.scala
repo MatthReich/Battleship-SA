@@ -15,7 +15,7 @@ import scala.swing.event.UIEvent
 
 class FieldPanel(showAllShips: Boolean, x: Int, y: Int, gameState: String, gui: Gui, grid: Vector[Map[String, Int]]) extends FlowPanel {
 
-  val controllerHttp = "controller-api:8081"
+  val controllerHttp: String = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
 
   val field: BoxPanel = new BoxPanel(Orientation.Vertical) {
     val water: Int = 0

@@ -55,6 +55,10 @@ class Gui() extends Frame {
     case _: GameWon =>
       redraw()
       newGameOrQuit()
+    case _: Saved => saveEventDialog()
+    case _: Loaded =>
+      redraw()
+      loadEventDialog()
     case exception: FailureEvent => redoTurnAlert(exception.getMessage())
     case _ =>
   }
@@ -129,7 +133,15 @@ class Gui() extends Frame {
     }
   }
 
-  private def redoTurnAlert(cause: String) {
+  private def saveEventDialog(): Unit = {
+    Dialog.showMessage(contents.head, "Game has saved!", "Saving State", Dialog.Message.Info)
+  }
+
+  private def loadEventDialog(): Unit = {
+    Dialog.showMessage(contents.head, "Game has loaded!", "Saving State", Dialog.Message.Info)
+  }
+
+  private def redoTurnAlert(cause: String): Unit = {
     Dialog.showMessage(contents.head, cause, "Alert", Dialog.Message.Warning)
   }
 

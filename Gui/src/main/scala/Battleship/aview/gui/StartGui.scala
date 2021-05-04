@@ -29,6 +29,8 @@ class StartGui() extends MainFrame {
   title = "Battleship"
   background = Color.GRAY
   preferredSize = new Dimension(dimWidth, dimHeight)
+  val gameGui = new Gui()
+  gameGui.visible = false
 
   reactions += {
     case _: GameStart =>
@@ -36,7 +38,14 @@ class StartGui() extends MainFrame {
     case _: PlayerChanged =>
       if (this.visible && requestState("getGameState") == "SHIPSETTING") {
         this.visible = false
-        new Gui().visible = true
+        gameGui.visible = true
+      }
+    case _ =>
+      if (this.visible && requestState("getGameState") != "SHIPSETTING") {
+        this.visible = false
+        gameGui.visible = true
+      } else if (!gameGui.visible) {
+        gameGui.visible = true
       }
   }
 

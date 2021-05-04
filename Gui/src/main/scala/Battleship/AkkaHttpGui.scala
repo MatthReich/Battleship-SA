@@ -50,6 +50,12 @@ object AkkaHttpGui extends Publisher {
               case "GAMEWON" =>
                 publish(new GameWon)
                 complete(StatusCodes.OK)
+              case "SAVED" =>
+                publish(new Saved)
+                complete(StatusCodes.OK)
+              case "LOADED" =>
+                publish(new Loaded)
+                complete(StatusCodes.OK)
               case "FAILUREEVENT" =>
                 publish(new FailureEvent((json \ "message").as[String]))
                 complete(StatusCodes.OK)
