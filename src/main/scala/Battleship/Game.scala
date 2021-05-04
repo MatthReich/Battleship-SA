@@ -17,17 +17,26 @@ object Game extends Reactor {
   val interface: String = "0.0.0.0"
   val port: Int = 8079
   val controllerHttp: String = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
+  val gameMode: String = sys.env.getOrElse("GAMEMODE", "local")
 
   def main(args: Array[String]): Unit = {
 
     listenTo()
 
-    Thread.sleep(25000)
-    requestNewEvent("GAMESTART")
-    requestNewEvent("PLAYERCHANGED")
-    println("game started, watch for tui or gui")
-    println("press any button to restart the game")
-
+    if (gameMode == "local") {
+      do {
+        requestNewEvent("GAMESTART")
+        requestNewEvent("PLAYERCHANGED")
+        println("game started, watch for tui or gui")
+        println("press any button to restart the game")
+        scala.io.StdIn.readLine()
+      } while (true)
+    } else {
+      Thread.sleep(25000)
+      requestNewEvent("GAMESTART")
+      requestNewEvent("PLAYERCHANGED")
+      println("game started, watch for tui or gui")
+    }
   }
 
   private def initNewGame(): Unit = {

@@ -24,6 +24,8 @@ class StartGui() extends MainFrame {
   listenTo(AkkaHttpGui)
   val controllerHttp: String = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
   val picturePath: String = sys.env.getOrElse("PICTUREPATH", "Gui/src/main/scala/Battleship/aview/gui/media/BattleShipPicture.png")
+  implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
   val dimWidth = 1600
   val dimHeight = 900
   title = "Battleship"
@@ -41,10 +43,10 @@ class StartGui() extends MainFrame {
         gameGui.visible = true
       }
     case _ =>
-      if (this.visible && requestState("getGameState") != "SHIPSETTING") {
+      if (this.visible && requestState("getGameState") != "PLAYERSETTING") {
         this.visible = false
         gameGui.visible = true
-      } else if (!gameGui.visible) {
+      } else if (!gameGui.visible && requestState("getGameState") != "PLAYERSETTING") {
         gameGui.visible = true
       }
   }
@@ -122,8 +124,6 @@ class StartGui() extends MainFrame {
   centerOnScreen()
 
   private def requestGameTurn(event: String, input: String): Unit = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val payload = Json.obj(
       "event" -> event.toUpperCase,
       "input" -> input
@@ -132,8 +132,6 @@ class StartGui() extends MainFrame {
   }
 
   private def requestState(state: String): String = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${controllerHttp}/controller/request?" + state + "=state"))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
