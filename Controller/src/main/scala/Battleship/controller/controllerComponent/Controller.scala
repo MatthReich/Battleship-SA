@@ -83,7 +83,19 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
     result.status == StatusCodes.OK
   }
 
-  override def save(): Unit = requestNewReaction("FAILUREEVENT", "saving will getting implemented") // publish(new FailureEvent("saving will getting implemented"))
+  override def save(): Unit = {
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model/database?request=save"))
+    Await.result(responseFuture, atMost = 10.second)
+    requestNewReaction("SAVED", "")
+
+  }
+
+  override def load(): Unit = {
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model/database?request=load"))
+    Await.result(responseFuture, atMost = 10.second)
+    requestNewReaction("LOADED", "")
+  }
+
 
   override def changeGameState(gameState: GameState): Unit = this.gameState = gameState
 
@@ -91,14 +103,13 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
 
   def requestNewReaction(event: String, message: String): Unit = {
     val payload = Json.obj(
-      "event" -> event.toUpperCase,
-      "message" -> message
+    "event" -> event.toUpperCase,
+    "message" -> message
     )
     Http().singleRequest(Post(s"http://${tuiHttp}/tui/reactor", payload.toString()))
     Http().singleRequest(Post(s"http://${guiHttp}/gui/reactor", payload.toString()))
   }
 
-  override def load(): Unit = requestNewReaction("FAILUREEVENT", "loading will getting implemented") // publish(new FailureEvent("loading will getting implemented"))
 
   override def redoTurn(): Unit = undoManager.undoStep()
 

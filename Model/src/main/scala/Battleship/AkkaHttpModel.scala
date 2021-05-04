@@ -42,7 +42,7 @@ object AkkaHttpModel {
 
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
-  val controllerHttp = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
+  val controllerHttp: String = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
 
   val requestHandler: RequestHandler = RequestHandler()
   val route: Route = concat(
@@ -216,13 +216,13 @@ object AkkaHttpModel {
         case "load" =>
           val newPlayer1 = dataBase.read(1)
           val newPlayer2 = dataBase.read(2)
-          player_01 = Player(newPlayer1._1, newPlayer1._3, player_01.shipList, Grid(10,new StrategyCollideNormal, newPlayer1._2))
-          player_02 = Player(newPlayer2._1, newPlayer2._3, player_02.shipList, Grid(10,new StrategyCollideNormal, newPlayer2._2))
-          setControllerStates(newPlayer1._4, newPlayer1._5)
+          player_01 = Player(newPlayer1._1, newPlayer1._3, newPlayer1._4, Grid(10,new StrategyCollideNormal, newPlayer1._2))
+          player_02 = Player(newPlayer2._1, newPlayer2._3, newPlayer2._4, Grid(10,new StrategyCollideNormal, newPlayer2._2))
+          setControllerStates(newPlayer1._5, newPlayer1._6)
           complete(StatusCodes.OK)
         case "save" =>
-          dataBase.update(1, player_01.name, player_01.grid.grid, player_01.shipSetList, requestState("getGameState"), requestState("getPlayerState"))
-          dataBase.update(2, player_02.name, player_02.grid.grid, player_02.shipSetList, requestState("getGameState"), requestState("getPlayerState"))
+          dataBase.update(1, player_01.name, player_01.grid.grid, player_01.shipSetList, player_01.shipList, requestState("getGameState"), requestState("getPlayerState"))
+          dataBase.update(2, player_02.name, player_02.grid.grid, player_02.shipSetList, player_02.shipList, requestState("getGameState"), requestState("getPlayerState"))
           complete(StatusCodes.OK)
       }
     }

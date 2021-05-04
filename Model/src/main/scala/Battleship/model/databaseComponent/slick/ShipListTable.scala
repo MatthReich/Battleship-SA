@@ -2,18 +2,19 @@ package Battleship.model.databaseComponent.slick
 
 import slick.jdbc.MySQLProfile.api._
 
-class ShipListTable(tag: Tag) extends Table[(Int, Int, Int, Boolean, Int)](tag, "ShipListTable") {
-  override def * = (id, x_value, shipLength, status, shipCoordinatesId)
+class ShipListTable(tag: Tag) extends Table[(Int, Int, Int, Boolean, String)](tag, "ShipListTable") {
 
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
 
-  def x_value = column[Int]("XValue")
+  def playerId = column[Int]("PlayerId")
 
   def shipLength = column[Int]("ShipLength")
 
   def status = column[Boolean]("Status")
 
-  def shipCoordinatesForeignKey = foreignKey("ShipCoordinates_FK", shipCoordinatesId, TableQuery[ShipCoordinatesTable])(_.id)
+  def coords = column[String]("Coords")
 
   def shipCoordinatesId = column[Int]("ShipCoordinatesId")
+
+  override def * = (id, playerId, shipLength, status, coords)
 }

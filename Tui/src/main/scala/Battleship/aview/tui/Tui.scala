@@ -62,6 +62,19 @@ class Tui() extends Reactor {
     case _: GameWon =>
       printTui("has won")
       println("<n> for new game <q> for end")
+    case _: Saved =>
+      println("Saved")
+    case _: Loaded =>
+      println("Laoded game")
+      requestState("getGameState") match {
+        case "PLAYERSETTING" =>
+          printTui("set your Name")
+        case "SHIPSETTING" =>
+          printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
+        case "IDLE" =>
+          printTui("guess the enemy ship <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
+        case value => println(value + " is not defined")
+      }
     case exception: FailureEvent => println(exception.getMessage())
     case value => println(value + " is not defined")
   }

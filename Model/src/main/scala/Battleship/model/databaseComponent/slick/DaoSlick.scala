@@ -1,17 +1,18 @@
 package Battleship.model.databaseComponent.slick
 
-import Battleship.AkkaHttpModel.{dataBase, grid_player_01, player_01}
 import Battleship.model.databaseComponent.DaoInterface
+import Battleship.model.shipComponent.InterfaceShip
+import Battleship.model.shipComponent.shipImplemenation.Ship
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import play.api.libs.json.Json
 import slick.jdbc.JdbcBackend
 import slick.jdbc.JdbcBackend.Database
-import slick.lifted.TableQuery
 import slick.jdbc.MySQLProfile.api._
+import slick.lifted.TableQuery
 
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContextExecutor}
-import scala.concurrent.duration.{Duration, DurationInt}
 
 case class DaoSlick() extends DaoInterface {
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
@@ -58,7 +59,7 @@ case class DaoSlick() extends DaoInterface {
     initControllerTable(2, controllerTable)
   }
 
-  override def read(id: Int): (String, Vector[Map[String, Int]], Map[String, Int], String, String) = {
+  override def read(id: Int): (String, Vector[Map[String, Int]], Map[String, Int], Vector[InterfaceShip], String, String) = {
     val resultPlayerTabel = Await.result(database.run(playerTable.filter(_.id === id).result), atMost = 10.second)
     val playerName = resultPlayerTabel.head._2
     val resultGrid = Await.result(database.run(gridTable.filter(_.id === id).result), atMost = 10.second)
@@ -68,14 +69,32 @@ case class DaoSlick() extends DaoInterface {
     val playerState = resultController.head._3
     val resultShipSetList = Await.result(database.run(shipSetListTable.filter(_.id === id).result), atMost = 10.second)
     val shipSetList = Json.parse(resultShipSetList.head._2).as[Map[String, Int]]
-    (playerName, grid, shipSetList, gameState, playerState)
+    val resultShipList = Await.result(database.run(shipListTable.filter(_.playerId === id).result), atMost = 10.second)
+    val shipList = recreateShips(resultShipList)
+    (playerName, grid, shipSetList, shipList, gameState, playerState)
   }
 
-  override def update(id: Int, playerName: String, grid: Vector[Map[String, Int]], shipSetList: Map[String, Int], gameState: String, playerState: String): Unit = {
+  private def recreateShips(shipSeq: Seq[(Int, Int, Int, Boolean, String)]): Vector[InterfaceShip] = {
+    recreateShipsRec(shipSeq, 0, Vector[InterfaceShip]())
+  }
+
+  private def recreateShipsRec(shipSeq: Seq[(Int, Int, Int, Boolean, String)], index: Int, result: Vector[InterfaceShip]): Vector[InterfaceShip] = {
+    if (shipSeq.length == index) {
+      result
+    } else if (shipSeq(index)._5 == "") {
+      recreateShipsRec(shipSeq, index + 1, result)
+    } else {
+      recreateShipsRec(shipSeq, index + 1, result.appended(Ship(shipSeq(index)._3, Json.parse(shipSeq(index)._5).as[Vector[Map[String, Int]]], shipSeq(index)._4)))
+    }
+  }
+
+  override def update(id: Int, playerName: String, grid: Vector[Map[String, Int]], shipSetList: Map[String, Int], shipList: Vector[InterfaceShip], gameState: String, playerState: String): Unit = {
     database.run(playerTable.filter(_.id === id).update((id, playerName, id, id, id, id)))
     database.run(gridTable.filter(_.id === id).update((id, Json.toJson(grid).toString())))
     database.run(controllerTable.filter(_.id === id).update((id, gameState, playerState)))
     database.run(shipSetListTable.filter(_.id === id).update(id, Json.toJson(shipSetList).toString()))
+    Await.result(database.run(shipListTable.filter(_.playerId === id).delete), atMost = 10.second)
+    for (ship <- shipList) yield database.run(shipListTable += (0, id, ship.shipLength, ship.status, Json.toJson(ship.shipCoordinates).toString()))
   }
 
   override def delete(): Unit = {

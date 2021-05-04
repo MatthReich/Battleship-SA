@@ -50,6 +50,12 @@ object AkkaHttpTui extends Publisher {
               case "FAILUREEVENT" =>
                 publish(new FailureEvent((json \ "message").as[String]))
                 complete(StatusCodes.OK)
+              case "SAVED" =>
+                publish(new Saved)
+                complete(StatusCodes.OK)
+              case "LOADED" =>
+                publish(new Loaded)
+                complete(StatusCodes.OK)
               case _ => complete(StatusCodes.BadRequest)
             }
           }
