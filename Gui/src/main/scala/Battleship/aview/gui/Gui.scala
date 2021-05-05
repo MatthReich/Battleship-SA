@@ -180,7 +180,7 @@ class Gui() extends Frame {
       "event" -> event.toUpperCase,
       "input" -> input
     )
-    Http().singleRequest(Post(s"http://${controllerHttp}/controller/update", payload.toString()))
+    Await.result(Http().singleRequest(Post(s"http://${controllerHttp}/controller/update", payload.toString())), atMost = 10.second)
   }
 
   private def requestState(state: String): String = {

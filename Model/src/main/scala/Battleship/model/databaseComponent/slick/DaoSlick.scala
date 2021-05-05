@@ -89,10 +89,10 @@ case class DaoSlick() extends DaoInterface {
   }
 
   override def update(id: Int, playerName: String, grid: Vector[Map[String, Int]], shipSetList: Map[String, Int], shipList: Vector[InterfaceShip], gameState: String, playerState: String): Unit = {
-    database.run(playerTable.filter(_.id === id).update((id, playerName, id, id, id, id)))
-    database.run(gridTable.filter(_.id === id).update((id, Json.toJson(grid).toString())))
-    database.run(controllerTable.filter(_.id === id).update((id, gameState, playerState)))
-    database.run(shipSetListTable.filter(_.id === id).update(id, Json.toJson(shipSetList).toString()))
+    Await.result(database.run(playerTable.filter(_.id === id).update((id, playerName, id, id, id, id))), atMost = 10.second)
+    Await.result(database.run(gridTable.filter(_.id === id).update((id, Json.toJson(grid).toString()))), atMost = 10.second)
+    Await.result(database.run(controllerTable.filter(_.id === id).update((id, gameState, playerState))), atMost = 10.second)
+    Await.result(database.run(shipSetListTable.filter(_.id === id).update(id, Json.toJson(shipSetList).toString())), atMost = 10.second)
     Await.result(database.run(shipListTable.filter(_.playerId === id).delete), atMost = 10.second)
     for (ship <- shipList) yield database.run(shipListTable += (0, id, ship.shipLength, ship.status, Json.toJson(ship.shipCoordinates).toString()))
   }

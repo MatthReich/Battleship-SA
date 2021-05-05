@@ -95,7 +95,7 @@ class Tui() extends Reactor {
       "event" -> event.toUpperCase,
       "input" -> input
     )
-    Http().singleRequest(Post(s"http://${controllerHttp}/controller/update", payload.toString()))
+    Await.result(Http().singleRequest(Post(s"http://${controllerHttp}/controller/update", payload.toString())), atMost = 10.second)
   }
 
   private def printTui(string: String): Unit = {

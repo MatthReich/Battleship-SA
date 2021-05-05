@@ -8,6 +8,12 @@ services:
     image: maingame:latest
     container_name: maingame
     stdin_open: true
+    depends_on:
+      - model-api
+      - controller-api
+      - tui-api
+      - gui-api
+      - mysqldatabase
     environment:
       - CONTROLLERHTTPSERVER=controller-api:8081
       - GAMEMODE=docker
@@ -49,6 +55,8 @@ services:
     image: controller-api:latest
     container_name: controller-api
     stdin_open: true
+    depends_on:
+      - model-api
     environment:
       - GUIHTTPSERVER=gui-api:8083
       - TUIHTTPSERVER=tui-api:8082
@@ -63,6 +71,9 @@ services:
       - "8082:8082"
     image: tui-api:latest
     container_name: tui-api
+    depends_on:
+      - controller-api
+      - model-api
     stdin_open: true
     environment:
       - CONTROLLERHTTPSERVER=controller-api:8081
@@ -76,6 +87,9 @@ services:
       - "8083:8083"
     image: gui-api:latest
     container_name: gui-api
+    depends_on:
+      - controller-api
+      - model-api
     stdin_open: true
     # launch VcXSrv.exe [multiple windows, start no client, Clipboard & Primary Selection & Native Opengl & Disable access control ]
     environment:
