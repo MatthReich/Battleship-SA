@@ -20,7 +20,7 @@ services:
 
   mysqldatabase:
     build:
-      context: ./DBDockerfiles
+      context: ./DBDockerfiles/MySqlDocker
       dockerfile: ./Dockerfile
     ports:
       - "3306:3306"
