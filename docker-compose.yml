@@ -14,6 +14,7 @@ services:
       - tui-api
       - gui-api
       - mysqldatabase
+      - mongodatabase
     environment:
       - CONTROLLERHTTPSERVER=controller-api:8081
       - GAMEMODE=docker
@@ -28,6 +29,17 @@ services:
       - seccomp:unconfined
     image: mysqldatabase:latest
     container_name: mysqldatabase
+
+  mongodatabase:
+    build:
+      context: ./DBDockerfiles/MongoDbDocker
+      dockerfile: ./Dockerfile
+    ports:
+      - "27017:27017"
+    security_opt:
+      - seccomp:unconfined
+    image: mongo:latest
+    container_name: mongodatabase
 
   model-api:
     build:
