@@ -16,12 +16,14 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.unmarshalling.Unmarshal
+import com.google.inject.name.Names
 import play.api.libs.json.{JsLookupResult, JsValue, Json}
 
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.io.StdIn
 import scala.util.{Failure, Success}
 import com.google.inject.{Guice, Injector}
+import net.codingwell.scalaguice.InjectorExtensions.ScalaInjector
 
 import scala.concurrent.duration.DurationInt
 
@@ -31,7 +33,7 @@ object AkkaHttpModel {
   val port: Int = 8080
 
   val injector: Injector = Guice.createInjector(new ModelModule)
-  val dataBase: DaoInterface = injector.getInstance(classOf[DaoInterface])
+  val dataBase: DaoInterface = injector.instance[DaoInterface](Names.named("mongodb"))
   dataBase.create()
 
   val grid_player_01: InterfaceGrid = Grid(10, new StrategyCollideNormal, Vector[Map[String, Int]]()).initGrid()

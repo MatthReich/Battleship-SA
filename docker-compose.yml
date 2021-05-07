@@ -40,11 +40,13 @@ services:
     stdin_open: true
     depends_on:
       - mysqldatabase
+      - mongodatabase
     environment:
       - DATABASE_HOST=mysqldatabase:3306
       - MYSQL_DATABASE=battleship
       - MYSQL_USER=battleship
       - MYSQL_PASSWORD=battleship
+      - MONGODB_HOST=mongodatabase:27017
 
   controller-api:
     build:
