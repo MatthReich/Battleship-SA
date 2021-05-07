@@ -2,17 +2,27 @@ package Battleship.model.databaseComponent.mongodb
 
 import Battleship.model.databaseComponent.DaoInterface
 import Battleship.model.shipComponent.InterfaceShip
+import Battleship.model.shipComponent.shipImplemenation.Ship
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.Behaviors
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.result.{DeleteResult, InsertOneResult, UpdateResult}
 import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase, Observer, SingleObservable}
 import play.api.libs.json.Json
 
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContextExecutor}
+
 case class DaoMongo() extends DaoInterface {
+  implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
   val uri: String = "mongodb://" + sys.env.getOrElse("MONGODB_HOST", "localhost:27017")
   val client: MongoClient = MongoClient(uri)
   val database: MongoDatabase = client.getDatabase("battleship")
+  println("Connect to: " + uri)
+
   val controllerCollection: MongoCollection[Document] = database.getCollection("Controller")
   val playerCollection: MongoCollection[Document] = database.getCollection("Player")
   val shipSetListCollection: MongoCollection[Document] = database.getCollection("ShipSetList")
@@ -31,7 +41,22 @@ case class DaoMongo() extends DaoInterface {
     handleObserverInsertion(gridCollection.insertOne(Document("_id" -> 2, "field" -> "")))
   }
 
-  override def read(id: Int): (String, Vector[Map[String, Int]], Map[String, Int], Vector[InterfaceShip], String, String) = ???
+  override def read(id: Int): (String, Vector[Map[String, Int]], Map[String, Int], Vector[InterfaceShip], String, String) = {
+    val resultPlayer = Await.result(playerCollection.find(equal("_id", id)).first().head(), atMost = 10.second)
+    val playerName = resultPlayer("playerName").asString().getValue
+    val resultGrid = Await.result(gridCollection.find(equal("_id", id)).first().head(), atMost = 10.second)
+    val grid = Json.parse(resultGrid("field").asString().getValue).as[Vector[Map[String, Int]]]
+    val resultController = Await.result(controllerCollection.find(equal("_id", id)).first().head(), atMost = 10.second)
+    val gameState = resultController("gameState").asString().getValue
+    val playerState = resultController("playerState").asString().getValue
+    val resultShipSetList = Await.result(shipSetListCollection.find(equal("_id", id)).first().head(), atMost = 10.second)
+    val shipSetList = Json.parse(resultShipSetList("shipSetList").asString().getValue).as[Map[String, Int]]
+    val resultShipList = shipListCollection.find(equal("playerId", id))
+    val shipMapping = resultShipList.map(elem => Ship(elem("shipLength").asInt32().getValue, Json.parse(elem("coords").asString().getValue).as[Vector[Map[String, Int]]], elem("status").asBoolean().getValue))
+    val shipList = Await.result(shipMapping.toFuture(), atMost = 10.second).toVector
+    (playerName, grid, shipSetList, shipList, gameState, playerState)
+  }
+
 
   override def update(id: Int, playerName: String, grid: Vector[Map[String, Int]], shipSetList: Map[String, Int], shipList: Vector[InterfaceShip], gameState: String, playerState: String): Unit = {
     handleObserverUpdate(controllerCollection.updateOne(equal("_id", id), set("gameState", gameState)))
