@@ -75,8 +75,6 @@ class StartGui() extends MainFrame {
     listenTo(ButtonStartGame)
     listenTo(exitButton)
 
-    val buttons: List[Button] = List(ButtonStartGame)
-
     reactions += {
       case ButtonClicked(b) =>
 
@@ -128,11 +126,11 @@ class StartGui() extends MainFrame {
       "event" -> event.toUpperCase,
       "input" -> input
     )
-    Await.result(Http().singleRequest(Post(s"http://${controllerHttp}/controller/update", payload.toString())), atMost = 10.second)
+    Await.result(Http().singleRequest(Post(s"http://$controllerHttp/controller/update", payload.toString())), atMost = 10.second)
   }
 
   private def requestState(state: String): String = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${controllerHttp}/controller/request?" + state + "=state"))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://$controllerHttp/controller/request?" + state + "=state"))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {

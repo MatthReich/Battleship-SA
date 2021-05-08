@@ -15,6 +15,7 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.swing._
 
+//noinspection HttpUrlsUsage
 class Gui() extends Frame {
 
   val controllerHttp: String = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
@@ -180,7 +181,7 @@ class Gui() extends Frame {
       "event" -> event.toUpperCase,
       "input" -> input
     )
-    Await.result(Http().singleRequest(Post(s"http://${controllerHttp}/controller/update", payload.toString())), atMost = 10.second)
+    Await.result(Http().singleRequest(Post(s"http://$controllerHttp/controller/update", payload.toString())), atMost = 10.second)
   }
 
   private def requestState(state: String): String = {

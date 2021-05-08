@@ -19,6 +19,7 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success, Try}
 
+//noinspection HttpUrlsUsage
 class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, var playerState: PlayerState = PlayerState.PLAYER_ONE) extends InterfaceController {
   private val undoManager: UndoManager = new UndoManager
   private val modelHttp: String = sys.env.getOrElse("MODELHTTPSERVER", "localhost:8080")
@@ -28,88 +29,9 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
-  def requestChangePlayerName(player: String, newName: String): Option[Throwable] = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model/player/name/update?playerName=" + player + "&newPlayerName=" + newName))
-    val result = Await.result(responseFuture, atMost = 10.second)
-    if (result.status != StatusCodes.OK) {
-      Some(new Exception("request status was: " + result.status))
-    } else {
-      None
-    }
-  }
-
-  def requestHandleFieldSettingShipSetting(player: String, coords: Vector[Map[String, Int]]): Option[Throwable] = {
-    val payload = Json.obj(
-      "player" -> player,
-      "coords" -> Json.toJson(coords),
-      "gameState" -> gameState.toString.toUpperCase
-    )
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Post(s"http://${modelHttp}/model/player/shipsetting/update", payload.toString()))
-    val result = Await.result(responseFuture, atMost = 10.second)
-    if (result.status != StatusCodes.OK) {
-      Some(new Exception(result.status.reason()))
-    } else {
-      None
-    }
-  }
-
-  def requestShipSettingFinished(player: String): Boolean = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model/player/shipsetting/request?shipSettingFinished=" + player))
-    val result = Await.result(responseFuture, atMost = 10.second)
-    result.status == StatusCodes.OK
-  }
-
-  def requestHandleFieldSettingIdle(player: String, coords: Vector[Map[String, Int]]): Either[Boolean, Throwable] = {
-    val payload = Json.obj(
-      "player" -> player,
-      "coords" -> Json.toJson(coords),
-      "gameState" -> gameState.toString.toUpperCase
-    )
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Post(s"http://${modelHttp}/model/player/idle/update", payload.toString()))
-    val result = Await.result(responseFuture, atMost = 10.second)
-    if (result.status.toString() == "468 change player") {
-      Left(true)
-    } else if (result.status != StatusCodes.OK) {
-      Right(new Exception(result.status.reason()))
-    } else {
-      Left(false)
-    }
-
-  }
-
-  def requestGameIsWon(player: String): Boolean = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model/player/idle/request?gameIsWon=" + player))
-    val result = Await.result(responseFuture, atMost = 10.second)
-    result.status == StatusCodes.OK
-  }
-
-  override def save(): Unit = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model/database?request=save"))
-    Await.result(responseFuture, atMost = 10.second)
-    requestNewReaction("SAVED", "")
-
-  }
-
-  override def load(): Unit = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model/database?request=load"))
-    Await.result(responseFuture, atMost = 10.second)
-    requestNewReaction("LOADED", "")
-  }
-
-
   override def changeGameState(gameState: GameState): Unit = this.gameState = gameState
 
   override def changePlayerState(playerState: PlayerState): Unit = this.playerState = playerState
-
-  def requestNewReaction(event: String, message: String): Unit = {
-    val payload = Json.obj(
-    "event" -> event.toUpperCase,
-    "message" -> message
-    )
-    Http().singleRequest(Post(s"http://${tuiHttp}/tui/reactor", payload.toString()))
-    Http().singleRequest(Post(s"http://${guiHttp}/gui/reactor", payload.toString()))
-  }
-
 
   override def redoTurn(): Unit = undoManager.undoStep()
 
@@ -120,6 +42,80 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
       case GameState.IDLE => undoManager.doStep(new CommandIdle(input, this, handleInput))
     }
   }
+
+  override def save(): Unit = {
+    waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model/database?request=save")))
+    requestNewReaction("SAVED", "")
+  }
+
+  override def load(): Unit = {
+    waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model/database?request=load")))
+    requestNewReaction("LOADED", "")
+  }
+
+  override def requestChangePlayerName(player: String, newName: String): Option[Throwable] = {
+    val name = if (newName == "") if (playerState == PlayerState.PLAYER_ONE) "player_01" else "player_02" else newName
+    val result = waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model/player/name/update?playerName=" + player + "&newPlayerName=" + name)))
+    if (result.status != StatusCodes.OK) {
+      Some(new Exception("request status was: " + result.status))
+    } else {
+      None
+    }
+  }
+
+  override def requestHandleFieldSettingShipSetting(player: String, coords: Vector[Map[String, Int]]): Option[Throwable] = {
+    val payload = Json.obj(
+      "player" -> player,
+      "coords" -> Json.toJson(coords),
+      "gameState" -> gameState.toString.toUpperCase
+    )
+    val result: HttpResponse = waitForResponse(Http().singleRequest(Post(s"http://$modelHttp/model/player/shipsetting/update", payload.toString())))
+    if (result.status != StatusCodes.OK) {
+      Some(new Exception(result.status.reason()))
+    } else {
+      None
+    }
+  }
+
+  override def requestShipSettingFinished(player: String): Boolean = {
+    val result: HttpResponse = waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model/player/shipsetting/request?shipSettingFinished=" + player)))
+    result.status == StatusCodes.OK
+  }
+
+  override def requestHandleFieldSettingIdle(player: String, coords: Vector[Map[String, Int]]): Either[Boolean, Throwable] = {
+    val payload = Json.obj(
+      "player" -> player,
+      "coords" -> Json.toJson(coords),
+      "gameState" -> gameState.toString.toUpperCase
+    )
+    val result: HttpResponse = waitForResponse(Http().singleRequest(Post(s"http://$modelHttp/model/player/idle/update", payload.toString())))
+    if (result.status.toString() == "468 change player") {
+      Left(true)
+    } else if (result.status != StatusCodes.OK) {
+      Right(new Exception(result.status.reason()))
+    } else {
+      Left(false)
+    }
+  }
+
+  override def requestGameIsWon(player: String): Boolean = {
+    val result: HttpResponse = waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model/player/idle/request?gameIsWon=" + player)))
+    result.status == StatusCodes.OK
+  }
+
+  override def requestNewReaction(event: String, message: String): Unit = {
+    val payload = Json.obj(
+      "event" -> event.toUpperCase,
+      "message" -> message
+    )
+    Http().singleRequest(Post(s"http://$tuiHttp/tui/reactor", payload.toString()))
+    Http().singleRequest(Post(s"http://$guiHttp/gui/reactor", payload.toString()))
+  }
+
+  private def waitForResponse(future: Future[HttpResponse]): HttpResponse = {
+    Await.result(future, atMost = 10.second)
+  }
+
 
   private def handleInput(input: String, state: Either[Int, Int]): Try[Vector[Map[String, Int]]] = {
     Try(input.split(" ").map(_.toInt)) match {

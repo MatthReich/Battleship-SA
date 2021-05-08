@@ -21,7 +21,17 @@ trait InterfaceController {
 
   def load(): Unit
 
-  def requestNewReaction(string: String, string2: String)
+  def requestNewReaction(string: String, string2: String): Unit
+
+  def requestGameIsWon(player: String): Boolean
+
+  def requestShipSettingFinished(player: String): Boolean
+
+  def requestChangePlayerName(player: String, newName: String): Option[Throwable]
+
+  def requestHandleFieldSettingShipSetting(player: String, coords: Vector[Map[String, Int]]): Option[Throwable]
+
+  def requestHandleFieldSettingIdle(player: String, coords: Vector[Map[String, Int]]): Either[Boolean, Throwable]
 
 }
 

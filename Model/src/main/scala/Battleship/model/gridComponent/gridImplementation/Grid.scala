@@ -4,7 +4,6 @@ import Battleship.model.gridComponent.{InterfaceGrid, InterfaceStrategyCollide}
 import com.google.inject.Inject
 
 import scala.annotation.tailrec
-import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
 case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, grid: Vector[Map[String, Int]]) extends InterfaceGrid {
@@ -53,48 +52,6 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
       case 1 => grid(index) + ("value" -> shipHit)
       case _ => grid(index)
     }
-  }
-
-  override def toString(showAllShips: Boolean): String = toStringRek(0, 0, showAllShips, initRek())
-
-  @tailrec
-  private def toStringRek(idx: Int, idy: Int, showAllShips: Boolean, result: mutable.StringBuilder): String = {
-    if (idx == 0 && idy == size) {
-      result.toString()
-    } else if (idx == size) {
-      val newY = idy + 1
-      result ++= "\n"
-      if (newY < size) {
-        result ++= newY + " "
-      }
-      toStringRek(0, newY, showAllShips, result)
-    } else {
-      val fieldValue = grid(grid.indexWhere(mapping => mapping.get("x").contains(idx) && mapping.get("y").contains(idy))).getOrElse("value", Int.MaxValue)
-      result ++= getFieldValueInString(fieldValue, showAllShips)
-      toStringRek(idx + 1, idy, showAllShips, result)
-    }
-  }
-
-  private def getFieldValueInString(fieldValue: Int, showAllShips: Boolean): String = {
-    fieldValue match {
-      case this.water => Console.BLUE + "  ~  " + Console.RESET
-      case this.ship =>
-        if (showAllShips) Console.GREEN + "  x  " + Console.RESET
-        else Console.BLUE + "  ~  " + Console.RESET
-      case this.shipHit => Console.RED + "  x  " + Console.RESET
-      case this.waterHit => Console.BLUE + "  0  " + Console.RESET
-    }
-  }
-
-  private def initRek(): mutable.StringBuilder = {
-    val stringOfGrid = new mutable.StringBuilder("  ")
-    var ids = 0
-    while (ids < size) {
-      stringOfGrid ++= "  " + ids + "  "
-      ids += 1
-    }
-    stringOfGrid ++= "\n0 "
-    stringOfGrid
   }
 
 }
