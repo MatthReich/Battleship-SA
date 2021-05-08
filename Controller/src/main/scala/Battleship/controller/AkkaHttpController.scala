@@ -14,7 +14,6 @@ import play.api.libs.json.{JsLookupResult, JsValue, Json}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.io.StdIn
-import scala.swing.event.Event
 
 object AkkaHttpController {
 
@@ -66,7 +65,6 @@ object AkkaHttpController {
                 controller.redoTurn()
                 complete(StatusCodes.OK)
               case "NEWGAMEVIEW" =>
-                class NewGameView extends Event {}
                 Http().singleRequest(Post(s"http://${gameHttp}/game/request/newgame", Json.obj("event" -> "NEWGAMEVIEW").toString()))
                 complete(StatusCodes.OK)
               case _ => complete(StatusCodes.BadRequest)

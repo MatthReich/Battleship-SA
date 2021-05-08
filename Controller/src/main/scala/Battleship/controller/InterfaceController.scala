@@ -3,9 +3,7 @@ package Battleship.controller
 import Battleship.controller.controllerComponent.states.GameState.GameState
 import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 
-import scala.swing.Publisher
-
-trait InterfaceController extends Publisher {
+trait InterfaceController {
 
   def gameState: GameState
 
