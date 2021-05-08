@@ -15,6 +15,7 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.swing.Reactor
 
+//noinspection HttpUrlsUsage
 class Tui() extends Reactor {
 
   val showAllShips = true
@@ -29,36 +30,15 @@ class Tui() extends Reactor {
   reactions += {
     case _: GameStart =>
       println("Yeah you play the best game in the world... probably :)")
-    case _: PlayerChanged =>
-      requestState("getGameState") match {
-        case "PLAYERSETTING" =>
-          printTui("set your Name")
-        case "SHIPSETTING" =>
-          printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
-        case "IDLE" =>
-          printTui("guess the enemy ship <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
-        case value => println(value + " is not defined")
-      }
+    case _: PlayerChanged => stateHandler("")
     case _: GridUpdated =>
       requestState("getGameState") match {
         case "SHIPSETTING" =>
           printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
         case value => println(value + " is not defined")
       }
-    case _: RedoTurn =>
-      requestState("getGameState") match {
-        case "SHIPSETTING" =>
-          printTui("try again .. set your Ship <x y x y>\n" + gridAsString() + "left:\n" + shipSetListAsString())
-        case "IDLE" =>
-          printTui("try again <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
-        case value => println(value + " is not defined")
-      }
-    case _: TurnAgain =>
-      requestState("getGameState") match {
-        case "IDLE" =>
-          printTui("that was a hit! guess again <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
-        case value => println(value + " is not defined")
-      }
+    case _: RedoTurn => stateHandler("try again .. ")
+    case _: TurnAgain => stateHandler("that was a hit, your turn again!")
     case _: GameWon =>
       printTui("has won")
       println("<n> for new game <q> for end")
@@ -66,17 +46,22 @@ class Tui() extends Reactor {
       println("Saved")
     case _: Loaded =>
       println("Laoded game")
-      requestState("getGameState") match {
-        case "PLAYERSETTING" =>
-          printTui("set your Name")
-        case "SHIPSETTING" =>
-          printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
-        case "IDLE" =>
-          printTui("guess the enemy ship <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
-        case value => println(value + " is not defined")
-      }
+      stateHandler("")
     case exception: FailureEvent => println(exception.getMessage())
     case value => println(value + " is not defined")
+  }
+
+  private def stateHandler(byPass: String): Unit = {
+    println(byPass)
+    requestState("getGameState") match {
+      case "PLAYERSETTING" =>
+        printTui("set your Name")
+      case "SHIPSETTING" =>
+        printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
+      case "IDLE" =>
+        printTui("guess the enemy ship <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
+      case value => println(value + " is not defined")
+    }
   }
 
   def tuiProcessLine(input: String): Unit = {
@@ -95,7 +80,7 @@ class Tui() extends Reactor {
       "event" -> event.toUpperCase,
       "input" -> input
     )
-    Await.result(Http().singleRequest(Post(s"http://${controllerHttp}/controller/update", payload.toString())), atMost = 10.second)
+    Await.result(Http().singleRequest(Post(s"http://$controllerHttp/controller/update", payload.toString())), atMost = 10.second)
   }
 
   private def printTui(string: String): Unit = {
@@ -105,18 +90,8 @@ class Tui() extends Reactor {
     }
   }
 
-  val size = 10
-  private val water: Int = 0
-  private val ship: Int = 1
-  private val waterHit: Int = 2
-  private val shipHit: Int = 3
-  var grid: Vector[Map[String, Int]] = Vector[Map[String, Int]]()
-
-  def toStringGrid(showAllShips: Boolean): String = toStringRek(0, 0, showAllShips, initRek())
-
   private def requestPlayerName(player: String): String = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model?getPlayerName=" + player))
-    val result = Await.result(responseFuture, atMost = 10.second)
+    val result: HttpResponse = waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model?getPlayerName=" + player)))
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {
       case Some(value) => value.as[String]
@@ -124,20 +99,9 @@ class Tui() extends Reactor {
     }
   }
 
-  private def requestGrid(player: String, showAll: Boolean): String = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model?getPlayerGrid=" + player + showAll))
-    val result = Await.result(responseFuture, atMost = 10.second)
-    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
-    tmp.result.toOption match {
-      case Some(value) => grid = value.as[Vector[Map[String, Int]]]
-      case None => println("dully")
-    }
-    toStringGrid(showAll)
-  }
 
   private def requestState(state: String): String = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${controllerHttp}/controller/request?" + state + "=state"))
-    val result = Await.result(responseFuture, atMost = 10.second)
+    val result = waitForResponse(Http().singleRequest(Get(s"http://$controllerHttp/controller/request?" + state + "=state")))
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {
       case Some(value) => value.as[String]
@@ -160,10 +124,30 @@ class Tui() extends Reactor {
   }
 
   private def requestPlayerShipSetList(player: String): String = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model?getPlayerShipSetList=" + player))
-    val result = Await.result(responseFuture, atMost = 10.second)
+    val result = waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model?getPlayerShipSetList=" + player)))
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.toString()
+  }
+
+  val size = 10
+  private val water: Int = 0
+  private val ship: Int = 1
+  private val waterHit: Int = 2
+  private val shipHit: Int = 3
+  var grid: Vector[Map[String, Int]] = Vector[Map[String, Int]]()
+
+  private def requestGrid(player: String, showAll: Boolean): String = {
+    val result: HttpResponse = waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model?getPlayerGrid=" + player + showAll)))
+    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
+    tmp.result.toOption match {
+      case Some(value) => grid = value.as[Vector[Map[String, Int]]]
+      case None => println("dully")
+    }
+    getGridAsString(showAll)
+  }
+
+  private def waitForResponse(future: Future[HttpResponse]): HttpResponse = {
+    Await.result(future, atMost = 10.second)
   }
 
   private def shipSetListAsString(): String = {
@@ -174,6 +158,8 @@ class Tui() extends Reactor {
         requestPlayerShipSetList("player_02")
     }
   }
+
+  def getGridAsString(showAllShips: Boolean): String = toStringRek(0, 0, showAllShips, initRek())
 
   @tailrec
   private def toStringRek(idx: Int, idy: Int, showAllShips: Boolean, result: mutable.StringBuilder): String = {

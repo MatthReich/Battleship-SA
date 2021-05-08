@@ -20,11 +20,6 @@ libraryDependencies ++= Seq(
   "com.google.inject" % "guice" % "3.0",
 )
 
-/** graphical dependencies */
-libraryDependencies ++= Seq(
-  "org.scala-lang.modules" %% "scala-swing" % "3.0.0",
-)
-
 /** akka http dependencies */
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
@@ -37,7 +32,7 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.7" % "test",
   "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion,
   "com.typesafe.akka" %% "akka-http-testkit" % AkkaHttpVersion,
-  "org.mockito" % "mockito-core" % "2.8.47" % "test",
+  // "org.mockito" % "mockito-core" % "2.8.47" % "test",
   // "org.mockito" %% "mockito-scala" % "1.15.0" % "test"
 )
 
