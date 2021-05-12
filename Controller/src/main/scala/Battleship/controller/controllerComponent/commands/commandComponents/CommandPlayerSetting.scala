@@ -23,10 +23,7 @@ class CommandPlayerSetting(input: String, controller: Controller) extends Comman
   private def handlePlayerNameSetting(newPlayerState: PlayerState.PlayerState, newGameState: GameState.GameState): Unit = {
     controller.changePlayerState(newPlayerState)
     controller.changeGameState(newGameState)
-    println("playerState = " + controller.playerState + " //// " + newPlayerState)
-    println("gameState = " + controller.gameState + " //// " + newGameState)
     controller.requestNewReaction("PLAYERCHANGED", "")
-    // controller.publish(new PlayerChanged)
   }
 
   override def undoStep(): Unit = {}

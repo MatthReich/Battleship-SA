@@ -10,11 +10,15 @@ import akka.http.scaladsl.server.Route
 import play.api.libs.json.Json
 
 import scala.concurrent.ExecutionContextExecutor
+import scala.io.StdIn
 import scala.swing.Publisher
 
 object AkkaHttpGui extends Publisher {
 
   val startGui = new StartGui()
+
+  val interface: String = "0.0.0.0"
+  val port: Int = 8083
 
   def main(args: Array[String]): Unit = {
 
@@ -46,6 +50,12 @@ object AkkaHttpGui extends Publisher {
               case "GAMEWON" =>
                 publish(new GameWon)
                 complete(StatusCodes.OK)
+              case "SAVED" =>
+                publish(new Saved)
+                complete(StatusCodes.OK)
+              case "LOADED" =>
+                publish(new Loaded)
+                complete(StatusCodes.OK)
               case "FAILUREEVENT" =>
                 publish(new FailureEvent((json \ "message").as[String]))
                 complete(StatusCodes.OK)
@@ -57,7 +67,11 @@ object AkkaHttpGui extends Publisher {
       }
     )
 
-    Http().newServerAt("localhost", 8083).bind(route)
-
+    val bindingFuture = Http().newServerAt(interface, port).bind(route)
+    println(s"Server online at: http://${interface}:${port}/\n")
+    StdIn.readLine() // let it run until user presses return
+    bindingFuture
+      .flatMap(_.unbind()) // trigger unbinding from the port
+      .onComplete(_ => system.terminate()) // and shutdown when done
   }
 }

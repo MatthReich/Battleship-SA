@@ -15,6 +15,8 @@ import scala.swing.event.UIEvent
 
 class FieldPanel(showAllShips: Boolean, x: Int, y: Int, gameState: String, gui: Gui, grid: Vector[Map[String, Int]]) extends FlowPanel {
 
+  val controllerHttp: String = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
+
   val field: BoxPanel = new BoxPanel(Orientation.Vertical) {
     val water: Int = 0
     val ship: Int = 1
@@ -63,6 +65,6 @@ class FieldPanel(showAllShips: Boolean, x: Int, y: Int, gameState: String, gui: 
       "event" -> event.toUpperCase,
       "input" -> input
     )
-    Http().singleRequest(Post("http://localhost:8081/controller/update", payload.toString()))
+    Http().singleRequest(Post(s"http://${controllerHttp}/controller/update", payload.toString()))
   }
 }

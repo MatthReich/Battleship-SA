@@ -15,12 +15,13 @@ import scala.swing.Publisher
 object AkkaHttpTui extends Publisher {
 
   val tui = new Tui()
+  val interface: String = "0.0.0.0"
+  val port: Int = 8082
 
   def main(args: Array[String]): Unit = {
 
     implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
-
 
     val route: Route = concat(
       path("tui" / "reactor") {
@@ -49,6 +50,12 @@ object AkkaHttpTui extends Publisher {
               case "FAILUREEVENT" =>
                 publish(new FailureEvent((json \ "message").as[String]))
                 complete(StatusCodes.OK)
+              case "SAVED" =>
+                publish(new Saved)
+                complete(StatusCodes.OK)
+              case "LOADED" =>
+                publish(new Loaded)
+                complete(StatusCodes.OK)
               case _ => complete(StatusCodes.BadRequest)
             }
           }
@@ -57,7 +64,8 @@ object AkkaHttpTui extends Publisher {
       }
     )
 
-    Http().newServerAt("localhost", 8082).bind(route)
+    Http().newServerAt(interface, port).bind(route)
+    println(s"Server online at: http://${interface}:${port}/\n")
 
     do {
       tui.tuiProcessLine(scala.io.StdIn.readLine())

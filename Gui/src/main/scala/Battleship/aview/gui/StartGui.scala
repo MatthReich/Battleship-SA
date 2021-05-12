@@ -22,11 +22,17 @@ import scala.swing.event.ButtonClicked
 
 class StartGui() extends MainFrame {
   listenTo(AkkaHttpGui)
+  val controllerHttp: String = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
+  val picturePath: String = sys.env.getOrElse("PICTUREPATH", "Gui/src/main/scala/Battleship/aview/gui/media/BattleShipPicture.png")
+  implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
   val dimWidth = 1600
   val dimHeight = 900
   title = "Battleship"
   background = Color.GRAY
   preferredSize = new Dimension(dimWidth, dimHeight)
+  val gameGui = new Gui()
+  gameGui.visible = false
 
   reactions += {
     case _: GameStart =>
@@ -34,12 +40,19 @@ class StartGui() extends MainFrame {
     case _: PlayerChanged =>
       if (this.visible && requestState("getGameState") == "SHIPSETTING") {
         this.visible = false
-        new Gui().visible = true
+        gameGui.visible = true
+      }
+    case _ =>
+      if (this.visible && requestState("getGameState") != "PLAYERSETTING") {
+        this.visible = false
+        gameGui.visible = true
+      } else if (!gameGui.visible && requestState("getGameState") != "PLAYERSETTING") {
+        gameGui.visible = true
       }
   }
 
   val backgroundIMG: BufferedImage =
-    ImageIO.read(new File("Gui/src/main/scala/Battleship/aview/gui/media/BattleShipPicture.png"))
+    ImageIO.read(new File(picturePath))
 
   val imageLabel: ImagePanel = new ImagePanel {
     imagePath(backgroundIMG)
@@ -61,8 +74,6 @@ class StartGui() extends MainFrame {
 
     listenTo(ButtonStartGame)
     listenTo(exitButton)
-
-    val buttons: List[Button] = List(ButtonStartGame)
 
     reactions += {
       case ButtonClicked(b) =>
@@ -111,19 +122,15 @@ class StartGui() extends MainFrame {
   centerOnScreen()
 
   private def requestGameTurn(event: String, input: String): Unit = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val payload = Json.obj(
       "event" -> event.toUpperCase,
       "input" -> input
     )
-    Await.result(Http().singleRequest(Post("http://localhost:8081/controller/update", payload.toString())), atMost = 10.second)
+    Await.result(Http().singleRequest(Post(s"http://$controllerHttp/controller/update", payload.toString())), atMost = 10.second)
   }
 
   private def requestState(state: String): String = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8081/controller/request?" + state + "=state"))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://$controllerHttp/controller/request?" + state + "=state"))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {

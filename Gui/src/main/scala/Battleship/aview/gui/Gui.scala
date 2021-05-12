@@ -15,8 +15,11 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.swing._
 
+//noinspection HttpUrlsUsage
 class Gui() extends Frame {
 
+  val controllerHttp: String = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
+  val modelHttp: String = sys.env.getOrElse("MODELHTTPSERVER", "localhost:8080")
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
@@ -53,6 +56,10 @@ class Gui() extends Frame {
     case _: GameWon =>
       redraw()
       newGameOrQuit()
+    case _: Saved => saveEventDialog()
+    case _: Loaded =>
+      redraw()
+      loadEventDialog()
     case exception: FailureEvent => redoTurnAlert(exception.getMessage())
     case _ =>
   }
@@ -127,7 +134,15 @@ class Gui() extends Frame {
     }
   }
 
-  private def redoTurnAlert(cause: String) {
+  private def saveEventDialog(): Unit = {
+    Dialog.showMessage(contents.head, "Game has saved!", "Saving State", Dialog.Message.Info)
+  }
+
+  private def loadEventDialog(): Unit = {
+    Dialog.showMessage(contents.head, "Game has loaded!", "Saving State", Dialog.Message.Info)
+  }
+
+  private def redoTurnAlert(cause: String): Unit = {
     Dialog.showMessage(contents.head, cause, "Alert", Dialog.Message.Warning)
   }
 
@@ -166,11 +181,11 @@ class Gui() extends Frame {
       "event" -> event.toUpperCase,
       "input" -> input
     )
-    Http().singleRequest(Post("http://localhost:8081/controller/update", payload.toString()))
+    Await.result(Http().singleRequest(Post(s"http://$controllerHttp/controller/update", payload.toString())), atMost = 10.second)
   }
 
   private def requestState(state: String): String = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8081/controller/request?" + state + "=state"))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${controllerHttp}/controller/request?" + state + "=state"))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {
@@ -180,7 +195,7 @@ class Gui() extends Frame {
   }
 
   private def requestGrid(player: String, showAll: Boolean): Vector[Map[String, Int]] = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get("http://localhost:8080/model?getPlayerGrid=" + player + showAll))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model?getPlayerGrid=" + player + showAll))
     val result = Await.result(responseFuture, atMost = 10.second)
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
     tmp.result.toOption match {

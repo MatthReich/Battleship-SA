@@ -60,7 +60,7 @@ case class RequestHandler() {
   }
 
   private def shipSettingAllowsNewShip(coordsLength: Int, player: InterfacePlayer): Boolean = {
-    player.shipSetList.getOrElse(coordsLength, Int.MinValue) > 0
+    player.shipSetList.getOrElse(coordsLength.toString, Int.MinValue) > 0
   }
 
   private def doSame(value: Try[InterfaceGrid], player: InterfacePlayer, x: Int, y: Int): Try[Either[InterfacePlayer, InterfacePlayer]] = {

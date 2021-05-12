@@ -3,9 +3,7 @@ package Battleship.controller
 import Battleship.controller.controllerComponent.states.GameState.GameState
 import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 
-import scala.swing.Publisher
-
-trait InterfaceController extends Publisher {
+trait InterfaceController {
 
   def gameState: GameState
 
@@ -23,7 +21,17 @@ trait InterfaceController extends Publisher {
 
   def load(): Unit
 
-  def requestNewReaction(string: String, string2: String)
+  def requestNewReaction(string: String, string2: String): Unit
+
+  def requestGameIsWon(player: String): Boolean
+
+  def requestShipSettingFinished(player: String): Boolean
+
+  def requestChangePlayerName(player: String, newName: String): Option[Throwable]
+
+  def requestHandleFieldSettingShipSetting(player: String, coords: Vector[Map[String, Int]]): Option[Throwable]
+
+  def requestHandleFieldSettingIdle(player: String, coords: Vector[Map[String, Int]]): Either[Boolean, Throwable]
 
 }
 

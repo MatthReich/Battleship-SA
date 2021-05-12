@@ -12,6 +12,4 @@ trait InterfaceGrid {
 
   def setField(gameStatus: String, fields: Vector[Map[String, Int]]): Either[Try[InterfaceGrid], Try[InterfaceGrid]]
 
-  def toString(showAllShips: Boolean): String
-
 }

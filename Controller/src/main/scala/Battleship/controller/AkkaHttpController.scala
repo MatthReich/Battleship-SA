@@ -1,20 +1,26 @@
 package Battleship.controller
 
 import Battleship.controller.controllerComponent.Controller
+import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
+import Battleship.controller.controllerComponent.states.GameState.GameState
+import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.client.RequestBuilding.Post
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import play.api.libs.json.{JsLookupResult, JsValue, Json}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.io.StdIn
-import scala.swing.event.Event
 
 object AkkaHttpController {
 
   val controller = new Controller()
+  val interface: String = "0.0.0.0"
+  val port: Int = 8081
+  val gameHttp: String = sys.env.getOrElse("GAMEHTTPSERVER", "localhost:8079")
 
   def main(args: Array[String]): Unit = {
 
@@ -59,9 +65,7 @@ object AkkaHttpController {
                 controller.redoTurn()
                 complete(StatusCodes.OK)
               case "NEWGAMEVIEW" =>
-                class NewGameView extends Event {}
-                controller.publish(new NewGameView)
-                controller.requestNewReaction("NEWGAMEVIEW", "")
+                Http().singleRequest(Post(s"http://${gameHttp}/game/request/newgame", Json.obj("event" -> "NEWGAMEVIEW").toString()))
                 complete(StatusCodes.OK)
               case _ => complete(StatusCodes.BadRequest)
             }
@@ -81,12 +85,32 @@ object AkkaHttpController {
           }
           }
         }
+      },
+      path("controller" / "update" / "states") {
+        parameters("setGameState", "setPlayerState") { (gameState, playerState) =>
+          val gameStateToSet: GameState = gameState match {
+            case "PLAYERSETTING" => GameState.PLAYERSETTING
+            case "IDLE" => GameState.IDLE
+            case "SHIPSETTING" => GameState.SHIPSETTING
+            case "SOLVED" => GameState.SOLVED
+            case "SAVED" => GameState.SAVED
+            case "LOADED" => GameState.LOADED
+          }
+          val playerStateToSet: PlayerState = playerState match {
+            case "PLAYER_ONE" => PlayerState.PLAYER_ONE
+            case "PLAYER_TWO" => PlayerState.PLAYER_TWO
+          }
+          controller.changeGameState(gameStateToSet)
+          controller.changePlayerState(playerStateToSet)
+          complete(StatusCodes.OK)
+        }
       }
+
     )
 
-    val bindingFuture = Http().newServerAt("localhost", 8081).bind(route)
+    val bindingFuture = Http().newServerAt(interface, port).bind(route)
 
-    println(s"Server online at http://localhost:8081/\nPress RETURN to stop...")
+    println(s"Server online at http://${interface}:${port}/\nPress RETURN to stop...")
     StdIn.readLine() // let it run until user presses return
     bindingFuture
       .flatMap(_.unbind()) // trigger unbinding from the port
