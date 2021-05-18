@@ -1,0 +1,707 @@
+{
+  "type": "GROUP",
+"name": "Global Information",
+"path": "",
+"pathFormatted": "group_missing-name-b06d1",
+"stats": {
+    "name": "Global Information",
+    "numberOfRequests": {
+        "total": 371804,
+        "ok": 80581,
+        "ko": 291223
+    },
+    "minResponseTime": {
+        "total": 3,
+        "ok": 3,
+        "ko": 159
+    },
+    "maxResponseTime": {
+        "total": 110883,
+        "ok": 101225,
+        "ko": 110883
+    },
+    "meanResponseTime": {
+        "total": 41621,
+        "ok": 12982,
+        "ko": 49546
+    },
+    "standardDeviation": {
+        "total": 26586,
+        "ok": 20383,
+        "ko": 22309
+    },
+    "percentiles1": {
+        "total": 38423,
+        "ok": 554,
+        "ko": 43430
+    },
+    "percentiles2": {
+        "total": 64984,
+        "ok": 22135,
+        "ko": 70203
+    },
+    "percentiles3": {
+        "total": 84690,
+        "ok": 57079,
+        "ko": 86011
+    },
+    "percentiles4": {
+        "total": 92372,
+        "ok": 83087,
+        "ko": 92820
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "count": 43679,
+    "percentage": 12
+},
+    "group2": {
+    "name": "800 ms < t < 1200 ms",
+    "count": 2855,
+    "percentage": 1
+},
+    "group3": {
+    "name": "t > 1200 ms",
+    "count": 34047,
+    "percentage": 9
+},
+    "group4": {
+    "name": "failed",
+    "count": 291223,
+    "percentage": 78
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 565.0516717325228,
+        "ok": 122.46352583586626,
+        "ko": 442.58814589665656
+    }
+},
+"contents": {
+"req_load---update-d-ecb44": {
+        "type": "REQUEST",
+        "name": "load - update databse",
+"path": "load - update databse",
+"pathFormatted": "req_load---update-d-ecb44",
+"stats": {
+    "name": "load - update databse",
+    "numberOfRequests": {
+        "total": 2,
+        "ok": 2,
+        "ko": 0
+    },
+    "minResponseTime": {
+        "total": 342,
+        "ok": 342,
+        "ko": 0
+    },
+    "maxResponseTime": {
+        "total": 342,
+        "ok": 342,
+        "ko": 0
+    },
+    "meanResponseTime": {
+        "total": 342,
+        "ok": 342,
+        "ko": 0
+    },
+    "standardDeviation": {
+        "total": 0,
+        "ok": 0,
+        "ko": 0
+    },
+    "percentiles1": {
+        "total": 342,
+        "ok": 342,
+        "ko": 0
+    },
+    "percentiles2": {
+        "total": 342,
+        "ok": 342,
+        "ko": 0
+    },
+    "percentiles3": {
+        "total": 342,
+        "ok": 342,
+        "ko": 0
+    },
+    "percentiles4": {
+        "total": 342,
+        "ok": 342,
+        "ko": 0
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "count": 2,
+    "percentage": 100
+},
+    "group2": {
+    "name": "800 ms < t < 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group3": {
+    "name": "t > 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group4": {
+    "name": "failed",
+    "count": 0,
+    "percentage": 0
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 0.00303951367781155,
+        "ok": 0.00303951367781155,
+        "ko": 0
+    }
+}
+    },"req_load---read-dat-a5271": {
+        "type": "REQUEST",
+        "name": "load - read databse",
+"path": "load - read databse",
+"pathFormatted": "req_load---read-dat-a5271",
+"stats": {
+    "name": "load - read databse",
+    "numberOfRequests": {
+        "total": 2,
+        "ok": 2,
+        "ko": 0
+    },
+    "minResponseTime": {
+        "total": 14,
+        "ok": 14,
+        "ko": 0
+    },
+    "maxResponseTime": {
+        "total": 14,
+        "ok": 14,
+        "ko": 0
+    },
+    "meanResponseTime": {
+        "total": 14,
+        "ok": 14,
+        "ko": 0
+    },
+    "standardDeviation": {
+        "total": 0,
+        "ok": 0,
+        "ko": 0
+    },
+    "percentiles1": {
+        "total": 14,
+        "ok": 14,
+        "ko": 0
+    },
+    "percentiles2": {
+        "total": 14,
+        "ok": 14,
+        "ko": 0
+    },
+    "percentiles3": {
+        "total": 14,
+        "ok": 14,
+        "ko": 0
+    },
+    "percentiles4": {
+        "total": 14,
+        "ok": 14,
+        "ko": 0
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "count": 2,
+    "percentage": 100
+},
+    "group2": {
+    "name": "800 ms < t < 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group3": {
+    "name": "t > 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group4": {
+    "name": "failed",
+    "count": 0,
+    "percentage": 0
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 0.00303951367781155,
+        "ok": 0.00303951367781155,
+        "ko": 0
+    }
+}
+    },"req_volume---update-5fc0a": {
+        "type": "REQUEST",
+        "name": "volume - update databse",
+"path": "volume - update databse",
+"pathFormatted": "req_volume---update-5fc0a",
+"stats": {
+    "name": "volume - update databse",
+    "numberOfRequests": {
+        "total": 2000,
+        "ok": 1980,
+        "ko": 20
+    },
+    "minResponseTime": {
+        "total": 41,
+        "ok": 41,
+        "ko": 159
+    },
+    "maxResponseTime": {
+        "total": 3260,
+        "ok": 3260,
+        "ko": 388
+    },
+    "meanResponseTime": {
+        "total": 1343,
+        "ok": 1354,
+        "ko": 227
+    },
+    "standardDeviation": {
+        "total": 897,
+        "ok": 895,
+        "ko": 51
+    },
+    "percentiles1": {
+        "total": 1165,
+        "ok": 1168,
+        "ko": 218
+    },
+    "percentiles2": {
+        "total": 2143,
+        "ok": 2153,
+        "ko": 264
+    },
+    "percentiles3": {
+        "total": 3119,
+        "ok": 3123,
+        "ko": 273
+    },
+    "percentiles4": {
+        "total": 3216,
+        "ok": 3216,
+        "ko": 365
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "count": 726,
+    "percentage": 36
+},
+    "group2": {
+    "name": "800 ms < t < 1200 ms",
+    "count": 307,
+    "percentage": 15
+},
+    "group3": {
+    "name": "t > 1200 ms",
+    "count": 947,
+    "percentage": 47
+},
+    "group4": {
+    "name": "failed",
+    "count": 20,
+    "percentage": 1
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 3.0395136778115504,
+        "ok": 3.0091185410334345,
+        "ko": 0.030395136778115502
+    }
+}
+    },"req_spike---read-da-599f2": {
+        "type": "REQUEST",
+        "name": "spike - read databse",
+"path": "spike - read databse",
+"pathFormatted": "req_spike---read-da-599f2",
+"stats": {
+    "name": "spike - read databse",
+    "numberOfRequests": {
+        "total": 2000,
+        "ok": 1795,
+        "ko": 205
+    },
+    "minResponseTime": {
+        "total": 118,
+        "ok": 118,
+        "ko": 1034
+    },
+    "maxResponseTime": {
+        "total": 2823,
+        "ok": 2823,
+        "ko": 1121
+    },
+    "meanResponseTime": {
+        "total": 1592,
+        "ok": 1651,
+        "ko": 1075
+    },
+    "standardDeviation": {
+        "total": 710,
+        "ok": 727,
+        "ko": 19
+    },
+    "percentiles1": {
+        "total": 1540,
+        "ok": 1681,
+        "ko": 1068
+    },
+    "percentiles2": {
+        "total": 2253,
+        "ok": 2293,
+        "ko": 1091
+    },
+    "percentiles3": {
+        "total": 2690,
+        "ok": 2698,
+        "ko": 1108
+    },
+    "percentiles4": {
+        "total": 2739,
+        "ok": 2740,
+        "ko": 1116
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "count": 347,
+    "percentage": 17
+},
+    "group2": {
+    "name": "800 ms < t < 1200 ms",
+    "count": 93,
+    "percentage": 5
+},
+    "group3": {
+    "name": "t > 1200 ms",
+    "count": 1355,
+    "percentage": 68
+},
+    "group4": {
+    "name": "failed",
+    "count": 205,
+    "percentage": 10
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 3.0395136778115504,
+        "ok": 2.7279635258358663,
+        "ko": 0.31155015197568386
+    }
+}
+    },"req_stress---update-24f01": {
+        "type": "REQUEST",
+        "name": "stress - update databse",
+"path": "stress - update databse",
+"pathFormatted": "req_stress---update-24f01",
+"stats": {
+    "name": "stress - update databse",
+    "numberOfRequests": {
+        "total": 180900,
+        "ok": 26972,
+        "ko": 153928
+    },
+    "minResponseTime": {
+        "total": 3,
+        "ok": 3,
+        "ko": 2041
+    },
+    "maxResponseTime": {
+        "total": 110883,
+        "ok": 101225,
+        "ko": 110883
+    },
+    "meanResponseTime": {
+        "total": 44310,
+        "ok": 18199,
+        "ko": 48885
+    },
+    "standardDeviation": {
+        "total": 25563,
+        "ok": 22509,
+        "ko": 23212
+    },
+    "percentiles1": {
+        "total": 39201,
+        "ok": 12433,
+        "ko": 42024
+    },
+    "percentiles2": {
+        "total": 67742,
+        "ok": 29796,
+        "ko": 71138
+    },
+    "percentiles3": {
+        "total": 86032,
+        "ok": 68623,
+        "ko": 86681
+    },
+    "percentiles4": {
+        "total": 93197,
+        "ok": 86460,
+        "ko": 93403
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "count": 12309,
+    "percentage": 7
+},
+    "group2": {
+    "name": "800 ms < t < 1200 ms",
+    "count": 250,
+    "percentage": 0
+},
+    "group3": {
+    "name": "t > 1200 ms",
+    "count": 14413,
+    "percentage": 8
+},
+    "group4": {
+    "name": "failed",
+    "count": 153928,
+    "percentage": 85
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 274.9240121580547,
+        "ok": 40.99088145896656,
+        "ko": 233.93313069908814
+    }
+}
+    },"req_stress---read-d-ee9ed": {
+        "type": "REQUEST",
+        "name": "stress - read databse",
+"path": "stress - read databse",
+"pathFormatted": "req_stress---read-d-ee9ed",
+"stats": {
+    "name": "stress - read databse",
+    "numberOfRequests": {
+        "total": 180900,
+        "ok": 43830,
+        "ko": 137070
+    },
+    "minResponseTime": {
+        "total": 9,
+        "ok": 9,
+        "ko": 185
+    },
+    "maxResponseTime": {
+        "total": 99911,
+        "ok": 99268,
+        "ko": 99911
+    },
+    "meanResponseTime": {
+        "total": 41202,
+        "ok": 12539,
+        "ko": 50368
+    },
+    "standardDeviation": {
+        "total": 26433,
+        "ok": 20016,
+        "ko": 21149
+    },
+    "percentiles1": {
+        "total": 38941,
+        "ok": 576,
+        "ko": 45345
+    },
+    "percentiles2": {
+        "total": 63710,
+        "ok": 21923,
+        "ko": 69389
+    },
+    "percentiles3": {
+        "total": 83424,
+        "ok": 54770,
+        "ko": 84981
+    },
+    "percentiles4": {
+        "total": 91504,
+        "ok": 82462,
+        "ko": 91890
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "count": 24293,
+    "percentage": 13
+},
+    "group2": {
+    "name": "800 ms < t < 1200 ms",
+    "count": 2205,
+    "percentage": 1
+},
+    "group3": {
+    "name": "t > 1200 ms",
+    "count": 17332,
+    "percentage": 10
+},
+    "group4": {
+    "name": "failed",
+    "count": 137070,
+    "percentage": 76
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 274.9240121580547,
+        "ok": 66.61094224924013,
+        "ko": 208.31306990881458
+    }
+}
+    },"req_endurance---upd-54a49": {
+        "type": "REQUEST",
+        "name": "endurance - update databse",
+"path": "endurance - update databse",
+"pathFormatted": "req_endurance---upd-54a49",
+"stats": {
+    "name": "endurance - update databse",
+    "numberOfRequests": {
+        "total": 3000,
+        "ok": 3000,
+        "ko": 0
+    },
+    "minResponseTime": {
+        "total": 3,
+        "ok": 3,
+        "ko": 0
+    },
+    "maxResponseTime": {
+        "total": 21,
+        "ok": 21,
+        "ko": 0
+    },
+    "meanResponseTime": {
+        "total": 4,
+        "ok": 4,
+        "ko": 0
+    },
+    "standardDeviation": {
+        "total": 1,
+        "ok": 1,
+        "ko": 0
+    },
+    "percentiles1": {
+        "total": 4,
+        "ok": 4,
+        "ko": 0
+    },
+    "percentiles2": {
+        "total": 5,
+        "ok": 5,
+        "ko": 0
+    },
+    "percentiles3": {
+        "total": 5,
+        "ok": 5,
+        "ko": 0
+    },
+    "percentiles4": {
+        "total": 6,
+        "ok": 6,
+        "ko": 0
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "count": 3000,
+    "percentage": 100
+},
+    "group2": {
+    "name": "800 ms < t < 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group3": {
+    "name": "t > 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group4": {
+    "name": "failed",
+    "count": 0,
+    "percentage": 0
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 4.5592705167173255,
+        "ok": 4.5592705167173255,
+        "ko": 0
+    }
+}
+    },"req_endurance---rea-38c56": {
+        "type": "REQUEST",
+        "name": "endurance - read databse",
+"path": "endurance - read databse",
+"pathFormatted": "req_endurance---rea-38c56",
+"stats": {
+    "name": "endurance - read databse",
+    "numberOfRequests": {
+        "total": 3000,
+        "ok": 3000,
+        "ko": 0
+    },
+    "minResponseTime": {
+        "total": 9,
+        "ok": 9,
+        "ko": 0
+    },
+    "maxResponseTime": {
+        "total": 58,
+        "ok": 58,
+        "ko": 0
+    },
+    "meanResponseTime": {
+        "total": 12,
+        "ok": 12,
+        "ko": 0
+    },
+    "standardDeviation": {
+        "total": 1,
+        "ok": 1,
+        "ko": 0
+    },
+    "percentiles1": {
+        "total": 12,
+        "ok": 12,
+        "ko": 0
+    },
+    "percentiles2": {
+        "total": 12,
+        "ok": 12,
+        "ko": 0
+    },
+    "percentiles3": {
+        "total": 14,
+        "ok": 14,
+        "ko": 0
+    },
+    "percentiles4": {
+        "total": 15,
+        "ok": 15,
+        "ko": 0
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "count": 3000,
+    "percentage": 100
+},
+    "group2": {
+    "name": "800 ms < t < 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group3": {
+    "name": "t > 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group4": {
+    "name": "failed",
+    "count": 0,
+    "percentage": 0
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 4.5592705167173255,
+        "ok": 4.5592705167173255,
+        "ko": 0
+    }
+}
+    }
+}
+
+}

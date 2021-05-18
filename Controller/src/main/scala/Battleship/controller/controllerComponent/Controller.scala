@@ -44,7 +44,7 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
   }
 
   override def save(): Unit = {
-    waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model/database?request=save")))
+    waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model/database?request=save&gameState=" + gameState.toString.toUpperCase + "&playerState=" + playerState.toString.toUpperCase)))
     requestNewReaction("SAVED", "")
   }
 
