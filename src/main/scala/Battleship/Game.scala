@@ -13,12 +13,15 @@ val injector: Injector = Guice.createInjector(new GameModul)
     println("starting Battleship...")
     val controller: ControllerInterface = injector.getInstance(classOf[ControllerInterface])
     val tui                             = Tui(controller)
+    val shipSetList                     = Map("2" -> 2, "3" -> 0, "4" -> 0, "5" -> 0)
 
     controller.updatePlayer(
         "player_01",
-        injector.getInstance(classOf[PlayerInterface]).updateGrid(injector.getInstance(classOf[GridInterface]).init()))
+        injector.getInstance(classOf[PlayerInterface]).updateGrid(
+            injector.getInstance(classOf[GridInterface]).init()).updateName("player_01").updateShipSetList(shipSetList))
     controller.updatePlayer(
         "player_02",
-        injector.getInstance(classOf[PlayerInterface]).updateGrid(injector.getInstance(classOf[GridInterface]).init()))
+        injector.getInstance(classOf[PlayerInterface]).updateGrid(
+            injector.getInstance(classOf[GridInterface]).init()).updateName("player_02").updateShipSetList(shipSetList))
 
     tui.tui_process

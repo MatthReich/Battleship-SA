@@ -20,8 +20,11 @@ class Tui(controller: ControllerInterface) extends Reactor:
 
     val goodbye_message: String = "The game is written in Scala 3. Wish you all the best and hope to see you back soon!"
 
-    val self: Int  = 0
-    val enemy: Int = 1
+    val self: Int       = 0
+    val enemy: Int      = 1
+    val showAllShips    = true
+    val showNotAllShips = false
+    val toStringHelper  = ToStringHelper(controller.player_01.grid.size)
 
     listenTo(controller)
 
@@ -73,7 +76,10 @@ class Tui(controller: ControllerInterface) extends Reactor:
         while true do
             val input = scala.io.StdIn.readLine()
             input match
-                case "s"          => println("Started game")
+                case "s"          =>
+                    println("Started game")
+                    controller.publish(new GameStart)
+                    controller.publish(new PlayerChanged)
                 case "n"          => println("Starting new game")
                 case "q"          =>
                     println(goodbye_message)
@@ -84,17 +90,29 @@ class Tui(controller: ControllerInterface) extends Reactor:
                 case "state info" =>
                     println(controller.gameState.getInfo)
                     println(controller.playerState.getInfo)
-                case _            =>
-                    println("Wrong input: " + input)
-                    println("try one of these:\n" + tui_options)
+                case input        => controller.doTurn(input)
 
     private def printWithPlayerAnnotation(msg: String) = controller.playerState match
         case PlayerStates.PLAYER_ONE => println(Console.MAGENTA + controller.player_01.name + Console.RESET + " " + msg)
         case PlayerStates.PLAYER_TWO => println(Console.CYAN + controller.player_02.name + Console.RESET + " " + msg)
 
     private def printGrid(who: Int)                    = who match {
-        case self  => println("self")
-        case enemy => println("enemy")
+        case self  => controller.playerState match
+                case PlayerStates.PLAYER_ONE =>
+                    println(toStringHelper.gridToString(showAllShips, controller.player_01.grid.grid))
+                case PlayerStates.PLAYER_TWO =>
+                    println(toStringHelper.gridToString(showAllShips, controller.player_02.grid.grid))
+        case enemy => controller.playerState match
+                case PlayerStates.PLAYER_ONE =>
+                    println(toStringHelper.gridToString(showNotAllShips, controller.player_01.grid.grid))
+                case PlayerStates.PLAYER_TWO =>
+                    println(toStringHelper.gridToString(showNotAllShips, controller.player_02.grid.grid))
     }
 
-    private def printRemainingShips() = println("Remaining ships:\n")
+    private def printRemainingShips() =
+        println("Remaining ships:")
+        controller.playerState match
+            case PlayerStates.PLAYER_ONE =>
+                println(toStringHelper.shipSetListToString(controller.player_01.shipSetList))
+            case PlayerStates.PLAYER_TWO =>
+                println(toStringHelper.shipSetListToString(controller.player_02.shipSetList))
