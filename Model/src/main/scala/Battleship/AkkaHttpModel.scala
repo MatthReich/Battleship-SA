@@ -30,18 +30,21 @@ object AkkaHttpModel {
   val interface: String = "0.0.0.0"
   val port: Int         = 8080
 
-  val injector: Injector     = Guice.createInjector(new ModelModule)
+  val injector: Injector = Guice.createInjector(new ModelModule)
+
   val grid_player_01: InterfaceGrid = Grid(
     10,
     new StrategyCollideNormal,
     Vector[Map[String, Int]]()).initGrid()
-  dataBase.create()
+
   val grid_player_02: InterfaceGrid = Grid(
     10,
     new StrategyCollideNormal,
     Vector[Map[String, Int]]()).initGrid()
-  val controllerHttp: String                              = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
+
+  val controllerHttp: String         = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
   val requestHandler: RequestHandler = RequestHandler()
+
   val route: Route = concat(
     path("model") {
       parameters(
@@ -299,12 +302,15 @@ object AkkaHttpModel {
 
   implicit val system: ActorSystem[Nothing]               = ActorSystem(Behaviors.empty, "my-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
-  var dataBase: DaoInterface = injector.instance[DaoInterface](Names.named("mysql"))
+  var dataBase: DaoInterface                              = injector.instance[DaoInterface](Names.named("mysql"))
+  dataBase.create()
+
   var player_01: InterfacePlayer = Player(
     "player_01",
     Map("2" -> 2, "3" -> 1, "4" -> 1, "5" -> 2),
     Vector[InterfaceShip](),
     grid_player_01)
+
   var player_02: InterfacePlayer = Player(
     "player_02",
     Map("2" -> 2, "3" -> 1, "4" -> 1, "5" -> 2),
