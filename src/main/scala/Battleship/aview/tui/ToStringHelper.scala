@@ -29,7 +29,7 @@ case class ToStringHelper(size: Int):
         else if idx == size then
             val newY = idy + 1
             result ++= "\n"
-            if newY < size then result ++= newY + " "
+            if newY < size then result ++= newY.toString + " "
             toStringRek(0, newY, showAllShips, grid, result)
         else
             val fieldValue = grid(grid.indexWhere(
@@ -39,22 +39,21 @@ case class ToStringHelper(size: Int):
             toStringRek(idx + 1, idy, showAllShips, grid, result)
         end if
 
-    private def getFieldValueInString(fieldValue: Int, showAllShips: Boolean): String = fieldValue match {
-        case this.water    => Console.BLUE + "  ~  " + Console.RESET
-        case this.ship     =>
-            if (showAllShips) Console.GREEN + "  x  " + Console.RESET
-            else Console.BLUE + "  ~  " + Console.RESET
-        case this.shipHit  => Console.RED + "  x  " + Console.RESET
-        case this.waterHit => Console.BLUE + "  0  " + Console.RESET
-    }
+    private def getFieldValueInString(fieldValue: Int, showAllShips: Boolean): String =
+        fieldValue match
+            case this.water    => Console.BLUE + "  ~  " + Console.RESET
+            case this.ship     =>
+                if showAllShips then Console.GREEN + "  x  " + Console.RESET
+                else Console.BLUE + "  ~  " + Console.RESET
+                end if
+            case this.shipHit  => Console.RED + "  x  " + Console.RESET
+            case this.waterHit => Console.BLUE + "  0  " + Console.RESET
 
-    private def initRek(): StringBuilder = {
+    private def initRek(): StringBuilder =
         val stringOfGrid = new StringBuilder("  ")
         var ids          = 0
-        while (ids < size) {
+        while ids < size do
             stringOfGrid ++= "  " + ids + "  "
             ids += 1
-        }
         stringOfGrid ++= "\n0 "
         stringOfGrid
-    }
