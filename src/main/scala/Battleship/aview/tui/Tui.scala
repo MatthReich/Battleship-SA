@@ -26,18 +26,44 @@ class Tui(controller: ControllerInterface) extends Reactor:
     listenTo(controller)
 
     reactions += {
-        case _: GameStart     => println("Yeah you play the best game in the world... probably :)")
-        case _: PlayerChanged =>
-            controller.gameState match
-                case GameStates.PLAYERSETTING => printWithPlayerAnnotation("set yout name")
+        case _: GameStart            => println("Yeah you play the best game in the world... probably :)")
+        case _: PlayerChanged        => controller.gameState match
+                case GameStates.PLAYERSETTING => printWithPlayerAnnotation("set your name")
                 case GameStates.SHIPSETTING   =>
                     printWithPlayerAnnotation("set your Ship <x y x y>")
                     printGrid(self)
                     printRemainingShips()
                 case GameStates.IDLE          =>
-                case GameStates.SOLVED        =>
-                case GameStates.SAVED         =>
-                case GameStates.LOADED        =>
+                    printWithPlayerAnnotation("guess the enemy ship <x y>")
+                    printGrid(enemy)
+                    printGrid(self)
+                case _                        => println("internal error")
+        case _: GridUpdated          => controller.gameState match
+                case GameStates.SHIPSETTING =>
+                    printWithPlayerAnnotation("set your Ship <x y x y>")
+                    printGrid(self)
+                    printRemainingShips()
+                case _                      => println("internal error")
+        case _: RedoTurn             => controller.gameState match
+                case GameStates.SHIPSETTING =>
+                    printWithPlayerAnnotation("please try again")
+                    println("Set your Ship <x y x y>")
+                case GameStates.IDLE        =>
+                    printWithPlayerAnnotation("please try again")
+                    println("Guess the enemy ship <x y>")
+                case _                      => println("internal error")
+        case _: TurnAgain            => controller.gameState match
+                case GameStates.IDLE =>
+                    printWithPlayerAnnotation("That was a hit!")
+                    println("Guess the enemy ship <x y>")
+                    printGrid(enemy)
+                    printGrid(self)
+                case _               => println("internal error")
+        case _: GameWon              =>
+            printWithPlayerAnnotation("has won!!!")
+            println(tui_options)
+        case exception: FailureEvent => println(exception.getMessage())
+        case _                       => println("internal error")
     }
 
     def tui_process: Unit =
@@ -69,7 +95,6 @@ class Tui(controller: ControllerInterface) extends Reactor:
     private def printGrid(who: Int)                    = who match {
         case self  => println("self")
         case enemy => println("enemy")
-        case _     => println("internel error")
     }
 
     private def printRemainingShips() = println("Remaining ships:\n")

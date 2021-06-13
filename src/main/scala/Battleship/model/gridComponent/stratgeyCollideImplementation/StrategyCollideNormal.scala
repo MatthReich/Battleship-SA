@@ -25,9 +25,9 @@ case class StrategyCollideNormal() extends StrategyCollideInterface:
         if start == end then result
         else
             val index    = grid.indexWhere(
-              mapping =>
-                  mapping.get("x").contains(fields(start).getOrElse("x", Int.MaxValue)) && mapping.get("y").contains(
-                    fields(start).getOrElse("y", Int.MaxValue)))
+                mapping =>
+                    mapping.get("x").contains(fields(start).getOrElse("x", Int.MaxValue)) && mapping.get("y").contains(
+                        fields(start).getOrElse("y", Int.MaxValue)))
             val newStart = start + 1
             if index == -1 then calculateIndexesRec(newStart, end, fields, grid, result)
             else calculateIndexesRec(newStart, end, fields, grid, result.appended(index))

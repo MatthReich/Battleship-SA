@@ -59,7 +59,7 @@ case class Grid(
             case _ => grid(index)
         }
 
-    override def init() = this.copy(grid = initGridRec(0, size * size, Vector[Map[String, Int]]()))
+    override def init(): GridInterface = this.copy(grid = initGridRec(0, size * size, Vector[Map[String, Int]]()))
 
     @tailrec
     private def initGridRec(start: Int, end: Int, result: Vector[Map[String, Int]]): Vector[Map[String, Int]] =

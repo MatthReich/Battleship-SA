@@ -12,4 +12,4 @@ trait GridInterface:
 
     def setFields(gameState: GameStates, fields: Vector[Map[String, Int]]): Try[GridInterface]
 
-    def init(): Unit
+    def init(): GridInterface
