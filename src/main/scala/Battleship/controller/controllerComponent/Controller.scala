@@ -39,7 +39,7 @@ case class Controller(
     private def handleInput(input: String, state: Either[Int, Int]): Try[Vector[Map[String, Int]]] =
         Try(input.split(" ").map(_.toInt)) match
             case Success(convertedInput) =>
-                if (convertedInput.exists(_.>=(player_01.grid.size)))
+                if convertedInput.exists(_.>=(player_01.grid.size)) then
                     return Failure(new Exception("input is out of scope"))
                 state match {
                     case Left(lengthOfArguments)  => calculateCoords(lengthOfArguments, convertedInput.toVector)
@@ -62,25 +62,26 @@ case class Controller(
             0) == convertedInput(2)) && !(convertedInput(1) == convertedInput(3))))
 
     private def calculateCoordsMapping(convertedInput: Vector[Int]): Try[Vector[Map[String, Int]]] =
-        if (shipIsPlacedLeftToRight(convertedInput) || shipIsPlacedUpToDown(convertedInput)) calculateCoordsMappingRec(
+        if shipIsPlacedLeftToRight(convertedInput) || shipIsPlacedUpToDown(convertedInput) then calculateCoordsMappingRec(
             convertedInput(0),
             convertedInput(2),
             convertedInput(1),
             convertedInput(3),
             Vector[Map[String, Int]]())
-        else if (shipIsPlacedRightToLeft(convertedInput)) calculateCoordsMappingRec(
+        else if shipIsPlacedRightToLeft(convertedInput) then calculateCoordsMappingRec(
             convertedInput(0),
             convertedInput(2),
             convertedInput(3),
             convertedInput(1),
             Vector[Map[String, Int]]())
-        else if (shipIsPlacedDownToUp(convertedInput)) calculateCoordsMappingRec(
+        else if shipIsPlacedDownToUp(convertedInput) then calculateCoordsMappingRec(
             convertedInput(2),
             convertedInput(0),
             convertedInput(3),
             convertedInput(1),
             Vector[Map[String, Int]]())
         else Failure(new Exception("something strange happened to your coords .. maybe try rice"))
+        end if
 
     private def shipIsPlacedLeftToRight(convertedInput: Vector[Int]): Boolean =
         convertedInput(0) == convertedInput(2) && convertedInput(1) < convertedInput(3)
@@ -101,20 +102,21 @@ case class Controller(
         startY: Int,
         endY: Int,
         result: Vector[Map[String, Int]]): Try[Vector[Map[String, Int]]] =
-        if (startX > endX && startY == endY || startX == endX && startY > endY) Success(result)
-        else if (startX == endX) calculateCoordsMappingRec(
+        if startX > endX && startY == endY || startX == endX && startY > endY then Success(result)
+        else if startX == endX then calculateCoordsMappingRec(
             startX,
             endX,
             startY + 1,
             endY,
             result.appended(Map("x" -> startX, "y" -> startY, "value" -> 1)))
-        else if (startY == endY) calculateCoordsMappingRec(
+        else if startY == endY then calculateCoordsMappingRec(
             startX + 1,
             endX,
             startY,
             endY,
             result.appended(Map("x" -> startX, "y" -> startY, "value" -> 1)))
         else Failure(new Exception("cannot calculate coords"))
+        end if
 
     def load(): Unit = ???
 

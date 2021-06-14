@@ -39,27 +39,27 @@ case class Grid(
         indexes: Vector[Int],
         gameState: GameStates,
         result: Vector[Map[String, Int]]): GridInterface =
-        if (start == end) this.copy(grid = result)
+        if start == end then this.copy(grid = result)
         else updateGridRec(
             start + 1,
             end,
             indexes,
             gameState,
             result.updated(indexes(start), newValueOfField(indexes(start), gameState)))
+        end if
 
     private def newValueOfField(index: Int, gameState: GameStates): Map[String, Int] =
-        grid(index).getOrElse("value", Int.MaxValue) match {
+        grid(index).getOrElse("value", Int.MaxValue) match
             case 0 =>
-                if (gameState == GameStates.SHIPSETTING) {
+                if gameState == GameStates.SHIPSETTING then
                     grid(index) + ("value" -> ship)
-                } else {
+                else
                     grid(index) + ("value" -> waterHit)
-                }
+                end if
             case 1 => grid(index) + ("value" -> shipHit)
             case _ => grid(index)
-        }
 
-    override def init(): GridInterface = this.copy(grid = initGridRec(0, size * size, Vector[Map[String, Int]]()))
+    override def init(): GridInterface                                               = this.copy(grid = initGridRec(0, size * size, Vector[Map[String, Int]]()))
 
     @tailrec
     private def initGridRec(start: Int, end: Int, result: Vector[Map[String, Int]]): Vector[Map[String, Int]] =
