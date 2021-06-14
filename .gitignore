@@ -8,6 +8,7 @@
 
 # vs code
 .vscode
+.dccache
 
 # sbt
 # (may want to keep parts of 'project')
