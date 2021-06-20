@@ -22,46 +22,48 @@ object AkkaHttpGui extends Publisher {
 
   def main(args: Array[String]): Unit = {
 
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
-
+    implicit val system: ActorSystem[Nothing] =
+      ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor =
+      system.executionContext
 
     val route: Route = concat(
       path("gui" / "reactor") {
         post {
-          entity(as[String]) { jsonString => {
-            val json = Json.parse(jsonString)
-            (json \ "event").as[String] match {
-              case "GAMESTART" =>
-                publish(new GameStart)
-                complete(StatusCodes.OK)
-              case "PLAYERCHANGED" =>
-                publish(new PlayerChanged)
-                complete(StatusCodes.OK)
-              case "GRIDUPDATE" =>
-                publish(new GridUpdated)
-                complete(StatusCodes.OK)
-              case "REDOTURN" =>
-                publish(new RedoTurn)
-                complete(StatusCodes.OK)
-              case "TURNAGAIN" =>
-                publish(new TurnAgain)
-                complete(StatusCodes.OK)
-              case "GAMEWON" =>
-                publish(new GameWon)
-                complete(StatusCodes.OK)
-              case "SAVED" =>
-                publish(new Saved)
-                complete(StatusCodes.OK)
-              case "LOADED" =>
-                publish(new Loaded)
-                complete(StatusCodes.OK)
-              case "FAILUREEVENT" =>
-                publish(new FailureEvent((json \ "message").as[String]))
-                complete(StatusCodes.OK)
-              case _ => complete(StatusCodes.BadRequest)
+          entity(as[String]) { jsonString =>
+            {
+              val json = Json.parse(jsonString)
+              (json \ "event").as[String] match {
+                case "GAMESTART" =>
+                  publish(new GameStart)
+                  complete(StatusCodes.OK)
+                case "PLAYERCHANGED" =>
+                  publish(new PlayerChanged)
+                  complete(StatusCodes.OK)
+                case "GRIDUPDATE" =>
+                  publish(new GridUpdated)
+                  complete(StatusCodes.OK)
+                case "REDOTURN" =>
+                  publish(new RedoTurn)
+                  complete(StatusCodes.OK)
+                case "TURNAGAIN" =>
+                  publish(new TurnAgain)
+                  complete(StatusCodes.OK)
+                case "GAMEWON" =>
+                  publish(new GameWon)
+                  complete(StatusCodes.OK)
+                case "SAVED" =>
+                  publish(new Saved)
+                  complete(StatusCodes.OK)
+                case "LOADED" =>
+                  publish(new Loaded)
+                  complete(StatusCodes.OK)
+                case "FAILUREEVENT" =>
+                  publish(new FailureEvent((json \ "message").as[String]))
+                  complete(StatusCodes.OK)
+                case _ => complete(StatusCodes.BadRequest)
+              }
             }
-          }
           }
         }
       }

@@ -29,6 +29,22 @@ case class RequestHandler() {
     }
   }
 
+  private def changePlayerStats(coords: Vector[Map[String, Int]])(player: InterfacePlayer, gameState: String): Either[InterfacePlayer, Throwable] = {
+    if (!shipSettingAllowsNewShip(coords.length, player)) return Right(new Exception("no more ships of this length can be placed"))
+    player.grid.setField(gameState, coords) match {
+      case Left(_) => Right(new Exception("there is already a ship placed"))
+      case Right(value) => value match {
+        case Failure(exception) => Right(exception)
+        case Success(updatedGrid) => val ship = Ship(coords.length, coords, shipNotSunk)
+          Left(player.addShip(ship).updateGrid(updatedGrid))
+      }
+    }
+  }
+
+  private def shipSettingAllowsNewShip(coordsLength: Int, player: InterfacePlayer): Boolean = {
+    player.shipSetList.getOrElse(coordsLength.toString, Int.MinValue) > 0
+  }
+
   def commandIdle(coords: Vector[Map[String, Int]], player: InterfacePlayer, gameState: String): Either[Either[InterfacePlayer, InterfacePlayer], Throwable] = {
     handleFieldSettingIdle(handleGuess(coords)(player, gameState))
   }
@@ -45,22 +61,6 @@ case class RequestHandler() {
       case Left(value) => doSame(value, player, coords.head.getOrElse("x", Int.MaxValue), coords.head.getOrElse("y", Int.MaxValue))
       case Right(value) => doSame(value, player, coords.head.getOrElse("x", Int.MaxValue), coords.head.getOrElse("y", Int.MaxValue))
     }
-  }
-
-  private def changePlayerStats(coords: Vector[Map[String, Int]])(player: InterfacePlayer, gameState: String): Either[InterfacePlayer, Throwable] = {
-    if (!shipSettingAllowsNewShip(coords.length, player)) return Right(new Exception("no more ships of this length can be placed"))
-    player.grid.setField(gameState, coords) match {
-      case Left(_) => Right(new Exception("there is already a ship placed"))
-      case Right(value) => value match {
-        case Failure(exception) => Right(exception)
-        case Success(updatedGrid) => val ship = Ship(coords.length, coords, shipNotSunk)
-          Left(player.addShip(ship).updateGrid(updatedGrid))
-      }
-    }
-  }
-
-  private def shipSettingAllowsNewShip(coordsLength: Int, player: InterfacePlayer): Boolean = {
-    player.shipSetList.getOrElse(coordsLength.toString, Int.MinValue) > 0
   }
 
   private def doSame(value: Try[InterfaceGrid], player: InterfacePlayer, x: Int, y: Int): Try[Either[InterfacePlayer, InterfacePlayer]] = {

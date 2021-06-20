@@ -44,13 +44,22 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
   }
 
   override def save(): Unit = {
-    waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model/database?request=save")))
+    waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model/database?request=save&gameState=" + gameState.toString.toUpperCase + "&playerState=" + playerState.toString.toUpperCase)))
     requestNewReaction("SAVED", "")
   }
 
   override def load(): Unit = {
     waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model/database?request=load")))
     requestNewReaction("LOADED", "")
+  }
+
+  override def requestNewReaction(event: String, message: String): Unit = {
+    val payload = Json.obj(
+      "event" -> event.toUpperCase,
+      "message" -> message
+    )
+    Http().singleRequest(Post(s"http://$tuiHttp/tui/reactor", payload.toString()))
+    Http().singleRequest(Post(s"http://$guiHttp/gui/reactor", payload.toString()))
   }
 
   override def requestChangePlayerName(player: String, newName: String): Option[Throwable] = {
@@ -75,6 +84,10 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
     } else {
       None
     }
+  }
+
+  private def waitForResponse(future: Future[HttpResponse]): HttpResponse = {
+    Await.result(future, atMost = 10.second)
   }
 
   override def requestShipSettingFinished(player: String): Boolean = {
@@ -102,20 +115,6 @@ class Controller @Inject()(var gameState: GameState = GameState.PLAYERSETTING, v
     val result: HttpResponse = waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model/player/idle/request?gameIsWon=" + player)))
     result.status == StatusCodes.OK
   }
-
-  override def requestNewReaction(event: String, message: String): Unit = {
-    val payload = Json.obj(
-      "event" -> event.toUpperCase,
-      "message" -> message
-    )
-    Http().singleRequest(Post(s"http://$tuiHttp/tui/reactor", payload.toString()))
-    Http().singleRequest(Post(s"http://$guiHttp/gui/reactor", payload.toString()))
-  }
-
-  private def waitForResponse(future: Future[HttpResponse]): HttpResponse = {
-    Await.result(future, atMost = 10.second)
-  }
-
 
   private def handleInput(input: String, state: Either[Int, Int]): Try[Vector[Map[String, Int]]] = {
     Try(input.split(" ").map(_.toInt)) match {

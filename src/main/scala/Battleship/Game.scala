@@ -16,7 +16,8 @@ object Game extends Reactor {
 
   val interface: String = "0.0.0.0"
   val port: Int = 8079
-  val controllerHttp: String = sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
+  val controllerHttp: String =
+    sys.env.getOrElse("CONTROLLERHTTPSERVER", "localhost:8081")
   val gameMode: String = sys.env.getOrElse("GAMEMODE", "local")
 
   def main(args: Array[String]): Unit = {
@@ -39,42 +40,54 @@ object Game extends Reactor {
     }
   }
 
+  private def listenTo(): Unit = {
+    implicit val system: ActorSystem[Nothing] =
+      ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor =
+      system.executionContext
+
+    val route: Route = concat(
+      path("game" / "request" / "newgame") {
+        post {
+          entity(as[String]) { jsonString =>
+            {
+              val json = Json.parse(jsonString)
+              (json \ "event").as[String] match {
+                case "NEWGAMEVIEW" =>
+                  initNewGame()
+                  complete(StatusCodes.OK)
+              }
+            }
+          }
+        }
+      }
+    )
+    Http().newServerAt(interface, port).bind(route)
+    println(
+      s"Server online at: http://${interface}:${port}/\nPress RETURN to stop..."
+    )
+  }
+
   private def initNewGame(): Unit = {
     requestNewEvent("GAMESTART")
     requestNewEvent("PLAYERCHANGED")
   }
 
   private def requestNewEvent(event: String): Unit = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
+    implicit val system: ActorSystem[Nothing] =
+      ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor =
+      system.executionContext
     val payload = Json.obj(
       "event" -> event.toUpperCase,
       "message" -> ""
     )
-    Http().singleRequest(Post(s"http://${controllerHttp}/controller/update/event", payload.toString()))
-  }
-
-  private def listenTo(): Unit = {
-    implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor = system.executionContext
-
-    val route: Route = concat(
-      path("game" / "request" / "newgame") {
-        post {
-          entity(as[String]) { jsonString => {
-            val json = Json.parse(jsonString)
-            (json \ "event").as[String] match {
-              case "NEWGAMEVIEW" =>
-                initNewGame()
-                complete(StatusCodes.OK)
-            }
-          }
-          }
-        }
-      }
+    Http().singleRequest(
+      Post(
+        s"http://${controllerHttp}/controller/update/event",
+        payload.toString()
+      )
     )
-    Http().newServerAt(interface, port).bind(route)
-    println(s"Server online at: http://${interface}:${port}/\nPress RETURN to stop...")
   }
 
 }

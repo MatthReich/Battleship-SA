@@ -1,7 +1,4 @@
 organization := "Battleship"
-val AkkaVersion = "2.6.8"
-val AkkaHttpVersion = "10.2.4"
-
 lazy val rootProject = (project in file(".")).settings(
 
   organization := "Battleship",
@@ -36,13 +33,10 @@ lazy val rootProject = (project in file(".")).settings(
   ),
 
 )
-
 lazy val model = project in file("Model")
-
 lazy val controller = project in file("Controller")
-
 lazy val gui = project in file("Gui")
-
 lazy val tui = project in file("Tui")
-
 lazy val db = project in file("DBDockerfiles")
+val AkkaVersion = "2.6.8"
+val AkkaHttpVersion = "10.2.4"

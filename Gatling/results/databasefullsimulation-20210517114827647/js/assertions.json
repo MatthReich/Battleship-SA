@@ -1,0 +1,10 @@
+{
+  "simulation": "battleship.gatling.model.DatabaseFullSimulation",
+  "simulationId": "databasefullsimulation",
+  "start": 1621252107647,
+  "description": "",
+  "scenarios": ["Testing Database - Load", "Testing Database - Volume", "Testing Database - Spike", "Testing Database - Stress", "Testing Database - Endurance"],
+  "assertions": [
+
+  ]
+}
