@@ -25,7 +25,7 @@ lazy val rootProject = (project in file(".")).settings(
 
   /** test dependencies */
   libraryDependencies ++= Seq(
-    // "org.scalatest" %% "scalatest" % "3.2.7" % "test",
+    "org.scalatest" %% "scalatest" % "3.2.7" % "test",
     // "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion,
     // "com.typesafe.akka" %% "akka-http-testkit" % AkkaHttpVersion,
     // "org.mockito" % "mockito-core" % "2.8.47" % "test",
@@ -33,6 +33,10 @@ lazy val rootProject = (project in file(".")).settings(
   ),
 
 )
+
+
+coverageExcludedPackages := "<empty>;.*Game;"
+
 lazy val model = project in file("Model")
 lazy val controller = project in file("Controller")
 lazy val gui = project in file("Gui")
