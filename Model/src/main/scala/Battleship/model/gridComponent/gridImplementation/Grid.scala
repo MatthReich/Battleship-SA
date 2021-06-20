@@ -20,6 +20,10 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
     }
   }
 
+  def initGrid(): InterfaceGrid = {
+    this.copy(grid = initGridRec(0, size * size, Vector[Map[String, Int]]()))
+  }
+
   private def updateGridIfIndexesAreRight(indexes: Vector[Int], gameState: String): Try[InterfaceGrid] = {
     if (indexes.nonEmpty && !indexes.exists(_.equals(-1)))
       Success(updateGridRec(0, indexes.length, indexes, gameState, grid))
@@ -30,10 +34,6 @@ case class Grid @Inject()(size: Int, strategyCollide: InterfaceStrategyCollide, 
   private def updateGridRec(start: Int, end: Int, indexes: Vector[Int], gameState: String, result: Vector[Map[String, Int]]): InterfaceGrid = {
     if (start == end) this.copy(grid = result)
     else updateGridRec(start + 1, end, indexes, gameState, result.updated(indexes(start), newValueOfField(indexes(start), gameState)))
-  }
-
-  def initGrid(): InterfaceGrid = {
-    this.copy(grid = initGridRec(0, size * size, Vector[Map[String, Int]]()))
   }
 
   @tailrec

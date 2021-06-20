@@ -50,19 +50,12 @@ class Tui() extends Reactor {
     case exception: FailureEvent => println(exception.getMessage())
     case value => println(value + " is not defined")
   }
-
-  private def stateHandler(byPass: String): Unit = {
-    println(byPass)
-    requestState("getGameState") match {
-      case "PLAYERSETTING" =>
-        printTui("set your Name")
-      case "SHIPSETTING" =>
-        printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
-      case "IDLE" =>
-        printTui("guess the enemy ship <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
-      case value => println(value + " is not defined")
-    }
-  }
+  val size = 10
+  private val water: Int = 0
+  private val ship: Int = 1
+  private val waterHit: Int = 2
+  private val shipHit: Int = 3
+  var grid: Vector[Map[String, Int]] = Vector[Map[String, Int]]()
 
   def tuiProcessLine(input: String): Unit = {
     if (input == "q") System.exit(0)
@@ -83,6 +76,21 @@ class Tui() extends Reactor {
     Await.result(Http().singleRequest(Post(s"http://$controllerHttp/controller/update", payload.toString())), atMost = 10.second)
   }
 
+  def getGridAsString(showAllShips: Boolean): String = toStringRek(0, 0, showAllShips, initRek())
+
+  private def stateHandler(byPass: String): Unit = {
+    println(byPass)
+    requestState("getGameState") match {
+      case "PLAYERSETTING" =>
+        printTui("set your Name")
+      case "SHIPSETTING" =>
+        printTui("set your Ship <x y x y>\n" + gridAsString() + "\n" + "left:\n" + shipSetListAsString())
+      case "IDLE" =>
+        printTui("guess the enemy ship <x y>\n\n" + "enemy\n" + enemyGridAsString() + "you\n" + gridAsString())
+      case value => println(value + " is not defined")
+    }
+  }
+
   private def printTui(string: String): Unit = {
     requestState("getPlayerState") match {
       case "PLAYER_ONE" => println(Console.MAGENTA + requestPlayerName("player_01") + Console.RESET + " " + string)
@@ -98,7 +106,6 @@ class Tui() extends Reactor {
       case None => player
     }
   }
-
 
   private def requestState(state: String): String = {
     val result = waitForResponse(Http().singleRequest(Get(s"http://$controllerHttp/controller/request?" + state + "=state")))
@@ -129,13 +136,6 @@ class Tui() extends Reactor {
     tmp.toString()
   }
 
-  val size = 10
-  private val water: Int = 0
-  private val ship: Int = 1
-  private val waterHit: Int = 2
-  private val shipHit: Int = 3
-  var grid: Vector[Map[String, Int]] = Vector[Map[String, Int]]()
-
   private def requestGrid(player: String, showAll: Boolean): String = {
     val result: HttpResponse = waitForResponse(Http().singleRequest(Get(s"http://$modelHttp/model?getPlayerGrid=" + player + showAll)))
     val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
@@ -158,8 +158,6 @@ class Tui() extends Reactor {
         requestPlayerShipSetList("player_02")
     }
   }
-
-  def getGridAsString(showAllShips: Boolean): String = toStringRek(0, 0, showAllShips, initRek())
 
   @tailrec
   private def toStringRek(idx: Int, idy: Int, showAllShips: Boolean, result: mutable.StringBuilder): String = {

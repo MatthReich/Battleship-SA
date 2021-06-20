@@ -32,10 +32,7 @@ class Gui() extends Frame {
   preferredSize = new Dimension(dimWidth, dimHeight)
   val gridSize: Int = 10
   redraw()
-
-  override def closeOperation() {
-    System.exit(0)
-  }
+  var ship: String = ""
 
   reactions += {
     case _: PlayerChanged =>
@@ -63,6 +60,12 @@ class Gui() extends Frame {
     case exception: FailureEvent => redoTurnAlert(exception.getMessage())
     case _ =>
   }
+  var last: String = ""
+  var shipCoords: Int = 0
+
+  override def closeOperation() {
+    System.exit(0)
+  }
 
   def evaluateShip(input: String): Unit = {
     if (input == last) {}
@@ -77,6 +80,13 @@ class Gui() extends Frame {
         shipCoords = 0
         redraw()
       }
+    }
+  }
+
+  private def redraw(): Unit = {
+    contents = new BorderPanel {
+      add(textGrid, BorderPanel.Position.North)
+      add(playGrid, BorderPanel.Position.Center)
     }
   }
 
@@ -104,22 +114,6 @@ class Gui() extends Frame {
     }
   }
 
-  var ship: String = ""
-  var last: String = ""
-  var shipCoords: Int = 0
-
-  private def textGrid = new GridPanel(1, 2) {
-    contents += new TextArea("player_01")
-    contents += new TextArea("player_02")
-  }
-
-  private def redraw(): Unit = {
-    contents = new BorderPanel {
-      add(textGrid, BorderPanel.Position.North)
-      add(playGrid, BorderPanel.Position.Center)
-    }
-  }
-
   private def playGrid: GridPanel = new GridPanel(1, 2) {
     val showAllShips = true
     val showNotAllShips = false
@@ -134,25 +128,37 @@ class Gui() extends Frame {
     }
   }
 
+  private def textGrid = new GridPanel(1, 2) {
+    contents += new TextArea("player_01")
+    contents += new TextArea("player_02")
+  }
+
+  private def requestState(state: String): String = {
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${controllerHttp}/controller/request?" + state + "=state"))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
+    tmp.result.toOption match {
+      case Some(value) => value.as[String]
+      case None => ""
+    }
+  }
+
+  private def requestGrid(player: String, showAll: Boolean): Vector[Map[String, Int]] = {
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model?getPlayerGrid=" + player + showAll))
+    val result = Await.result(responseFuture, atMost = 10.second)
+    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
+    tmp.result.toOption match {
+      case Some(value) => value.as[Vector[Map[String, Int]]]
+      case None => Vector[Map[String, Int]]()
+    }
+  }
+
   private def saveEventDialog(): Unit = {
     Dialog.showMessage(contents.head, "Game has saved!", "Saving State", Dialog.Message.Info)
   }
 
   private def loadEventDialog(): Unit = {
     Dialog.showMessage(contents.head, "Game has loaded!", "Saving State", Dialog.Message.Info)
-  }
-
-  private def redoTurnAlert(cause: String): Unit = {
-    Dialog.showMessage(contents.head, cause, "Alert", Dialog.Message.Warning)
-  }
-
-  private def newGameOrQuit(): Unit = {
-    val retVal = Dialog.showConfirmation(contents.head, "Start new Game?", optionType = Dialog.Options.YesNo, title = title)
-    if (retVal == Dialog.Result.No) sys.exit(0)
-    else if (retVal == Dialog.Result.Yes) {
-      this.visible = false
-      requestGameTurn("NEWGAMEVIEW", "")
-    }
   }
 
   menuBar = new MenuBar {
@@ -176,32 +182,25 @@ class Gui() extends Frame {
 
   centerOnScreen()
 
+  private def redoTurnAlert(cause: String): Unit = {
+    Dialog.showMessage(contents.head, cause, "Alert", Dialog.Message.Warning)
+  }
+
+  private def newGameOrQuit(): Unit = {
+    val retVal = Dialog.showConfirmation(contents.head, "Start new Game?", optionType = Dialog.Options.YesNo, title = title)
+    if (retVal == Dialog.Result.No) sys.exit(0)
+    else if (retVal == Dialog.Result.Yes) {
+      this.visible = false
+      requestGameTurn("NEWGAMEVIEW", "")
+    }
+  }
+
   private def requestGameTurn(event: String, input: String): Unit = {
     val payload = Json.obj(
       "event" -> event.toUpperCase,
       "input" -> input
     )
     Await.result(Http().singleRequest(Post(s"http://$controllerHttp/controller/update", payload.toString())), atMost = 10.second)
-  }
-
-  private def requestState(state: String): String = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${controllerHttp}/controller/request?" + state + "=state"))
-    val result = Await.result(responseFuture, atMost = 10.second)
-    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
-    tmp.result.toOption match {
-      case Some(value) => value.as[String]
-      case None => ""
-    }
-  }
-
-  private def requestGrid(player: String, showAll: Boolean): Vector[Map[String, Int]] = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(Get(s"http://${modelHttp}/model?getPlayerGrid=" + player + showAll))
-    val result = Await.result(responseFuture, atMost = 10.second)
-    val tmp = Json.parse(Await.result(Unmarshal(result).to[String], atMost = 10.second))
-    tmp.result.toOption match {
-      case Some(value) => value.as[Vector[Map[String, Int]]]
-      case None => Vector[Map[String, Int]]()
-    }
   }
 
 }

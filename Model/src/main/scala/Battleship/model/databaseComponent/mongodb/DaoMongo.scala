@@ -1,5 +1,6 @@
 package Battleship.model.databaseComponent.mongodb
 
+import Battleship.AkkaHttpModel
 import Battleship.model.databaseComponent.DaoInterface
 import Battleship.model.shipComponent.InterfaceShip
 import Battleship.model.shipComponent.shipImplemenation.Ship
@@ -29,45 +30,45 @@ case class DaoMongo() extends DaoInterface {
   val shipListCollection: MongoCollection[Document] = database.getCollection("ShipList")
   val gridCollection: MongoCollection[Document] = database.getCollection("Grid")
 
-
   override def create(): Unit = {
-    handleObserverInsertion(controllerCollection.insertOne(Document("_id" -> 1, "gameState" -> "", "playerState" -> "")))
-    handleObserverInsertion(controllerCollection.insertOne(Document("_id" -> 2, "gameState" -> "", "playerState" -> "")))
-    handleObserverInsertion(playerCollection.insertOne(Document("_id" -> 1, "playerName" -> "")))
-    handleObserverInsertion(playerCollection.insertOne(Document("_id" -> 2, "playerName" -> "")))
-    handleObserverInsertion(shipSetListCollection.insertOne(Document("_id" -> 1, "shipSetList" -> "")))
-    handleObserverInsertion(shipSetListCollection.insertOne(Document("_id" -> 2, "shipSetList" -> "")))
-    handleObserverInsertion(gridCollection.insertOne(Document("_id" -> 1, "field" -> "")))
-    handleObserverInsertion(gridCollection.insertOne(Document("_id" -> 2, "field" -> "")))
+    handleObserverInsertion(
+      controllerCollection.insertOne(
+        Document("_id" -> 1, "gameState" -> "", "playerState" -> "")
+      ),
+    )
+    handleObserverInsertion(
+      controllerCollection.insertOne(
+        Document("_id" -> 2, "gameState" -> "", "playerState" -> "")
+      ),
+    )
+    handleObserverInsertion(
+      playerCollection.insertOne(Document("_id" -> 1, "playerName" -> "")),
+
+    )
+    handleObserverInsertion(
+      playerCollection.insertOne(Document("_id" -> 2, "playerName" -> "")),
+    )
+    handleObserverInsertion(
+      shipSetListCollection.insertOne(
+        Document("_id" -> 1, "shipSetList" -> "")
+      ),
+    )
+    handleObserverInsertion(
+      shipSetListCollection.insertOne(
+        Document("_id" -> 2, "shipSetList" -> "")
+      ),
+    )
+    handleObserverInsertion(
+      gridCollection.insertOne(Document("_id" -> 1, "field" -> "")),
+    )
+    handleObserverInsertion(
+      gridCollection.insertOne(Document("_id" -> 2, "field" -> "")),
+    )
   }
 
-  override def read(id: Int): (String, Vector[Map[String, Int]], Map[String, Int], Vector[InterfaceShip], String, String) = {
-    val resultPlayer = Await.result(playerCollection.find(equal("_id", id)).first().head(), atMost = 10.second)
-    val playerName = resultPlayer("playerName").asString().getValue
-    val resultGrid = Await.result(gridCollection.find(equal("_id", id)).first().head(), atMost = 10.second)
-    val grid = Json.parse(resultGrid("field").asString().getValue).as[Vector[Map[String, Int]]]
-    val resultController = Await.result(controllerCollection.find(equal("_id", id)).first().head(), atMost = 10.second)
-    val gameState = resultController("gameState").asString().getValue
-    val playerState = resultController("playerState").asString().getValue
-    val resultShipSetList = Await.result(shipSetListCollection.find(equal("_id", id)).first().head(), atMost = 10.second)
-    val shipSetList = Json.parse(resultShipSetList("shipSetList").asString().getValue).as[Map[String, Int]]
-    val resultShipList = shipListCollection.find(equal("playerId", id))
-    val shipMapping = resultShipList.map(elem => Ship(elem("shipLength").asInt32().getValue, Json.parse(elem("coords").asString().getValue).as[Vector[Map[String, Int]]], elem("status").asBoolean().getValue))
-    val shipList = Await.result(shipMapping.toFuture(), atMost = 10.second).toVector
-    (playerName, grid, shipSetList, shipList, gameState, playerState)
-  }
-
-
-  override def update(id: Int, playerName: String, grid: Vector[Map[String, Int]], shipSetList: Map[String, Int], shipList: Vector[InterfaceShip], gameState: String, playerState: String): Unit = {
-    handleObserverUpdate(controllerCollection.updateOne(equal("_id", id), set("gameState", gameState)))
-    handleObserverUpdate(controllerCollection.updateOne(equal("_id", id), set("playerState", playerState)))
-    handleObserverUpdate(playerCollection.updateOne(equal("_id", id), set("playerName", playerName)))
-    handleObserverUpdate(gridCollection.updateOne(equal("_id", id), set("field", Json.toJson(grid).toString())))
-    handleObserverUpdate(shipSetListCollection.updateOne(equal("_id", id), set("shipSetList", Json.toJson(shipSetList).toString())))
-    settingShipListToDatabase(id, shipList)
-  }
-
-  private def handleObserverInsertion(insertObservable: SingleObservable[InsertOneResult]): Unit = {
+  private def handleObserverInsertion(
+                                       insertObservable: SingleObservable[InsertOneResult],
+                                     ): Unit = {
     insertObservable.subscribe(new Observer[InsertOneResult] {
       override def onNext(result: InsertOneResult): Unit = println(s"inserted: $result")
 
@@ -77,25 +78,142 @@ case class DaoMongo() extends DaoInterface {
     })
   }
 
-  private def handleObserverUpdate(insertObservable: SingleObservable[UpdateResult]): Unit = {
-    insertObservable.subscribe(new Observer[UpdateResult] {
-      override def onNext(result: UpdateResult): Unit = println(s"inserted: $result")
+  override def read(id: Int): (
+    String,
+      Vector[Map[String, Int]],
+      Map[String, Int],
+      Vector[InterfaceShip],
+      String,
+      String
+    ) = {
+    val resultPlayer = Await.result(
+      playerCollection.find(equal("_id", id)).first().head(),
+      atMost = 10.second
+    )
+    val playerName = resultPlayer("playerName").asString().getValue
+    val resultGrid = Await.result(
+      gridCollection.find(equal("_id", id)).first().head(),
+      atMost = 10.second
+    )
+    val grid = Json
+      .parse(resultGrid("field").asString().getValue)
+      .as[Vector[Map[String, Int]]]
+    val resultController = Await.result(
+      controllerCollection.find(equal("_id", id)).first().head(),
+      atMost = 10.second
+    )
+    val gameState = resultController("gameState").asString().getValue
+    val playerState = resultController("playerState").asString().getValue
+    val resultShipSetList = Await.result(
+      shipSetListCollection.find(equal("_id", id)).first().head(),
+      atMost = 10.second
+    )
+    val shipSetList = Json
+      .parse(resultShipSetList("shipSetList").asString().getValue)
+      .as[Map[String, Int]]
+    val resultShipList = shipListCollection.find(equal("playerId", id))
+    val shipMapping = resultShipList.map(elem =>
+      Ship(elem("shipLength").asInt32().getValue, Json.parse(elem("coords").asString().getValue)
+          .as[Vector[Map[String, Int]]], elem("status").asBoolean().getValue)
+    )
+    val shipList = Await.result(shipMapping.toFuture(), atMost = 10.second).toVector
+    (playerName, grid, shipSetList, shipList, gameState, playerState)
+  }
 
-      override def onError(e: Throwable): Unit = println(s"onError: $e")
+  override def update(
+                       id: Int,
+                       playerName: String,
+                       grid: Vector[Map[String, Int]],
+                       shipSetList: Map[String, Int],
+                       shipList: Vector[InterfaceShip],
+                       gameState: String,
+                       playerState: String
+                     ): Unit = {
+    handleObserverUpdate(
+      controllerCollection
+        .updateOne(equal("_id", id), set("gameState", gameState)),
+      gameState,
+      playerState
+    )
+    handleObserverUpdate(
+      controllerCollection
+        .updateOne(equal("_id", id), set("playerState", playerState)),
+      gameState,
+      playerState
+    )
+    handleObserverUpdate(
+      playerCollection
+        .updateOne(equal("_id", id), set("playerName", playerName)),
+      gameState,
+      playerState
+    )
+    handleObserverUpdate(
+      gridCollection.updateOne(
+        equal("_id", id),
+        set("field", Json.toJson(grid).toString())
+      ),
+      gameState,
+      playerState
+    )
+    handleObserverUpdate(
+      shipSetListCollection.updateOne(
+        equal("_id", id),
+        set("shipSetList", Json.toJson(shipSetList).toString())
+      ),
+      gameState,
+      playerState
+    )
+    settingShipListToDatabase(id, shipList, gameState, playerState)
+  }
+
+  private def handleObserverUpdate(
+                                    insertObservable: SingleObservable[UpdateResult],
+                                    gameState: String,
+                                    playerState: String
+                                  ): Unit = {
+    insertObservable.subscribe(new Observer[UpdateResult] {
+      override def onNext(result: UpdateResult): Unit =
+        println(s"inserted: $result")
+
+      override def onError(e: Throwable): Unit = {
+        println(s"onError: $e")
+        AkkaHttpModel.retryWithNewDatabase("mysql", gameState, playerState)
+      }
 
       override def onComplete(): Unit = println("completed")
     })
   }
 
-  private def settingShipListToDatabase(id: Int, shipList: Vector[InterfaceShip]): Unit = {
-    shipListCollection.deleteMany(equal("playerId", id)).subscribe(new Observer[DeleteResult] {
-      override def onNext(result: DeleteResult): Unit = println(s"inserted: $result")
+  private def settingShipListToDatabase(
+                                         id: Int,
+                                         shipList: Vector[InterfaceShip],
+                                         gameState: String,
+                                         playerState: String
+                                       ): Unit = {
+    shipListCollection
+      .deleteMany(equal("playerId", id))
+      .subscribe(new Observer[DeleteResult] {
+        override def onNext(result: DeleteResult): Unit =
+          println(s"inserted: $result")
 
-      override def onError(e: Throwable): Unit = println(s"onError: $e")
+        override def onError(e: Throwable): Unit = {
+          println(s"onError: $e")
+          AkkaHttpModel.retryWithNewDatabase("mysql", gameState, playerState)
+        }
 
-      override def onComplete(): Unit = println("deleted all")
-    })
-    for (ship <- shipList) yield handleObserverInsertion(shipListCollection.insertOne(Document("playerId" -> id, "shipLength" -> ship.shipLength, "status" -> ship.status, "coords" -> Json.toJson(ship.shipCoordinates).toString())))
+        override def onComplete(): Unit = println("deleted all")
+      })
+    for (ship <- shipList)
+      yield handleObserverInsertion(
+        shipListCollection.insertOne(
+          Document(
+            "playerId" -> id,
+            "shipLength" -> ship.shipLength,
+            "status" -> ship.status,
+            "coords" -> Json.toJson(ship.shipCoordinates).toString()
+          )
+        )
+      )
   }
 
   override def delete(): Unit = {
