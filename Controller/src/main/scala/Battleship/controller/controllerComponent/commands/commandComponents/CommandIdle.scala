@@ -38,8 +38,6 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
     }
   }
 
-  override def undoStep(): Unit = {}
-
   private def publishFailure(cause: String): Unit = {
     controller.requestNewReaction("FAILUREEVENT", cause)
     controller.requestNewReaction("REDOTURN", "")
@@ -70,5 +68,7 @@ class CommandIdle(input: String, controller: Controller, coordsCalculation: (Str
       // controller.publish(new TurnAgain)
     }
   }
+
+  override def undoStep(): Unit = {}
 
 }

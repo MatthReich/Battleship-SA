@@ -4,10 +4,6 @@ import slick.jdbc.MySQLProfile.api._
 
 class PlayerTable(tag: Tag) extends Table[(Int, String, Int, Int, Int, Int)](tag, "PlayerTable") {
 
-  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-
-  def name = column[String]("PlayerName")
-
   def controllerForeignKey = foreignKey("Controller_FK", controllerId, TableQuery[ControllerTable])(_.id)
 
   def controllerId = column[Int]("Controller")
@@ -22,8 +18,12 @@ class PlayerTable(tag: Tag) extends Table[(Int, String, Int, Int, Int, Int)](tag
 
   def gridForeignKey = foreignKey("Grid_FK", gridId, TableQuery[GridTable])(_.id)
 
-  def gridId = column[Int]("Grid")
-
   override def * = (id, name, shipSetListId, shipListId, gridId, controllerId)
+
+  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+
+  def name = column[String]("PlayerName")
+
+  def gridId = column[Int]("Grid")
 
 }

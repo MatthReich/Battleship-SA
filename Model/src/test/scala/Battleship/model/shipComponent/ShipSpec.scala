@@ -12,11 +12,10 @@ class ShipSpec extends AnyWordSpec {
     Map("x" -> 0, "y" -> 1, "value" -> 1),
     Map("x" -> 0, "y" -> 2, "value" -> 1)
   )
-  private val fieldIsNotHit: Int = 1
-
   val shipLength = 3
-  private val fieldIsHit: Int = 0
   val status = false
+  private val fieldIsNotHit: Int = 1
+  private val fieldIsHit: Int = 0
 
   "A Ship" when {
 

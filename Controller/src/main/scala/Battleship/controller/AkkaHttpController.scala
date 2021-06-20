@@ -1,9 +1,9 @@
 package Battleship.controller
 
 import Battleship.controller.controllerComponent.Controller
-import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import Battleship.controller.controllerComponent.states.GameState.GameState
 import Battleship.controller.controllerComponent.states.PlayerState.PlayerState
+import Battleship.controller.controllerComponent.states.{GameState, PlayerState}
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http

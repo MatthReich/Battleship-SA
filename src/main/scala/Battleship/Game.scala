@@ -40,28 +40,6 @@ object Game extends Reactor {
     }
   }
 
-  private def initNewGame(): Unit = {
-    requestNewEvent("GAMESTART")
-    requestNewEvent("PLAYERCHANGED")
-  }
-
-  private def requestNewEvent(event: String): Unit = {
-    implicit val system: ActorSystem[Nothing] =
-      ActorSystem(Behaviors.empty, "my-system")
-    implicit val executionContext: ExecutionContextExecutor =
-      system.executionContext
-    val payload = Json.obj(
-      "event" -> event.toUpperCase,
-      "message" -> ""
-    )
-    Http().singleRequest(
-      Post(
-        s"http://${controllerHttp}/controller/update/event",
-        payload.toString()
-      )
-    )
-  }
-
   private def listenTo(): Unit = {
     implicit val system: ActorSystem[Nothing] =
       ActorSystem(Behaviors.empty, "my-system")
@@ -87,6 +65,28 @@ object Game extends Reactor {
     Http().newServerAt(interface, port).bind(route)
     println(
       s"Server online at: http://${interface}:${port}/\nPress RETURN to stop..."
+    )
+  }
+
+  private def initNewGame(): Unit = {
+    requestNewEvent("GAMESTART")
+    requestNewEvent("PLAYERCHANGED")
+  }
+
+  private def requestNewEvent(event: String): Unit = {
+    implicit val system: ActorSystem[Nothing] =
+      ActorSystem(Behaviors.empty, "my-system")
+    implicit val executionContext: ExecutionContextExecutor =
+      system.executionContext
+    val payload = Json.obj(
+      "event" -> event.toUpperCase,
+      "message" -> ""
+    )
+    Http().singleRequest(
+      Post(
+        s"http://${controllerHttp}/controller/update/event",
+        payload.toString()
+      )
     )
   }
 
