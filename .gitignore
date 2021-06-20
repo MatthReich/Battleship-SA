@@ -19,7 +19,6 @@ build/
 # eclipse
 build
 .classpath
-.project
 .settings
 .worksheet
 
